@@ -1,12 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from "react-toastify";
 import ThemeProvider, { useTheme } from "./contexts/ThemeContext";
 import AuthProvider, { useAuth } from "./contexts/AuthContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotePage from "./pages/NotePage";
+import ToastNotifications from "./components/notifications/ToastNotifications";
 
 const PrivateRoute = ({ children }) => {
     const { user } = useAuth();
@@ -35,17 +35,7 @@ function App() {
                 <div className="App" data-theme={theme}>
                     {routes}
 
-                    <ToastContainer
-                        position="top-right"
-                        autoClose={3000}
-                        hideProgressBar={false}
-                        newestOnTop
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
-                    />
+                    <ToastNotifications />
                 </div>
             </ThemeProvider>
         </AuthProvider>
