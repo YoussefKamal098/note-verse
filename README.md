@@ -30,7 +30,7 @@ The app is focused on delivering a seamless user experience and robust API handl
 
 1. Clone the repository:
 ```shell script
-git clone https://github.com/YoussefKamal098/full-stack-note-app.git
+git clone https://github.com/YoussefKamal098/note_app.git
    cd full-stack-note-app
 ```
 
