@@ -223,7 +223,8 @@ notes_app/
 10. **Email and Password Change**: Allows users to update their email and password securely.
 11. **Delete Account**: Allow users to delete their account.
 12. **Archive and Collection Notes**: Enable users to archive or group their notes into collections.
-13. **User Settings Section (Frontend)**: Create a user settings section in the frontend where users can update their profile details and manage settings like email, password, and preferences. Design a user-friendly settings page in the frontend where users can:
+13. **DarkMode (Frontend)**: Switch between light and dark themes for the app.
+14. **User Settings Section (Frontend)**: Create a user settings section in the frontend where users can update their profile details and manage settings like email, password, and preferences. Design a user-friendly settings page in the frontend where users can:
     - Upload or change their profile image.
     - Update email and password.
     - View and manage active sessions.
