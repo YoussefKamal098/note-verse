@@ -1,0 +1,89 @@
+.pagination {
+    position: fixed;
+    display: flex;
+    font-size: 0.9em;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    left: 50%;
+    bottom: 0.5em;
+    transform: translateX(-50%);
+    margin: 1em;
+    padding: 0.5em;
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    background-color: var(--color-background);
+    border: calc(var(--border-width) / 2) solid var(--color-border);
+    animation: scale-out 0.3s ease-in-out;
+    transform-origin: center;
+    gap: 0.5em;
+}
+
+@keyframes scale-out {
+    0% {
+        transform: translateX(-50%) scale(0);
+    }
+    100% {
+        transform:translateX(-50%) scale(1);
+    }
+}
+
+.pagination .page-item {
+    width: 2em;
+    height: 2em;
+    border-radius: calc(var(--border-radius) / 2);
+    text-decoration: none;
+    color: var(--color-placeholder);
+    border: var(--border-width) solid var(--color-border);
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    overflow: hidden;
+    transition: 0.3s ease;
+}
+
+.pagination .page-link {
+    font-size: 1em;
+    font-weight: bold;
+    font-family: "Varela Round", serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.pagination .page-item:hover,
+.pagination .page-item:has(.page-link:focus),
+.pagination .page-item.active{
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-background);
+}
+
+.pagination-disabled .previous,
+.pagination-disabled .next,
+.pagination-disabled .page-item {
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.pagination-disabled .page-item.active,
+.pagination-disabled .page-item:has(.page-link:focus){
+    background-color: var(--color-placeholder);
+    border-color: var(--color-placeholder);
+}
+
+.pagination .next,
+.pagination .previous,
+.pagination .break {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--color-placeholder);
+    transition: 0.3s ease;
+}
+
+.pagination .next:hover,
+.pagination .previous:hover{
+    color: var(--color-accent);
+    cursor: pointer;
+}
