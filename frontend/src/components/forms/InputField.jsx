@@ -11,7 +11,7 @@ const InputField = ({ field, form, Icon,  innerRef, autoFocus=false, type="", pl
     const toggleDataVisibility = () => setIsShow(!isShow);
 
     return (
-        <InputContainerStyled>
+        <InputContainerStyled hasError={error}>
             <label htmlFor={name}>{label}</label>
             <div className="input">
                 <div className="input__icon"><Icon/></div>
