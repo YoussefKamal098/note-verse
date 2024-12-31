@@ -17,7 +17,7 @@ const NoNotesStyled = styled.div`
 
 const NoNotes = ({ children }) => {
     return (
-        <FadeInAnimation>
+        <FadeInAnimation keyProp="no-notes">
             <NoNotesStyled>
                 <LuNotebookPen size={100} />
                 {children}

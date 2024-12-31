@@ -71,12 +71,12 @@ import styled from "styled-components";
 
     .input:has(input:focus),
     .input:hover {
-        border-color: ${({ hasError }) => hasError ? "var(--color-danger)" : "var(--color-accent)"};
+        border-color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
     }
      
     .input:hover input::placeholder,
     .input:has(input:focus) input::placeholder {
-        color: ${({ hasError }) => hasError ? "var(--color-danger)" : "var(--color-accent)"};
+        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
     }
      
     input {
@@ -91,7 +91,7 @@ import styled from "styled-components";
     }
      
     input::placeholder {
-        color: ${({ hasError }) => hasError ? "var(--color-danger)" : "var(--color-placeholder)"};
+        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
         font-weight: 600;
         transition: 0.3s ease;
     }
@@ -102,12 +102,12 @@ import styled from "styled-components";
         justify-content: center;
         align-items: center;
         background-color: var(--color-background-secondary);
-        color: ${({ hasError }) => hasError ? "var(--color-danger)" : "var(--color-primary)"};
+        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-primary)"};
     }
 
      .input:has(input:focus) .input__icon,
      .input:hover .input__icon{
-         color:  ${({ hasError }) => hasError ? "var(--color-danger)" : "var(--color-accent)"};
+         color:  ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
      }
 
     .error {

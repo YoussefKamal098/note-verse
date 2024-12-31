@@ -4,7 +4,7 @@ import { RiPushpin2Fill, RiUnpinLine } from 'react-icons/ri';
 
 const PinButtonStyled = styled.button`
     font-size: 1.2em;
-    color: ${({ ispinned }) => (ispinned ? "var(--color-accent)" : "var(--color-placeholder)")};
+    color: ${({ is_pinned }) => (is_pinned ? "var(--color-accent)" : "var(--color-placeholder)")};
     transition: transform 0.3s, color 0.3s;
     cursor: pointer;
 
@@ -20,7 +20,7 @@ const PinButtonStyled = styled.button`
 
 const PinButton = ({ isPinned, togglePin }) => {
     return (
-        <PinButtonStyled onClick={togglePin} ispinned={isPinned ? "true" : undefined}>
+        <PinButtonStyled onClick={togglePin} is_pinned={isPinned ? "true" : undefined}>
             {isPinned ? <RiPushpin2Fill /> : <RiUnpinLine />}
         </PinButtonStyled>
     );
