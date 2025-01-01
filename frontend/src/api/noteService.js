@@ -71,9 +71,7 @@ class NoteService {
     }
 
     #handleError(error, defaultMessage) {
-        error.statusCode = error.statusCode || 500;
-        error.message = error.message || defaultMessage;
-        return error;
+        throw new Error(error.message || defaultMessage);
     }
 }
 

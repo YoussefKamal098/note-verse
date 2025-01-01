@@ -15,6 +15,11 @@ const CardContainerStyled = styled.div`
     padding: 1em 1em 0.5em 1em;
     transition: 0.3s ease;
     gap: 1em;
+    
+    ${({ loading }) => loading && `
+        pointer-events: none; 
+        cursor: not-allowed;
+    `}
 `;
 
 const TitleStyled = styled.h2`

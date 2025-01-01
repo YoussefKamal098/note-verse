@@ -3,7 +3,7 @@ import { AnimatedListTranslateChildrenFade } from "../animations/ContainerAnimat
 import { NoteCardsContainerStyled } from "../noteCard/NoteCardStyles";
 import NoteCard from "../noteCard/NoteCard";
 
-const NoteCards = React.memo(({ notes, onDelete, togglePin }) => {
+const NoteCards = React.memo(({ notes, onDelete, onTogglePin, fetchReplacedNote }) => {
     return (
         <NoteCardsContainerStyled>
             <AnimatedListTranslateChildrenFade>
@@ -12,8 +12,9 @@ const NoteCards = React.memo(({ notes, onDelete, togglePin }) => {
                         key={note.id}
                         index={index}
                         note={note}
-                        togglePin={() => togglePin(note.id)}
-                        onDelete={() => onDelete(note.id)}
+                        onTogglePin={onTogglePin}
+                        onDelete={onDelete}
+                        fetchReplacedNote={fetchReplacedNote}
                     />
                 ))}
             </AnimatedListTranslateChildrenFade>

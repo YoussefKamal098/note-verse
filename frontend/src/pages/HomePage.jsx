@@ -1,129 +1,100 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/common/Pagination";
 import NotesCard from "../components/notes/NoteCards";
 import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
+import { usePaginatedNotes } from "../hooks";
 import { AppConfig } from "../config";
-import noteService from "../api/noteService";
 
 const HomePage = () => {
-    const [notes, setNotes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(Number(localStorage.getItem("homeCurrentPage")) ||0);
-    const [totalPages, setTotalPages] = useState(0);
-    const [totalItems, setTotalItems] = useState(0);
-    const [searchText, setSearchText] = useState(localStorage.getItem("homeSearchText") || "");
     const navigate = useNavigate();
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
+    const [currentPage, setCurrentPage] = useState(Number(localStorage.getItem("homeCurrentPage")) || 0);
+    const [searchText, setSearchText] = useState(localStorage.getItem("homeSearchText") || "");
+    const replacedNoteIndexFromAdjacentPage = useRef(0);
 
-    useEffect(() => {
-        (async ()=> {
-            await loadNotes(currentPage, searchText);
-            localStorage.setItem("homeSearchText", searchText);
-            localStorage.setItem("homeCurrentPage", currentPage.toString());
-        })();
-    }, [currentPage, searchText]);
+    const {
+        notes,
+        loading,
+        totalPages,
+        setTotalPages,
+        setNotes,
+        fetchNotes,
+        totalNotes
+    } = usePaginatedNotes(currentPage, searchText, notesPerPage);
 
-    const fetchNotes = useCallback(async (page = 0, searchText = "") => {
+    const fetchReplacedNote = async () => {
         try {
-            const queryParams = {
-                searchText,
-                page,
-                perPage: notesPerPage,
-                sort: { isPinned: -1, updatedAt: -1, title: 1, createdAt: -1 },
-            };
+            const notes = (totalPages > 1 && currentPage !== totalPages - 1)
+                ? (await fetchNotes(currentPage + 1, searchText)).data
+                : null;
 
-            const result = searchText
-                ? await noteService.textSearch(searchText, queryParams)
-                : await noteService.getAll(queryParams);
+            const note = notes && notes.length > replacedNoteIndexFromAdjacentPage.current
+                ? notes[replacedNoteIndexFromAdjacentPage.current]
+                : null;
 
-            if (result.statusCode !== 200) {
-                throw new Error(result.message);
-            }
-
-            return result.data;
+            replacedNoteIndexFromAdjacentPage.current += 1;
+            return note;
         } catch (error) {
-            throw new Error(error.message || "An error occurred. Please try again.");
+            throw new Error (`Error fetch replaced note:  ${error.message}`);
         }
-    }, []);
+    };
 
-    const loadNotes = async (page = 0, searchText = "") => {
-        try {
-            setLoading(true);
-            const result = await fetchNotes(currentPage, searchText);
-            const { data, totalPages, totalItems } = result;
+    const deleteNote = async (noteId, replacedNote) => {
+        setNotes((prevNotes) =>
+            replacedNote
+                ? [...prevNotes.filter((note) => note.id !== noteId), replacedNote]
+                : prevNotes.filter((note) => note.id !== noteId)
+        );
 
-            setTotalPages(totalPages);
-            setTotalItems(totalItems);
-            setNotes(data);
-        } catch (error) {
-            toast.error(`Error fetching notes:  ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    }
+        totalNotes.current -= 1;
+        const newTotalPages = Math.ceil(totalNotes.current / notesPerPage);
+        setCurrentPage((prevPage) =>
+            prevPage > 0 && prevPage === totalPages - 1 && totalPages > newTotalPages ? prevPage - 1 : prevPage
+        );
+        setTotalPages(newTotalPages);
+        replacedNoteIndexFromAdjacentPage.current -= 1;
+    };
 
-    const handleSearch =  async (searchText) => {
+    const handleSearch = (text) => {
         setCurrentPage(0);
-        setSearchText(searchText);
-    };
-
-    const togglePin = async (noteId) => {
-        const noteToUpdate = notes.find(note => note.id === noteId);
-        const updatedNote = { ...noteToUpdate, isPinned: !noteToUpdate.isPinned };
-
-        try {
-            await noteService.update(noteId, { isPinned: updatedNote.isPinned });
-            setNotes(prevNotes => prevNotes.map(note => note.id === noteId ? updatedNote : note));
-        } catch (error) {
-            toast.error(`Error toggling pin:  ${error.message}`);
-        }
-    };
-
-    const deleteNote = async (noteId) => {
-        try {
-            if (totalPages > 1 && currentPage !== totalPages - 1) {
-                const result = await fetchNotes(currentPage + 1, searchText);
-                const nextPageData = result.data;
-                setNotes(prevNotes => [...prevNotes.filter(note => note.id !== noteId), nextPageData[0]]);
-            } else {
-                setNotes(prevNotes => prevNotes.filter(note => note.id !== noteId));
-            }
-
-            setTotalPages(Math.ceil((totalItems - 1) / notesPerPage));
-            setTotalItems(totalItems - 1);
-            await noteService.delete(noteId);
-        } catch (error) {
-            toast.error(`Error deleting note:  ${error.message}`);
-        }
+        setSearchText(text);
     };
 
     const handlePageClick = (data) => {
-        if (loading) return;
-        setCurrentPage(data.selected);
+        if (!loading) setCurrentPage(data.selected);
     };
 
-    const handleAddNoteButtonClick = () => { navigate('/note/new') };
+    const handleAddNoteButtonClick = () => navigate("/note/new");
+
+    useEffect(() => {
+        localStorage.setItem("homeSearchText", searchText);
+        localStorage.setItem("homeCurrentPage", currentPage.toString());
+    }, [searchText, currentPage]);
 
     return (
         <div className="page">
             <Navbar
-                showSearch={true}
-                showAddNoteButton={true}
+                showSearch
+                showAddNoteButton
                 disableAddNoteButton={loading}
                 onAddNoteButtonClick={handleAddNoteButtonClick}
-                onSearch={handleSearch} />
+                onSearch={handleSearch}
+            />
 
             <div className="container">
                 {loading ? (
                     <Loader />
-                ) : notes.length <= 0 ? (
+                ) : notes.length === 0 ? (
                     <NoNotes>📝 No notes available!</NoNotes>
                 ) : (
-                    <NotesCard notes={notes} onDelete={deleteNote} togglePin={togglePin} />
+                    <NotesCard
+                        notes={notes}
+                        onDelete={deleteNote}
+                        fetchReplacedNote={fetchReplacedNote}
+                    />
                 )}
             </div>
 
@@ -133,7 +104,8 @@ const HomePage = () => {
                     onPageChange={handlePageClick}
                     isDisabled={loading}
                     currentPage={currentPage}
-                />)}
+                />
+            )}
         </div>
     );
 };

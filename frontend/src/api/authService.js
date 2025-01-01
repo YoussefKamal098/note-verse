@@ -36,45 +36,46 @@ class AuthService {
 
     #setupInterceptors() {
         this.#apiClient.instance.interceptors.request.use(
-            (config) => {
-                const token = this.#tokenStorage.getAccessToken();
-                if (token) {
-                    config.headers[HEADERS.AUTHORIZATION] = `Bearer ${token}`;
-                }
-                return config;
-            },
+            (config) => this.#addAuthTokenToRequest(config),
             (error) => Promise.reject(error)
         );
 
         this.#apiClient.instance.interceptors.response.use(
             (response) => response,
-            async (error) => {
-                const originalRequest = error.config;
+            async (error) => this.#handleResponseError(error)
+        );
+    }
 
-                // Skip refresh logic for specific endpoints
-                if (
-                    originalRequest.url.includes(ENDPOINTS.REFRESH) ||
-                    originalRequest.url.includes(ENDPOINTS.LOGOUT)
-                ) {
-                    return Promise.reject(error);
-                }
+    #addAuthTokenToRequest(config) {
+        const token = this.#tokenStorage.getAccessToken();
+        if (token) {
+            config.headers[HEADERS.AUTHORIZATION] = `Bearer ${token}`;
+        }
+        return config;
+    }
 
-                if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    try {
-                        const { accessToken: newAccessToken } = await this.#refreshAccessToken();
-                        originalRequest.headers[HEADERS.AUTHORIZATION] = `Bearer ${newAccessToken}`;
+    async #handleResponseError(error) {
+        const originalRequest = error.config;
 
-                        return this.#apiClient.instance(originalRequest);
-                    } catch (refreshError) {
-                        console.error('Token refresh failed:', refreshError);
-                        return Promise.reject(error);
-                    }
-                }
+        if (
+            originalRequest.url.includes(ENDPOINTS.REFRESH) ||
+            originalRequest.url.includes(ENDPOINTS.LOGOUT)
+        ) {
+            return Promise.reject(error);
+        }
 
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                const { accessToken } = await this.#refreshAccessToken();
+                originalRequest.headers[HEADERS.AUTHORIZATION] = `Bearer ${accessToken}`;
+                return this.#apiClient.instance(originalRequest);
+            } catch (refreshError) {
                 return Promise.reject(error);
             }
-        );
+        }
+
+        return Promise.reject(error);
     }
 
     async #refreshAccessToken() {
@@ -85,8 +86,7 @@ class AuthService {
         } catch (error) {
             this.#handleTokenFailure();
             try { await this.logout() } catch (logoutError) {}
-            console.error('Error refreshing access token:', error);
-            throw new Error('Token refresh failed');
+            throw new Error(`Token refresh failed: ${error}`);
         }
     }
 
@@ -146,9 +146,7 @@ class AuthService {
     }
 
     #handleError(error, defaultMessage) {
-        error.statusCode = error.statusCode || 500;
-        error.message = error.message || defaultMessage;
-        return error;
+        throw new Error(error.message || defaultMessage);
     }
 }
 

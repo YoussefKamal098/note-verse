@@ -1,3 +1,7 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { toast } from "react-toastify";
+import noteService from "./api/noteService";
+
 const useFormNavigation = (fieldRefs) => {
     const handleKeyDown = (event, isSubmitting) => {
         const index = fieldRefs.findIndex(ref => ref.current === document.activeElement);
@@ -22,4 +26,52 @@ const useFormNavigation = (fieldRefs) => {
     return { handleKeyDown };
 };
 
-export  { useFormNavigation };
+const usePaginatedNotes = (currentPage, searchText, notesPerPage) => {
+    const [notes, setNotes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [totalPages, setTotalPages] = useState(0);
+    const totalNotes = useRef(0);
+
+    const fetchPageNotes = useCallback(async (page, search) => {
+        try {
+            const queryParams = {
+                searchText: search,
+                page,
+                perPage: notesPerPage,
+                sort: { isPinned: -1, updatedAt: -1, title: 1, createdAt: -1 },
+            };
+
+            const result = search
+                ? await noteService.textSearch(search, queryParams)
+                : await noteService.getAll(queryParams);
+
+            return result.data;
+        } catch (error) {
+            throw new Error (`Error fetch page notes:  ${error.message}`);
+        }
+    }, [notesPerPage]);
+
+    const loadNotes = useCallback(async (page, search) => {
+        try {
+            setLoading(true);
+            const result = await fetchPageNotes(page, search);
+            const { data, totalPages: total, totalItems } = result;
+
+            totalNotes.current = totalItems;
+            setTotalPages(total);
+            setNotes(data);
+        } catch (error) {
+            toast.error(`Error fetching notes: ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchPageNotes]);
+
+    useEffect(() => {
+        loadNotes(currentPage, searchText);
+    }, [loadNotes, currentPage, searchText]);
+
+    return { notes, loading, totalPages, loadNotes, fetchPageNotes, totalNotes, setNotes, setTotalPages };
+};
+
+export  { useFormNavigation,  usePaginatedNotes };

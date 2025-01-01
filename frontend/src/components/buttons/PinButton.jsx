@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { RiPushpin2Fill, RiUnpinLine } from 'react-icons/ri';
+import Spinner from './LoadingSpinnerButton';
 
 const PinButtonStyled = styled.button`
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: ${({ is_pinned }) => (is_pinned ? "var(--color-accent)" : "var(--color-placeholder)")};
-    transition: transform 0.3s, color 0.3s;
+    transition: 0.3s, color 0.3s;
     cursor: pointer;
 
     &:hover {
@@ -18,11 +19,13 @@ const PinButtonStyled = styled.button`
     }
 `;
 
-const PinButton = ({ isPinned, togglePin }) => {
+const PinButton = ({ isPinned, togglePin, loading=false }) => {
     return (
-        <PinButtonStyled onClick={togglePin} is_pinned={isPinned ? "true" : undefined}>
-            {isPinned ? <RiPushpin2Fill /> : <RiUnpinLine />}
-        </PinButtonStyled>
+        <Spinner loading={loading} color={"var(--color-accent)"} >
+            <PinButtonStyled onClick={togglePin} is_pinned={isPinned ? "true" : undefined}>
+                {isPinned ? <RiPushpin2Fill /> : <RiUnpinLine />}
+            </PinButtonStyled>
+        </Spinner>
     );
 };
 

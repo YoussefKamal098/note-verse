@@ -11,7 +11,7 @@ const StyledAddButton = styled.button`
     bottom: 0.7em;
     right: 0.5em;
     font-size: 1.5em;
-    border: calc(var(--border-width) / 2) solid var(--color-border);
+    border: calc(var(--border-width)) solid var(--color-border);
     border-radius: calc(var(--border-radius) / 1.5);
     background: var(--color-background);
     box-shadow: var(--box-shadow-hoverable);
@@ -21,6 +21,7 @@ const StyledAddButton = styled.button`
 
     &:hover {
         box-shadow: var(--box-shadow-hover);
+        border-color: var(--color-accent);
     }
 
     &:active {

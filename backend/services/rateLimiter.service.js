@@ -38,7 +38,7 @@ class RateLimiterService {
     #windowSize;
     #maxRequests;
 
-    constructor(cacheService, blockerService, { windowSize = 60, maxRequests = 10 } = {}) {
+    constructor(cacheService, blockerService, { windowSize = 60, maxRequests = 60 } = {}) {
         this.#cacheService = cacheService;
         this.#blockerService = blockerService;
         this.#windowSize = windowSize; // in seconds

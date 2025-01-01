@@ -28,10 +28,10 @@ const Navbar = ({
     const navigate = useNavigate();
 
     const logoutUser = async () => {
-        const result = await authService.logout();
-        if (result.statusCode !== 204) {
-            toast.error(`Error logout: ${result.message}` || "An error occurred. Please try again.");
-            return;
+        try {
+            await authService.logout();
+        } catch (error) {
+            toast.error(`Error logout: ${error.message}`);
         }
 
         navigate("/login");

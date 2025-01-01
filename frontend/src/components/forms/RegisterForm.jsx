@@ -25,12 +25,7 @@ const RegisterForm = () => {
         const { email, password, firstname, lastname } = values;
 
         try {
-            const result = await authService.register({ email, password, firstname, lastname });
-            if (result.statusCode !== 200) {
-                setErrorMessage(result.message || "An error occurred. Please try again.");
-                return;
-            }
-
+            await authService.register({ email, password, firstname, lastname });
             navigate("/home");
         } catch (error) {
             setErrorMessage(error.message);

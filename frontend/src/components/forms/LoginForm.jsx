@@ -20,15 +20,10 @@ const LoginForm = () => {
         const { email, password } = values;
 
         try {
-            const result = await AuthService.login({ email, password });
-            if (result.statusCode !== 200) {
-                setErrorMessage(result.message || "An error occurred. Please try again.");
-                return;
-            }
-
+            await AuthService.login({ email, password });
             navigate("/home");
         } catch (error) {
-            setErrorMessage(error.message);
+            setErrorMessage(error.message || "An error occurred. Please try again.");
         } finally {
             actions.setSubmitting(false);
         }

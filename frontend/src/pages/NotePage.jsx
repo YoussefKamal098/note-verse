@@ -14,25 +14,29 @@ const NotePage = () => {
     const [loading, setLoading] = useState(true);
 
     const fetchNoteData = useCallback(async () => {
+        setLoading(true);
+
         if (id === "new") {
             setNote({
                 id: null,
                 title: "",
                 content: "# Untitled",
                 isPinned: false,
-                tags: [],
+                tags: ["Tag"],
                 createdAt: null,
                 updatedAt: null
             });
+
             setLoading(false);
-        } else {
-            setLoading(true);
+            return;
+        }
+
+        try {
             const result = await noteService.getById(id);
-            if (result.statusCode === 200) {
-                setNote(result.data);
-            } else {
-                toast.error(result.message || "Failed to fetch note");
-            }
+            setNote(result.data);
+        } catch (error) {
+            toast.error(`"Failed to fetch note :${error.message}`);
+        } finally {
             setLoading(false);
         }
     }, [id]);
@@ -46,21 +50,21 @@ const NotePage = () => {
         let savedNote;
 
         if (!note.id) {
-            const result = await noteService.create({ isPinned, tags, title, content });
-            if (result.statusCode === 201) {
+            try {
+                const result = await noteService.create({ isPinned, tags, title, content });
                 savedNote = result.data;
                 toast.success(`New note created with ID: ${savedNote.id}`);
                 navigate(`/note/${savedNote.id}`, { replace: true });
-            } else {
-                toast.error(result.message || "Failed to create note");
+            } catch (error){
+                toast.error(`Failed to create note: ${error.message}`);
             }
         } else {
-            const result = await noteService.update(id, { isPinned, tags, title, content });
-            if (result.statusCode === 200) {
+            try {
+                const result = await noteService.update(id, { isPinned, tags, title, content });
                 savedNote = result.data;
                 toast.success(`Content saved! ${formatBytes(stringSizeInBytes(content))}.`);
-            } else {
-                toast.error(result.message || "Failed to update note");
+            } catch(error) {
+                toast.error(`Failed to update note: ${error.message}`);
             }
         }
 
@@ -70,22 +74,17 @@ const NotePage = () => {
 
     const handleDelete = async () => {
         if (!note.id) return;
-        setLoading(true);
 
         try {
-            const result = await noteService.delete(id);
-            if (result.statusCode === 200) {
-                toast.success("Note deleted successfully!");
-                navigate("/home");
-                return;
-            } else {
-                toast.error(result.message || "Failed to delete note");
-            }
+            setLoading(true);
+            await noteService.delete(id);
+            toast.success("Note deleted successfully!");
+            navigate("/home");
         } catch (error) {
-            toast.error("Failed to delete note.");
+            toast.error(`Failed to delete note :${error.message}`);
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     return (
