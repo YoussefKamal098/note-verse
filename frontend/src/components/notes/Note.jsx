@@ -111,13 +111,7 @@ const Note = React.memo(function Note({
             tags
         });
 
-        sessionStorage.removeItem('noteState');
     }, [content, tags, title, isPinned]);
-
-    const handleDelete = useCallback(() => {
-        onDelete();
-        sessionStorage.removeItem('noteState');
-    }, [onDelete]);
 
     return (
         <NoteContainerStyled >
@@ -129,7 +123,7 @@ const Note = React.memo(function Note({
             {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt} /> }
             <EditableTags tags={tags} setTags={setTags} />
             <ButtonsContainerStyled>
-                <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={handleDelete}> Delete </Button>
+                <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={onDelete}> Delete </Button>
                 <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
             </ButtonsContainerStyled>
             <NoteMarkdownTabs content={content} onContentChange={setContent}/>
