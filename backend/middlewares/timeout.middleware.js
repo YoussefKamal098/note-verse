@@ -1,10 +1,10 @@
 const timeoutHandler = require('express-timeout-handler');
+const AppError = require("../errors/app.error");
 
 const timeoutOptions = {
     timeout: 15000, // Timeout duration in milliseconds (e.g., 15 seconds)
-    onTimeout: function(req, res) {
-        // If a timeout occurs, handle it here
-        return res.status(408).json({ error: 'Request Timeout' });
+    onTimeout: function(req, res, next) {
+        next(new AppError('The request timed out. Please try again later.', 408));
     },
 };
 
