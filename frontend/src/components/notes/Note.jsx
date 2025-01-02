@@ -30,7 +30,7 @@ const HeaderContainerStyled = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.3em;
+    font-size: 1em;
     margin-bottom: 2em;
 `
 

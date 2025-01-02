@@ -13,7 +13,7 @@ import {
 const SearchBar = ({ onSearch = (value) => value }) => {
     const storedSearchText = localStorage.getItem("searchText") || "";
     const [searchText, setSearchText] = useState(storedSearchText);
-    const [value, setValue] = useState(storedSearchText);
+    const [value, setValue] = useState(searchText);
 
     useEffect(() => {
         setSearchText(value.trim());
@@ -22,26 +22,19 @@ const SearchBar = ({ onSearch = (value) => value }) => {
 
     const debouncedSearch = useMemo(
         () =>
-            debounce((value) => {
-                if (onSearch) onSearch(value);
-            }, 500),
+            debounce((value="") => { if (onSearch) onSearch(value) }, 300),
         [onSearch]
     );
 
-    const handleChange = (e) => {
-        const value = e.target.value;
-        setValue(value);
-    };
+    const handleChange = (e) => { setValue(e.target.value) };
 
     const handleKeyUp = () => {
-        if (setSearchText) {
-            debouncedSearch(searchText);
-        }
+        if (setSearchText) debouncedSearch(searchText);
     };
 
     const handleClear = () => {
         setValue("");
-        if (onSearch) onSearch("");
+        onSearch("");
     };
 
     return (

@@ -1,6 +1,7 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
-import {toast} from "react-toastify";
-import {useEffect, useRef} from "react";
+import { toast } from "react-toastify";
+import { debounce } from 'lodash';
 import noteValidationSchema from "../../validations/noteValidtion";
 
 const InputWrapperStyled = styled.div`
@@ -32,7 +33,7 @@ const TitleInputStyled = styled.textarea`
     width: 100%;
     padding: 0.3em;
     height: fit-content;
-    resize: none; 
+    resize: none;
     overflow: hidden;
     position: relative;
     font-size: 2em;
@@ -48,6 +49,7 @@ const TitleInputStyled = styled.textarea`
 `;
 
 const NoteTitleInputField = ({ title, setTitle }) => {
+    const [value, setValue] = useState(title);
     const textAreaRef = useRef(null);
 
     useEffect(() => {
@@ -59,6 +61,9 @@ const NoteTitleInputField = ({ title, setTitle }) => {
         textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     };
 
+    const debouncedTitle = useMemo(() => debounce((newValue="") => {
+        setTitle(newValue);
+    }, 300), [setTitle]);
 
     const onTitleChange = (e) => {
         const value = e.target.value;
@@ -70,18 +75,23 @@ const NoteTitleInputField = ({ title, setTitle }) => {
             return;
         }
 
-        setTitle(value);
+        setValue(value);
         resizeTextArea();
     };
 
-   return (
+    const onKeyUpUp = () => {
+        debouncedTitle(value);
+    }
+
+    return (
         <InputWrapperStyled>
             <TitleInputStyled
                 spellCheck={false}
                 rows={1}
                 ref={textAreaRef}
-                value={title}
+                value={value}
                 onChange={onTitleChange}
+                onKeyUp={onKeyUpUp}
                 placeholder="📝✨ Title your note!"
             />
         </InputWrapperStyled>

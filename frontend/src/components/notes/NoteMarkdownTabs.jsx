@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useCallback, useEffect} from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import MarkdownEditor from "@uiw/react-markdown-editor";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -20,25 +20,33 @@ const EditorStyled = styled(MarkdownEditor)`
     font-weight: 600;
 `;
 
-const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content, onContentChange}) {
+const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content = "", onContentChange }) {
     const [tabIndex, setTabIndex] = useState(1);
+    const [value, setValue] = useState(content);
 
     const onTabChange = useCallback((index) => {
         setTabIndex(index);
     }, []);
 
     useEffect(() => {
-        setTabIndex(0)
+        setTabIndex(0);
     }, []);
 
-    const handleChange = useMemo(
-        () => debounce((newContent) => {
+    const debounceChange = useMemo(
+        () => debounce((newContent = "") => {
             onContentChange(newContent);
-        }, 500),
-        [onContentChange]
+        }, 300), [onContentChange]
     );
 
-    const memoizedContent = useMemo(() => content, [content]);
+    const handleOnChange = useMemo(
+        () => debounce((newValue = "") => {
+                setValue(newValue);
+        }, 300), [onContentChange]
+    );
+
+    const handleOnKeyUp = () => { debounceChange(value) };
+
+    const memoizedContent = useMemo(() => value, [value]);
 
     const tabsData = useMemo(() => [
         {
@@ -47,11 +55,14 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content, onContentCh
         },
         {
             title: 'Editor',
-            content: <EditorStyled value={memoizedContent}
-                                   onChange={handleChange}
-                                   enablePreview={false}/>
+            content: <EditorStyled
+                value={memoizedContent}
+                onChange={handleOnChange}
+                onKeyUp={handleOnKeyUp}
+                enablePreview={false}
+            />
         }
-    ], [tabIndex, memoizedContent]);
+    ], [tabIndex, value]);
 
     return (
         <DynamicTabs
