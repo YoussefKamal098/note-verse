@@ -5,6 +5,7 @@ import { formatDate } from "../../utils";
 import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { TitleStyled, CreatedAt, TagsContainerStyled, TagStyled, CardContainerStyled } from "./NoteCardStyles";
 import noteService from "../../api/noteService";
 
@@ -13,6 +14,17 @@ const NoteCard = React.memo(({ note, index, togglePin = () => {}, onDelete = () 
     const [loading, setLoading] = useState(false);
     const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
     const [pinButtonLoading, setPinButtonLoading] = useState(false);
+    const { showConfirmation }  = useConfirmation();
+
+   const handleDelete = (noteId) => {
+       setDeleteButtonLoading(true);
+       showConfirmation({
+           type: "danger",
+           confirmationMessage: "Are you sure you want to delete this note?",
+           onConfirm: () => deleteNote(noteId),
+           onCancel: () => setDeleteButtonLoading(false),
+       });
+   }
 
     const handleTogglePin = async (noteId) => {
         try {
@@ -29,7 +41,7 @@ const NoteCard = React.memo(({ note, index, togglePin = () => {}, onDelete = () 
         }
     };
 
-    const handleDelete = async (noteId) => {
+    const deleteNote = async (noteId) => {
         try {
             setLoading(true);
             setDeleteButtonLoading(true);
@@ -61,7 +73,7 @@ const NoteCard = React.memo(({ note, index, togglePin = () => {}, onDelete = () 
                         ))}
                     </TagsContainerStyled>
                     <PinButton isPinned={isPinned} loading={pinButtonLoading} togglePin={() => { handleTogglePin(note.id) }} />
-                    <DeleteButton loading={deleteButtonLoading} onClick={() => { handleDelete(note.id) }} />
+                    <DeleteButton loading={deleteButtonLoading} onClick={ () => { handleDelete(note.id) }} />
                 </div>
             </CardContainerStyled>
         </>

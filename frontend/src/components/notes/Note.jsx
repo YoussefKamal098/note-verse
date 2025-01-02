@@ -11,6 +11,7 @@ import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
 import Button, { ButtonsContainerStyled } from "../buttons/Button";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { deepArrayEqual } from "../../utils";
 import noteValidationSchema from "../../validations/noteValidtion";
 
@@ -76,6 +77,7 @@ const Note = React.memo(function Note({
     const [title, setTitle] = useState(origTitle || '');
     const [isPinned, setIsPinned] = useState(origIsPinned);
     const [hasChanges, setHasChanges] = useState(false);
+    const { showConfirmation }  = useConfirmation();
 
     const checkChanges = useCallback(() => {
         return origTitle !== title ||
@@ -113,6 +115,14 @@ const Note = React.memo(function Note({
 
     }, [content, tags, title, isPinned]);
 
+    const onNoteDelete = () => {
+        showConfirmation({
+            type: "danger",
+            confirmationMessage: "Are you sure you want to delete this note?",
+            onConfirm: () => onDelete(),
+        });
+    }
+
     return (
         <NoteContainerStyled >
            <HeaderContainerStyled>
@@ -123,7 +133,7 @@ const Note = React.memo(function Note({
             {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt} /> }
             <EditableTags tags={tags} setTags={setTags} />
             <ButtonsContainerStyled>
-                <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={onDelete}> Delete </Button>
+                <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={onNoteDelete}> Delete </Button>
                 <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
             </ButtonsContainerStyled>
             <NoteMarkdownTabs content={content} onContentChange={setContent}/>

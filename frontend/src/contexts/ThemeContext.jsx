@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 
 const ThemeContext = createContext({
     theme: "light",
-    setTheme: () => {}
+    setTheme: ({}) => {}
 });
 
 const useTheme = () => useContext(ThemeContext);

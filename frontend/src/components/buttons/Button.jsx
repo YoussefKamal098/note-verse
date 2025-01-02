@@ -3,31 +3,37 @@ import styled from "styled-components";
 import PropTypes from "prop-types";
 
 const BUTTON_TYPES = {
-    primary: {main: "var(--color-accent)", hover: "var(--color-accent-hover)" }, // Green
-    danger: {main: "var(--color-danger)", hover: "var(--color-danger-hover)" }, // Red
-    secondary: {main: "var(--color-primary)", hover: "var(--color-primary-hover)" } // Blue
+    primary: "var(--color-accent)", // Green
+    danger: "var(--color-danger)" , // Red
+    secondary: "var(--color-primary)", // Blue
 };
 
 const ButtonStyled = styled.button`
-  background-color: ${(props) => BUTTON_TYPES[props.type].main || BUTTON_TYPES.primary.main};
-  opacity: ${(props) => props.disabled ? 0.5 : 1};
-    color: white;
-    padding: 0.4em 0.6em;
+    opacity: ${ (props) => props.disabled ? 0.5 : 1 };
+    color: ${ (props) => BUTTON_TYPES[props.type] };
+    padding: 0.4em 0.5em;
     border-radius: calc(var(--border-radius) / 1.5);
     font-size: 1em;
     font-weight: 500;  
-    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--box-shadow-hoverable);
-    gap: 0.5em;
+    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+    border: var(--border-width) solid var(--color-background);
+    box-shadow: var(--box-shadow);
     transition: 0.3s ease;
+    gap: 0.5em;
 
-  &:hover {
-      background-color: ${(props) => BUTTON_TYPES[props.type].hover || BUTTON_TYPES.primary.hover};
-      box-shadow: var(--box-shadow-hover);
-  }
+    &:hover {
+        background-color: ${ (props) => BUTTON_TYPES[props.type] };
+        border-color: ${ (props) => BUTTON_TYPES[props.type] };
+        box-shadow: var(--box-shadow-hover);
+        color: var(--color-background);
+    }
+
+    &:active {
+       scale: 0.85
+    }
 `;
 
 const ButtonsContainerStyled = styled.div`
@@ -39,7 +45,7 @@ const ButtonsContainerStyled = styled.div`
 `;
 
 const Button = ({
-                    type = "primary",
+                    type = "secondary",
                     disabled=false,
                     onClick = () => {},
                     icon: Icon=null,

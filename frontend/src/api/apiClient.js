@@ -4,9 +4,8 @@ import { AppConfig } from '../config';
 class ApiClient {
     #api;
 
-    constructor(baseURL, logger = console) {
+    constructor(baseURL) {
         this.#api = this.#createInstance(baseURL);
-        this.logger = logger;
         this.#setupInterceptors();
     }
 
@@ -18,7 +17,8 @@ class ApiClient {
         return axios.create({
             baseURL,
             headers: { 'Content-Type': 'application/json' },
-            withCredentials: true,
+            timeout: 5000, // (5 seconds)
+            withCredentials: true
         });
     }
 
@@ -32,7 +32,7 @@ class ApiClient {
     #handleError(error) {
         const statusCode = error.response?.status || 500;
         const backendMessage = error.response?.data?.message || null;
-
+        console.log(error.response?.data ,error.response?.data?.message, error.response?.status)
         const userFriendlyMessage = this.#getUserFriendlyMessage(statusCode, backendMessage);
 
         this.#logError({ statusCode, backendMessage, userFriendlyMessage, stack: error.stack });
@@ -53,20 +53,21 @@ class ApiClient {
             case 401:
             case 403:
                 return "You are not authorized to perform this action. Please log in or check your permissions.";
+            case 'ECONNABORTED':
+                return "The request timed out. Please try again later.";
             default:
                 return backendMessage || "An unexpected error occurred. Please try again later.";
         }
     }
 
     #logError({ statusCode, backendMessage, userFriendlyMessage, stack }) {
-        if (this.logger && typeof this.logger.error === "function") {
-            this.logger.error("API Error:", {
-                statusCode,
-                backendMessage,
-                userFriendlyMessage,
-                stack: stack || "No stack trace available",
-            });
-        }
+        // I'll use winston logger later
+        console.error("API Error:", {
+            statusCode,
+            backendMessage,
+            userFriendlyMessage,
+            stack: stack || "No stack trace available",
+        });
     }
 }
 

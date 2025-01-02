@@ -26,9 +26,10 @@ const useFormNavigation = (fieldRefs) => {
     return { handleKeyDown };
 };
 
-const usePaginatedNotes = (currentPage, searchText, notesPerPage) => {
+const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(initPage);
     const [totalPages, setTotalPages] = useState(0);
     const totalNotes = useRef(0);
 
@@ -47,14 +48,19 @@ const usePaginatedNotes = (currentPage, searchText, notesPerPage) => {
 
             return result.data;
         } catch (error) {
-            throw new Error (`Error fetch page notes:  ${error.message}`);
+            throw new Error (`Error fetching page notes:  ${error.message}`);
         }
     }, [notesPerPage]);
 
     const loadNotes = useCallback(async (page, search) => {
         try {
             setLoading(true);
-            const result = await fetchPageNotes(page, search);
+            let result = await fetchPageNotes(page, search);
+            if (result.data.length === 0 && result.totalPages > 0) {
+                result = await fetchPageNotes(result.totalPages - 1, search);
+                setCurrentPage(result.totalPages - 1);
+            }
+
             const { data, totalPages: total, totalItems } = result;
 
             totalNotes.current = totalItems;
@@ -71,7 +77,18 @@ const usePaginatedNotes = (currentPage, searchText, notesPerPage) => {
         loadNotes(currentPage, searchText);
     }, [loadNotes, currentPage, searchText]);
 
-    return { notes, loading, totalPages, loadNotes, fetchPageNotes, totalNotes, setNotes, setTotalPages };
+    return {
+        notes,
+        loading,
+        totalPages,
+        loadNotes,
+        fetchPageNotes,
+        totalNotes,
+        setNotes,
+        setTotalPages,
+        currentPage,
+        setCurrentPage
+    };
 };
 
 export  { useFormNavigation,  usePaginatedNotes };

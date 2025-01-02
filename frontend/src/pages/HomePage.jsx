@@ -11,7 +11,6 @@ import { AppConfig } from "../config";
 const HomePage = () => {
     const navigate = useNavigate();
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
-    const [currentPage, setCurrentPage] = useState(Number(localStorage.getItem("homeCurrentPage")) || 0);
     const [searchText, setSearchText] = useState(localStorage.getItem("homeSearchText") || "");
     const replacedNoteIndexFromAdjacentPage = useRef(0);
 
@@ -21,14 +20,16 @@ const HomePage = () => {
         totalPages,
         setTotalPages,
         setNotes,
-        fetchNotes,
+        currentPage,
+        setCurrentPage,
+        fetchPageNotes,
         totalNotes
-    } = usePaginatedNotes(currentPage, searchText, notesPerPage);
+    } = usePaginatedNotes(localStorage.getItem("homeCurrentPage") || 0, searchText, notesPerPage);
 
     const fetchReplacedNote = async () => {
         try {
             const notes = (totalPages > 1 && currentPage !== totalPages - 1)
-                ? (await fetchNotes(currentPage + 1, searchText)).data
+                ? (await fetchPageNotes(currentPage + 1, searchText)).data
                 : null;
 
             const note = notes && notes.length > replacedNoteIndexFromAdjacentPage.current

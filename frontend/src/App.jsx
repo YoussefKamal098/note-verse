@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ThemeProvider, { useTheme } from "./contexts/ThemeContext";
 import AuthProvider, { useAuth } from "./contexts/AuthContext";
+import ConfirmationPopUpProvider from "./contexts/ConfirmationContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -33,9 +34,10 @@ function App() {
         <AuthProvider>
             <ThemeProvider>
                 <div className="App" data-theme={theme}>
-                    {routes}
-
-                    <ToastNotifications />
+                    <ConfirmationPopUpProvider>
+                        {routes}
+                        <ToastNotifications/>
+                    </ConfirmationPopUpProvider>
                 </div>
             </ThemeProvider>
         </AuthProvider>

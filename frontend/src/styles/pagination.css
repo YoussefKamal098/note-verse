@@ -13,10 +13,10 @@
     box-shadow: var(--box-shadow);
     border-radius: var(--border-radius);
     background-color: var(--color-background);
-    border: calc(var(--border-width) / 2) solid var(--color-border);
+    border: calc(var(--border-width) / 2) solid var(--color-background);
     animation: scale-out 0.3s ease-in-out;
     transform-origin: center;
-    gap: 0.5em;
+    gap: 0.25em;
 }
 
 @keyframes scale-out {
@@ -29,12 +29,12 @@
 }
 
 .pagination .page-item {
-    width: 2em;
-    height: 2em;
+    width: 1.9em;
+    height: 1.9em;
     border-radius: calc(var(--border-radius) / 2);
     text-decoration: none;
     color: var(--color-placeholder);
-    border: var(--border-width) solid var(--color-border);
+    border: var(--border-width) solid var(--color-background);
     box-shadow: var(--box-shadow);
     cursor: pointer;
     overflow: hidden;
@@ -42,7 +42,7 @@
 }
 
 .pagination .page-link {
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: bold;
     font-family: "Varela Round", serif;
     display: flex;
