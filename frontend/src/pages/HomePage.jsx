@@ -13,6 +13,7 @@ const HomePage = () => {
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
     const [searchText, setSearchText] = useState(localStorage.getItem("homeSearchText") || "");
     const replacedNoteIndexFromAdjacentPage = useRef(0);
+    const pageSectionRef = useRef(null);
 
     const {
         notes,
@@ -75,8 +76,14 @@ const HomePage = () => {
         localStorage.setItem("homeCurrentPage", currentPage.toString());
     }, [searchText, currentPage]);
 
+    useEffect(() => {
+        if (!loading && pageSectionRef.current) {
+            pageSectionRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [loading]);
+
     return (
-        <div className="page">
+        <div className="page" ref={pageSectionRef}>
             <Navbar
                 showSearch
                 showAddNoteButton

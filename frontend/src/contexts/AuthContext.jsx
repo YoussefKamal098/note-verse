@@ -32,7 +32,7 @@ const AuthProvider = ({ children }) => {
 
     const handleLogout = () => {
         setUser(null);
-        localStorage.clear();
+        localStorage.removeItem("user");
     };
 
     if (loading) return null; // Return null or a loading spinner until the user data is fetched
