@@ -224,8 +224,7 @@ notes_app/
 11. **Delete Account**: Allow users to delete their account.
 12. **Compression for Large Markdown Content (Frontend & Backend)**: Implement compression for large markdown content in both frontend and backend to optimize performance when sending and receiving large content. The frontend will use compression libraries (e.g., pako) to compress markdown before sending to the backend, where the server will decompress it using zlib for processing.
 13. **Archive and Collection Notes**: Enable users to archive or group their notes into collections.
-14. **DarkMode (Frontend)**: Switch between light and dark themes for the app.
-15. **User Settings Section (Frontend)**: Create a user settings section in the frontend where users can update their profile details and manage settings like email, password, and preferences. Design a user-friendly settings page in the frontend where users can:
+14**User Settings Section (Frontend)**: Create a user settings section in the frontend where users can update their profile details and manage settings like email, password, and preferences. Design a user-friendly settings page in the frontend where users can:
     - Upload or change their profile image.
     - Update email and password.
     - View and manage active sessions.

@@ -13,9 +13,21 @@
     --color-accent-dark-light: #46b846; /* Dark Green */
     --color-text-light: #333;
     --color-border-light: #ccc;
+    --color-border-secondary-light: var(--color-background-light);
     --color-placeholder-light: #888;
 
-    /* Color Palette - Dark Mode */ /* will be added later */
+    /* Color Palette - Dark Mode */
+    --color-background-dark: #1b1e1f;
+    --color-background-dark-primary: #181a1b;
+    --color-background-dark-secondary: #2a1d1d;
+    --color-accent-dark: #2fbc05;
+    --color-primary-dark: #319ffe;
+    --color-danger-dark: #e95849;
+    --color-secondary-dark: #b1aba1;
+    --color-text-dark: #c8c3bc;
+    --color-placeholder-dark: #9d9488;
+    --color-border-dark: #3e4446;
+    --color-border-secondary-dark: var(--color-border-dark);
 
     --box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.1);
     --box-shadow-hoverable: 0em 0.25em 0.375em rgba(0, 0, 0, 0.1), 0em 0.0625em 0.1875em rgba(0, 0, 0, 0.08);
@@ -24,9 +36,6 @@
     --border-radius: 0.525em;
     --border-width: 0.125em;
 }
-
-/* Dark Mode */ /* will be added later */
-[data-theme="dark"] {}
 
 /* Light Mode */
 [data-theme="light"] {
@@ -43,7 +52,27 @@
     --color-danger-hover: var(--color-danger-dark-light);
     --color-text: var(--color-text-light);
     --color-border: var(--color-border-light);
+    --color-border-secondary: var(--color-border-secondary-light);
     --color-placeholder: var(--color-placeholder-light);
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+    --color-background: var(--color-background-dark);
+    --color-background-primary: var(--color-background-dark-primary);
+    --color-background-secondary: var(--color-background-dark-secondary);
+    --color-primary: var(--color-primary-dark);
+    --color-primary-hover: var(--color-primary-dark-light);
+    --color-secondary: var(--color-secondary-dark);
+    --color-secondary-hover: var(--color-secondary-dark-light);
+    --color-accent: var(--color-accent-dark);
+    --color-accent-hover: var(--color-accent-dark-light);
+    --color-danger: var(--color-danger-dark);
+    --color-danger-hover: var(--color-danger-dark-light);
+    --color-text: var(--color-text-dark);
+    --color-border: var(--color-border-dark);
+    --color-border-secondary: var(--color-border-secondary-dark);
+    --color-placeholder: var(--color-placeholder-dark);
 }
 
 /* Reset */
@@ -51,12 +80,13 @@
     margin: 0;
     padding: 0;
     border: none;
-    background: none;
     outline: none;
     list-style: none;
+    background: none;
     box-sizing: border-box;
     font-family: "Quicksand", sans-serif;
     scroll-behavior: smooth;
+
 }
 
 *::selection{
@@ -64,9 +94,12 @@
     color: var(--color-background);
 }
 
-html, body {
-    background-color: var(--color-background);
+.App {
+    height: 100vh;
+    width: 100vw;
+    overflow: auto;
     color: var(--color-text);
+    background-color: var(--color-background-primary);
 }
 
 .page{

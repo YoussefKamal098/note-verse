@@ -11,24 +11,20 @@ const SearchBarContainerStyled = styled.div`
     align-items: center;
     padding: 0 1em;
     background-color: var(--color-background-secondary);
-    border: calc(var(--border-width) * 1.5) solid var(--color-background);
+    border: calc(var(--border-width) * 1.5) solid var(--color-border-secondary);
     border-radius: var(--border-radius);
     transition: 0.3s ease;
     overflow: hidden;
 
     &:hover .search-icon,
     &:focus-within .search-icon {
-        color: var(--color-accent);
-    }
-
-    &:hover,
-    &:focus-within {
-        border-color: var(--color-accent);
+        color: var(--color-primary);
     }
 `;
 
 const InputStyled = styled.input`
     width: 100%;
+    color: var(--color-text);
     font-size: 1em;
     font-weight: 600;
     background: transparent;
@@ -42,7 +38,7 @@ const InputStyled = styled.input`
 
     &:hover::placeholder,
     &:focus::placeholder {
-        color: var(--color-accent);
+        color: var(--color-primary);
     }
 `;
 

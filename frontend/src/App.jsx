@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import ThemeProvider, { useTheme } from "./contexts/ThemeContext";
+import { useTheme } from "./contexts/ThemeContext";
 import AuthProvider, { useAuth } from "./contexts/AuthContext";
 import ConfirmationPopUpProvider from "./contexts/ConfirmationContext";
 import HomePage from "./pages/HomePage";
@@ -32,14 +32,12 @@ function App() {
 
     return (
         <AuthProvider>
-            <ThemeProvider>
-                <div className="App" data-theme={theme}>
-                    <ConfirmationPopUpProvider>
-                        {routes}
-                        <ToastNotifications/>
-                    </ConfirmationPopUpProvider>
-                </div>
-            </ThemeProvider>
+            <div className="App" data-theme={theme}>
+                <ConfirmationPopUpProvider>
+                    {routes}
+                    <ToastNotifications/>
+                </ConfirmationPopUpProvider>
+            </div>
         </AuthProvider>
     );
 }

@@ -60,20 +60,22 @@ const NoteCard = React.memo(({ note, index, togglePin = () => {}, onDelete = () 
         <>
             <Overlay isVisible={loading} />
             <CardContainerStyled loading={loading ? "true" : undefined} index={index}>
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", maxWidth: "50%" }}>
+                <div className="left" >
                     <Link style={{ textDecoration: "none" }} to={`/note/${note.id}`}>
                         <TitleStyled>{note.title}</TitleStyled>
                     </Link>
                     <CreatedAt>{formatDate(note.createdAt)}</CreatedAt>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "1em", maxWidth: "50%" }}>
+                <div className="right" >
                     <TagsContainerStyled>
                         {note.tags.map((tag, index) => (
                             <TagStyled key={`tag-${index}${note.id}`}><span> # </span>{tag}</TagStyled>
                         ))}
                     </TagsContainerStyled>
-                    <PinButton isPinned={isPinned} loading={pinButtonLoading} togglePin={() => { handleTogglePin(note.id) }} />
-                    <DeleteButton loading={deleteButtonLoading} onClick={ () => { handleDelete(note.id) }} />
+                    <div className="controllers">
+                        <PinButton isPinned={isPinned} loading={pinButtonLoading} togglePin={() => { handleTogglePin(note.id) }} />
+                        <DeleteButton loading={deleteButtonLoading} onClick={ () => { handleDelete(note.id) }} />
+                    </div>
                 </div>
             </CardContainerStyled>
         </>

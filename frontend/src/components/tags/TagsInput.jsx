@@ -12,15 +12,16 @@ const EnterAnimation = css`
 `;
 
 const TagInputStyled = styled.input`
+    width: 100%;
     padding: 0.7em 1em;
     background: var(--color-background);
     border-radius: var(--border-radius);
-    border: var(--border-width) solid var(--color-background);
+    border: var(--border-width) solid var(--color-border-secondary);
     box-shadow: var(--box-shadow);
     color: var(--color-text);
     font-size: 1em;
     font-weight: 600;
-    transition: 0.3s;
+    transition: 0.3s ease;
 
     ${({ animate }) => animate && css`
         animation: ${EnterAnimation} 0.3s ease-out;
@@ -36,11 +37,6 @@ const TagInputStyled = styled.input`
     &:hover::placeholder,
     &:focus::placeholder{
         color: var(--color-accent);
-    }
-
-    &:hover,
-    &:focus {
-        border-color: var(--color-accent);
     }
 `;
 

@@ -86,16 +86,14 @@ const HomePage = () => {
             />
 
             <div className="container">
-                {loading ? (
-                    <Loader />
-                ) : notes.length === 0 ? (
-                    <NoNotes>📝 No notes available!</NoNotes>
-                ) : (
-                    <NotesCard
-                        notes={notes}
-                        onDelete={deleteNote}
-                        fetchReplacedNote={fetchReplacedNote}
-                    />
+                {loading ? <Loader />: <></>}
+
+                {notes.length === 0 && !loading ? ( <NoNotes>📝 No notes available!</NoNotes> ) : (
+                <NotesCard
+                    loading={loading}
+                    notes={notes}
+                    onDelete={deleteNote}
+                    fetchReplacedNote={fetchReplacedNote}/>
                 )}
             </div>
 

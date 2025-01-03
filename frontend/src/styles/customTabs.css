@@ -6,7 +6,7 @@
 .react-tabs__tab {
     font-size: 1em;
     font-weight: 600;
-    color: var(--color-text-light);
+    color: var(--color-text);
 }
 
 .react-tabs__tab {

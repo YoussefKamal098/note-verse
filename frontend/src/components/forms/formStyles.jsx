@@ -62,7 +62,7 @@ import styled from "styled-components";
         display: flex;
         align-items: center;
         width: 100%;
-        border: var(--border-width) solid var(--color-background);
+        border: var(--border-width) solid var(--color-border-secondary);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         transition: 0.3s ease;
@@ -81,6 +81,7 @@ import styled from "styled-components";
      
     input {
         width: 100%;
+        color: var(--color-text);
         font-size: 1em;
         font-weight: 500;
         transition: 0.3s ease;

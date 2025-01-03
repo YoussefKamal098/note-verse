@@ -2,15 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import SearchBar from "../searchBar/SearchBar";
 import AddNoteButton from "../notes/AddNoteButton";
 import authService from "../../api/authService";
+import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
 import { getInitials, capitalizeStringFirstLetter } from "../../utils";
 
 import {
     NavbarContainerStyled,
     NavbarWrapperContainerStyled,
     NavbarTitleStyled,
+    LeftNavbarSideStyled,
     RightNavbarSideStyled,
     ProfileContainerStyled,
     AvatarStyled,
@@ -25,6 +28,7 @@ const Navbar = ({
                     onSearch = (searchText) => searchText
                 }) => {
     const { user } = useAuth();
+    const { theme, setTheme } = useTheme();
     const navigate = useNavigate();
 
     const logoutUser = async () => {
@@ -37,11 +41,20 @@ const Navbar = ({
         navigate("/login");
     };
 
+    const onColorModeIconClick = () => {
+        setTheme(theme === "dark" ? "light" : "dark");
+    }
+
     return (
         <NavbarContainerStyled>
             <NavbarWrapperContainerStyled className="container">
-                <NavbarTitleStyled>Notes</NavbarTitleStyled>
-                {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)} />}
+                <LeftNavbarSideStyled>
+                    <NavbarTitleStyled>Notes</NavbarTitleStyled>
+                    <div className="color-mode-icon" onClick={onColorModeIconClick}>
+                        {theme === "dark" ? <MdOutlineDarkMode/> : <MdOutlineLightMode/>}
+                    </div>
+                </LeftNavbarSideStyled>
+                {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
                 {user && (
                     <RightNavbarSideStyled>
                         <ProfileContainerStyled>

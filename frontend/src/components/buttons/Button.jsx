@@ -19,10 +19,10 @@ const ButtonStyled = styled.button`
     align-items: center;
     justify-content: center;
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-    border: var(--border-width) solid var(--color-background);
+    border: var(--border-width) solid var(--color-border-secondary);
     box-shadow: var(--box-shadow);
     transition: 0.3s ease;
-    gap: 0.5em;
+    gap: 0.2em;
 
     &:hover {
         background-color: ${ (props) => BUTTON_TYPES[props.type] };

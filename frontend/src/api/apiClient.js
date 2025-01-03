@@ -32,7 +32,6 @@ class ApiClient {
     #handleError(error) {
         const statusCode = error.response?.status || 500;
         const backendMessage = error.response?.data?.message || null;
-        console.log(error.response?.data ,error.response?.data?.message, error.response?.status)
         const userFriendlyMessage = this.#getUserFriendlyMessage(statusCode, backendMessage);
 
         this.#logError({ statusCode, backendMessage, userFriendlyMessage, stack: error.stack });
@@ -51,8 +50,9 @@ class ApiClient {
             case 404:
                 return "The requested resource was not found. Please check the URL or try a different search.";
             case 401:
+                return "You are not authorized to perform this action. Please log in.";
             case 403:
-                return "You are not authorized to perform this action. Please log in or check your permissions.";
+                return "You are not authorized to perform this action. Please check your permissions.";
             case 'ECONNABORTED':
                 return "The request timed out. Please try again later.";
             default:
@@ -66,7 +66,7 @@ class ApiClient {
             statusCode,
             backendMessage,
             userFriendlyMessage,
-            stack: stack || "No stack trace available",
+            // stack: stack || "No stack trace available",
         });
     }
 }

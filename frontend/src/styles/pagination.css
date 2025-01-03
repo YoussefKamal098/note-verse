@@ -1,22 +1,20 @@
 .pagination {
-    position: fixed;
+    position: relative;
+    width: fit-content;
     display: flex;
     font-size: 0.9em;
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    left: 50%;
-    bottom: 0.5em;
-    transform: translateX(-50%);
-    margin: 1em;
+    margin: 2em;
     padding: 0.5em;
     box-shadow: var(--box-shadow);
     border-radius: var(--border-radius);
     background-color: var(--color-background);
-    border: calc(var(--border-width) / 2) solid var(--color-background);
+    border: var(--border-width) solid var(--color-border-secondary);
     animation: scale-out 0.3s ease-in-out;
     transform-origin: center;
-    gap: 0.25em;
+    gap: 0.4em;
 }
 
 @keyframes scale-out {
@@ -34,7 +32,7 @@
     border-radius: calc(var(--border-radius) / 2);
     text-decoration: none;
     color: var(--color-placeholder);
-    border: var(--border-width) solid var(--color-background);
+    border: var(--border-width) solid var(--color-border-secondary);
     box-shadow: var(--box-shadow);
     cursor: pointer;
     overflow: hidden;

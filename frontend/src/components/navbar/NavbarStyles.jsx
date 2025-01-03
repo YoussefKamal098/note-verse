@@ -29,6 +29,30 @@ const NavbarTitleStyled = styled.h2`
     color: var(--color-accent);
 `;
 
+const LeftNavbarSideStyled= styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    
+    .color-mode-icon{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 1.75em;
+        height: 1.75em;
+        font-size: 1.5em;
+        color: var(--color-placeholder);
+        border-radius: 50%;
+        transition: 0.3s ease;
+        cursor: pointer;
+    }
+
+    .color-mode-icon:hover {
+        background-color: var(--color-background-secondary);
+        color: var(--color-primary);
+    }
+`
+
 const RightNavbarSideStyled = styled.div`
     display: flex;
     align-items: center;
@@ -84,6 +108,7 @@ export {
     NavbarContainerStyled,
     NavbarWrapperContainerStyled,
     NavbarTitleStyled,
+    LeftNavbarSideStyled,
     RightNavbarSideStyled,
     ProfileContainerStyled,
     AvatarStyled,

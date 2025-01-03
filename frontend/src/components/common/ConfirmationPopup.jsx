@@ -13,8 +13,8 @@ const Overlay = styled.div`
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(0.2em);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(0.1em);
     z-index: 1000;
 `;
 
