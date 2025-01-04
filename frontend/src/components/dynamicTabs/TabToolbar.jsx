@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import { MdFullscreen } from "react-icons/md";
 import { ToolbarStyled } from "./DynamicTabsStyles";
 
-export const TabToolbar = () => {
+const TabToolbar = () => {
     const [fullScreen, setFullScreen] = useState(false);
 
     return (
@@ -11,3 +11,5 @@ export const TabToolbar = () => {
         </ToolbarStyled>
     )
 }
+
+export default TabToolbar;

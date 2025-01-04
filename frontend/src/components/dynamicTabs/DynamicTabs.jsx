@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { useTheme } from "../../contexts/ThemeContext";
-import { TabToolbar } from "./TabToolbar";
+import TabToolbar from "./TabToolbar";
 import { TabStyled, TabBodyStyled } from "./DynamicTabsStyles";
 import 'react-tabs/style/react-tabs.css';
 import '../../styles/customTabs.css';
@@ -54,4 +54,3 @@ function DynamicTabs({ tabs }) {
 }
 
 export default DynamicTabs;
-

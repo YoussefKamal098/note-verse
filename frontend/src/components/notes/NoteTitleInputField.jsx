@@ -54,6 +54,12 @@ const NoteTitleInputField = ({ title, setTitle }) => {
 
     useEffect(() => {
         resizeTextArea();
+
+        window.addEventListener("resize", resizeTextArea);
+
+        return () => {
+            window.removeEventListener("resize", resizeTextArea);
+        };
     }, []);
 
     const resizeTextArea = () => {
@@ -99,4 +105,3 @@ const NoteTitleInputField = ({ title, setTitle }) => {
 }
 
 export default NoteTitleInputField;
-
