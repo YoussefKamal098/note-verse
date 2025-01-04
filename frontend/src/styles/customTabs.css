@@ -1,6 +1,7 @@
 .react-tabs__tab-list {
-    --thick: calc(var(--border-width));
+    --thick: var(--border-width);
     border-bottom: var(--thick) solid var(--color-accent);
+    margin: 0 0 0.5em;
 }
 
 .react-tabs__tab {

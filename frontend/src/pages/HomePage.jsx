@@ -25,7 +25,7 @@ const HomePage = () => {
         setCurrentPage,
         fetchPageNotes,
         totalNotes
-    } = usePaginatedNotes(localStorage.getItem("homeCurrentPage") || 0, searchText, notesPerPage);
+    } = usePaginatedNotes(Number(localStorage.getItem("homeCurrentPage")) || 0, searchText, notesPerPage);
 
     const fetchReplacedNote = async () => {
         try {

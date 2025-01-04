@@ -1,3 +1,20 @@
+.md-editor {
+    border: var(--border-width) solid var(--color-border-secondary);
+    overflow: hidden;
+}
+
 .md-editor .md-editor-toolbar-mode {
     display: none !important;
+}
+
+.md-editor .cm-line::selection,
+.md-editor .cm-line *::selection {
+    color: var(--color-accent);
+}
+
+.md-editor .cm-editor,
+.md-editor .cm-content,
+.md-editor .cm-gutter,
+.md-editor .md-editor-toolbar-warp {
+    background-color: var(--color-background-primary);
 }

@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
 import MarkdownEditor from "@uiw/react-markdown-editor";
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-editor/markdown-editor.css';
 import { debounce } from 'lodash';
-import DynamicTabs from "../common/DynamicTabs";
+import DynamicTabs from "../dynamicTabs/DynamicTabs";
 import '../../styles/customMarkdownEditor.css';
 
 const PreviewStyled = styled(MarkdownPreview)`
@@ -12,7 +12,6 @@ const PreviewStyled = styled(MarkdownPreview)`
     padding: 1em 2em;
     font-size: 1em;
     font-weight: 600;
-    color: var(--color-text);
 `;
 
 const EditorStyled = styled(MarkdownEditor)`
@@ -21,16 +20,7 @@ const EditorStyled = styled(MarkdownEditor)`
 `;
 
 const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content = "", onContentChange }) {
-    const [tabIndex, setTabIndex] = useState(1);
     const [value, setValue] = useState(content);
-
-    const onTabChange = useCallback((index) => {
-        setTabIndex(index);
-    }, []);
-
-    useEffect(() => {
-        setTabIndex(0);
-    }, []);
 
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
@@ -48,10 +38,10 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content = "", onCont
 
     const memoizedContent = useMemo(() => value, [value]);
 
-    const tabsData = useMemo(() => [
+    const tabs = useMemo(() => [
         {
             title: 'Preview',
-            content: tabIndex === 0 ? <PreviewStyled source={memoizedContent} /> : null
+            content: <PreviewStyled source={memoizedContent} />
         },
         {
             title: 'Editor',
@@ -62,15 +52,9 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({ content = "", onCont
                 enablePreview={false}
             />
         }
-    ], [tabIndex, value]);
+    ], [value]);
 
-    return (
-        <DynamicTabs
-            tabsData={tabsData}
-            tabIndex={tabIndex}
-            onTabChange={onTabChange}
-        />
-    );
+    return ( <DynamicTabs tabs={tabs} /> );
 });
 
 export default NoteMarkdownTabs;

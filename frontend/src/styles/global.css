@@ -91,7 +91,7 @@
 
 *::selection{
     background: var(--color-accent);
-    color: var(--color-background);
+    color: var(--color-background-light);
 }
 
 .App {

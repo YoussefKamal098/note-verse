@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import ConfirmationPopup from "../components/common/ConfirmationPopup";
+import ConfirmationPopup from "../components/confirmationPopup/ConfirmationPopup";
 
 const ConfirmationContext = createContext({showConfirmation: ({}) => {} });
 const useConfirmation = () => useContext(ConfirmationContext);
