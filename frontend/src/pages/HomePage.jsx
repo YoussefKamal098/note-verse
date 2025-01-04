@@ -6,7 +6,7 @@ import NotesCard from "../components/notes/NoteCards";
 import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
 import { usePaginatedNotes } from "../hooks";
-import { AppConfig } from "../config";
+import AppConfig  from "../config";
 
 const HomePage = () => {
     const navigate = useNavigate();

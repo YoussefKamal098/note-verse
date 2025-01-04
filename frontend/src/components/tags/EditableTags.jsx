@@ -20,4 +20,4 @@ function EditableTags({ tags, setTags }){
     )
 }
 
-            export default EditableTags
+export default EditableTags

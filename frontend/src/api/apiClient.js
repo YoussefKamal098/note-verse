@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AppConfig } from '../config';
+import AppConfig from '../config';
 
 class ApiClient {
     #api;
