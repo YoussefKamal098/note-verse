@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { animated, useSpring } from 'react-spring';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import { useTheme } from "../../contexts/ThemeContext";
+import React, {useCallback, useEffect, useState} from 'react';
+import {animated, useSpring} from 'react-spring';
+import {Tab, TabList, TabPanel, Tabs} from 'react-tabs';
+import {useTheme} from "../../contexts/ThemeContext";
 import TabToolbar from "./TabToolbar";
-import { TabStyled, TabBodyStyled } from "./DynamicTabsStyles";
+import {TabBodyStyled, TabStyled, TitleWrapperStyled} from "./DynamicTabsStyles";
 import 'react-tabs/style/react-tabs.css';
 import '../../styles/customTabs.css';
 
-function DynamicTabs({ tabs }) {
-    const { theme } = useTheme();
+function DynamicTabs({tabs}) {
+    const {theme} = useTheme();
     const [tabIndex, setTabIndex] = useState(1);
 
     useEffect(() => {
@@ -23,7 +23,7 @@ function DynamicTabs({ tabs }) {
         return new useSpring({
             opacity: tabIndex === index ? 1 : 0,
             transform: tabIndex === index ? 'translateX(0)' : 'translateX(100%)',
-            config: { tension: 250, friction: 20 },
+            config: {tension: 250, friction: 20},
         });
     };
 
@@ -31,8 +31,10 @@ function DynamicTabs({ tabs }) {
         <div>
             <Tabs data-color-mode={theme} selectedIndex={tabIndex} onSelect={onTabChange}>
                 <TabList>
-                    {tabs.map((tabData, index) => (
-                        <Tab key={index}>{tabData.title}</Tab>
+                    {tabs.map((tab, index) => (
+                        <Tab
+                            key={`tab-title-${index}`}><TitleWrapperStyled> {tab.icon} {tab.title} </TitleWrapperStyled>
+                        </Tab>
                     ))}
                 </TabList>
 
@@ -40,7 +42,7 @@ function DynamicTabs({ tabs }) {
                     <TabPanel key={`tab-${index}`}>
                         <TabStyled>
                             <animated.div className="tap" style={tabAnimation(index)}>
-                                <TabToolbar className="tab-toolbar" />
+                                <TabToolbar className="tab-toolbar"/>
                                 <TabBodyStyled className="tab-body">
                                     {tab.content}
                                 </TabBodyStyled>

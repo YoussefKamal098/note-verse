@@ -1,20 +1,27 @@
 import styled from "styled-components";
 
+const TitleWrapperStyled = styled.div`{
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+`
+
 const TabBodyStyled = styled.div`
-   & > * {
-       background-color: var(--color-background-primary);
-       border-radius: calc(var(--border-radius) / 2);
-       border-top-right-radius: 0;
-       border-top-left-radius: 0;
-       box-shadow: var(--box-shadow);
+    & > * {
+        background-color: var(--color-background-primary);
+        border-radius: calc(var(--border-radius) / 2);
+        border-top-right-radius: 0;
+        border-top-left-radius: 0;
+        box-shadow: var(--box-shadow);
     }
 `
 
 const TabStyled = styled.div`
-    .tap:has(.tool.full-screen)  {
+    .tap:has(.tool.full-screen) {
         position: fixed;
-        top:0;
-        left:0;
+        top: 0;
+        left: 0;
         margin: 0;
         padding: 0;
         width: 100vw;
@@ -27,14 +34,14 @@ const TabStyled = styled.div`
     .tap:has(.tool.full-screen) .tab-body > * {
         min-height: 100vh;
     }
-    
+
     .tap:has(.tool.full-screen) .tab-body .cm-editor,
-    .tap:has(.tool.full-screen) .tab-body .cm-content{
+    .tap:has(.tool.full-screen) .tab-body .cm-content {
         min-height: 100vh;
     }
 `
 
-const ToolbarStyled= styled.div`
+const ToolbarStyled = styled.div`
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -47,7 +54,7 @@ const ToolbarStyled= styled.div`
     padding: 0.2em 0.3em;
     margin-bottom: 0.5em;
     gap: 0.5em;
-    
+
     .tool {
         border-radius: calc(var(--border-radius) / 4);
         font-size: 1.3em;
@@ -61,4 +68,4 @@ const ToolbarStyled= styled.div`
     }
 `
 
-export { TabStyled, ToolbarStyled, TabBodyStyled };
+export {TabStyled, ToolbarStyled, TabBodyStyled, TitleWrapperStyled};
