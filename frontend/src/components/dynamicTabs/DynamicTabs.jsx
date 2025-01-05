@@ -3,15 +3,16 @@ import {animated, useSpring} from 'react-spring';
 import {Tab, TabList, TabPanel, Tabs} from 'react-tabs';
 import {useTheme} from "../../contexts/ThemeContext";
 import TabToolbar from "./TabToolbar";
-import {TabBodyStyled, TabStyled, TitleWrapperStyled} from "./DynamicTabsStyles";
+import {TabBodyStyled, TabStyled, TabsWrapperStyled, TitleWrapperStyled} from "./DynamicTabsStyles";
 import 'react-tabs/style/react-tabs.css';
-import '../../styles/customTabs.css';
 
 function DynamicTabs({tabs}) {
     const {theme} = useTheme();
     const [tabIndex, setTabIndex] = useState(1);
+    const [tabsCount, setTabsCount] = useState(0);
 
     useEffect(() => {
+        setTabsCount(tabs.length);
         setTabIndex(0);
     }, []);
 
@@ -30,13 +31,21 @@ function DynamicTabs({tabs}) {
     return (
         <div>
             <Tabs data-color-mode={theme} selectedIndex={tabIndex} onSelect={onTabChange}>
-                <TabList>
-                    {tabs.map((tab, index) => (
-                        <Tab
-                            key={`tab-title-${index}`}><TitleWrapperStyled> {tab.icon} {tab.title} </TitleWrapperStyled>
-                        </Tab>
-                    ))}
-                </TabList>
+                <TabsWrapperStyled tabs_count={tabsCount}>
+                    <TabList>
+                        {tabs.map((tab, index) => {
+                            return (
+                                <Tab
+                                    key={`tab-title-${index}`}>
+                                    <TitleWrapperStyled>
+                                        <div className="tab-title-icon"> {tab.icon} </div>
+                                        <div className="tab-title"> {tab.title} </div>
+                                    </TitleWrapperStyled>
+                                </Tab>
+                            );
+                        })}
+                    </TabList>
+                </TabsWrapperStyled>
 
                 {tabs.map((tab, index) => (
                     <TabPanel key={`tab-${index}`}>

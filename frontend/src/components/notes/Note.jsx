@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from "react-router-dom";
+import React, {useCallback, useEffect, useState} from 'react';
+import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { MdDeleteForever, MdSave } from "react-icons/md";
-import { IoMdArrowRoundBack } from "react-icons/io";
+import {MdDeleteForever, MdSave} from "react-icons/md";
+import {IoMdArrowRoundBack} from "react-icons/io";
 import NoteMarkdownTabs from "./NoteMarkdownTabs";
 import PinButton from "../buttons/PinButton";
 import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
-import Button, { ButtonsContainerStyled } from "../buttons/Button";
-import { useConfirmation } from "../../contexts/ConfirmationContext";
-import { deepArrayEqual } from "../../utils";
+import Button, {ButtonsContainerStyled} from "../buttons/Button";
+import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {deepArrayEqual} from "../../utils";
 import noteValidationSchema from "../../validations/noteValidtion";
 
 const NoteContainerStyled = styled.div`
@@ -25,6 +25,7 @@ const NoteContainerStyled = styled.div`
     background-color: var(--color-background);
     padding: 1em 1.25em 2em;
     border-radius: var(--border-radius);
+    overflow: hidden;
 `;
 
 const HeaderContainerStyled = styled.div`
@@ -56,13 +57,13 @@ const BackHome = () => {
 
     return (
         <BackHomeStyled>
-            <IoMdArrowRoundBack onClick={()=> navigate('/home') } > </IoMdArrowRoundBack>
+            <IoMdArrowRoundBack onClick={() => navigate('/home')}> </IoMdArrowRoundBack>
         </BackHomeStyled>
     )
 }
 
 const Note = React.memo(function Note({
-                                          id=null,
+                                          id = null,
                                           origCreateAt = null,
                                           origUpdatedAt = null,
                                           origTitle = 'Untitled',
@@ -70,14 +71,15 @@ const Note = React.memo(function Note({
                                           origIsPinned = false,
                                           origTags = ["InspireYourself"],
                                           onSave = (noteData) => (noteData),
-                                          onDelete = () => {}
+                                          onDelete = () => {
+                                          }
                                       }) {
     const [content, setContent] = useState(origContent || '');
     const [tags, setTags] = useState(origTags || []);
     const [title, setTitle] = useState(origTitle || '');
     const [isPinned, setIsPinned] = useState(origIsPinned);
     const [hasChanges, setHasChanges] = useState(false);
-    const { showConfirmation }  = useConfirmation();
+    const {showConfirmation} = useConfirmation();
 
     const checkChanges = useCallback(() => {
         return origTitle !== title ||
@@ -124,14 +126,14 @@ const Note = React.memo(function Note({
     }
 
     return (
-        <NoteContainerStyled >
-           <HeaderContainerStyled>
-                <BackHome />
-                <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)} />
+        <NoteContainerStyled>
+            <HeaderContainerStyled>
+                <BackHome/>
+                <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
             </HeaderContainerStyled>
-            <NoteTitleInputField title={title} setTitle={setTitle} />
-            {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt} /> }
-            <EditableTags tags={tags} setTags={setTags} />
+            <NoteTitleInputField title={title} setTitle={setTitle}/>
+            {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
+            <EditableTags tags={tags} setTags={setTags}/>
             <ButtonsContainerStyled>
                 <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={onNoteDelete}> Delete </Button>
                 <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
