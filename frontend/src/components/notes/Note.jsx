@@ -11,9 +11,11 @@ import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
 import Button, {ButtonsContainerStyled} from "../buttons/Button";
+import Loader from "../common/Loader";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {deepArrayEqual} from "../../utils";
 import noteValidationSchema from "../../validations/noteValidtion";
+import CacheService from "../../api/cacheService"
 
 const NoteContainerStyled = styled.div`
     position: relative;
@@ -77,9 +79,19 @@ const Note = React.memo(function Note({
     const [content, setContent] = useState(origContent || '');
     const [tags, setTags] = useState(origTags || []);
     const [title, setTitle] = useState(origTitle || '');
-    const [isPinned, setIsPinned] = useState(origIsPinned);
+    const [isPinned, setIsPinned] = useState(origIsPinned || false);
     const [hasChanges, setHasChanges] = useState(false);
+    const [loading, setLoading] = useState(true);
     const {showConfirmation} = useConfirmation();
+
+    useEffect(() => {
+        if (id) loadUnSavedChanges();
+    }, [id, origTitle, origContent, origTags, origIsPinned]);
+
+
+    useEffect(() => {
+        if (hasChanges && id) saveUnsavedChanges();
+    }, [hasChanges, id, title, content, tags, isPinned]);
 
     const checkChanges = useCallback(() => {
         return origTitle !== title ||
@@ -96,6 +108,31 @@ const Note = React.memo(function Note({
     useEffect(() => {
         setHasChanges(checkChanges());
     }, [title, content, tags, isPinned, checkChanges]);
+
+
+    const loadUnSavedChanges = async () => {
+        try {
+            const cachedData = await CacheService.get(id);
+            if (cachedData) {
+                setTitle(cachedData.title !== undefined ? cachedData.title : title);
+                setContent(cachedData.content !== undefined ? cachedData.content : content);
+                setTags(cachedData.tags !== undefined ? cachedData.tags : tags);
+                setIsPinned(cachedData.isPinned !== undefined ? cachedData.isPinned : isPinned);
+            }
+        } catch (error) {
+            toast.error(`Failed to load unsaved changes: ${error.message}.`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveUnsavedChanges = async () => {
+        try {
+            await CacheService.save(id, {title, content, tags, isPinned});
+        } catch (error) {
+            toast.error(`Failed to save unsaved changes: ${error.message}.`);
+        }
+    };
 
     const onNoteSave = useCallback(() => {
         try {
@@ -114,7 +151,6 @@ const Note = React.memo(function Note({
             isPinned,
             tags
         });
-
     }, [content, tags, title, isPinned]);
 
     const onNoteDelete = () => {
@@ -125,21 +161,26 @@ const Note = React.memo(function Note({
         });
     }
 
-    return (
-        <NoteContainerStyled>
-            <HeaderContainerStyled>
-                <BackHome/>
-                <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
-            </HeaderContainerStyled>
-            <NoteTitleInputField title={title} setTitle={setTitle}/>
-            {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
-            <EditableTags tags={tags} setTags={setTags}/>
-            <ButtonsContainerStyled>
-                <Button type="danger" disabled={!id} icon={MdDeleteForever} onClick={onNoteDelete}> Delete </Button>
-                <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
-            </ButtonsContainerStyled>
-            <NoteMarkdownTabs content={content} onContentChange={setContent}/>
-        </NoteContainerStyled>
+    return (<>
+            {loading ? (
+                <Loader/>
+            ) : (
+                <NoteContainerStyled>
+                    <HeaderContainerStyled>
+                        <BackHome/>
+                        <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
+                    </HeaderContainerStyled>
+                    <NoteTitleInputField title={title} setTitle={setTitle}/>
+                    {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
+                    <EditableTags tags={tags} setTags={setTags}/>
+                    <ButtonsContainerStyled>
+                        <Button type="danger" disabled={!id} icon={MdDeleteForever}
+                                onClick={onNoteDelete}> Delete </Button>
+                        <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
+                    </ButtonsContainerStyled>
+                    <NoteMarkdownTabs content={content} onContentChange={setContent}/>
+                </NoteContainerStyled>)}
+        </>
     );
 });
 

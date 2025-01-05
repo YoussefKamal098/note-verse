@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import styled from "styled-components";
 import MarkdownEditor from "@uiw/react-markdown-editor";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -22,10 +22,23 @@ const EditorStyled = styled(MarkdownEditor)`
 `;
 
 const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onContentChange}) {
+    const initialTabIndex = Number(localStorage.getItem("NoteMarkdownTabsCurrentTab")) || 0;
     const [value, setValue] = useState(content);
+    const isValueFromInSite = useRef(false);
+
+    useEffect(() => {
+        if (!isValueFromInSite.current) {
+            handleOnChange(content);
+        }
+    }, [content]);
+
+    const onTabChange = (tab) => {
+        localStorage.setItem("NoteMarkdownTabsCurrentTab", tab);
+    }
 
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
+            isValueFromInSite.current = true;
             onContentChange(newContent);
         }, 300), [onContentChange]
     );
@@ -60,7 +73,7 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
         }
     ], [value]);
 
-    return (<DynamicTabs tabs={tabs}/>);
+    return (<DynamicTabs tabs={tabs} initialTabIndex={initialTabIndex} onTabChange={onTabChange}/>);
 });
 
 export default NoteMarkdownTabs;

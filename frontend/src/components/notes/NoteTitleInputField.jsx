@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import styled from "styled-components";
-import { toast } from "react-toastify";
-import { debounce } from 'lodash';
+import {toast} from "react-toastify";
+import {debounce} from 'lodash';
 import noteValidationSchema from "../../validations/noteValidtion";
 
 const InputWrapperStyled = styled.div`
@@ -15,7 +15,7 @@ const InputWrapperStyled = styled.div`
         left: 0;
         bottom: -5px;
         width: 100%;
-        height: calc(var(--border-width)/1.5);
+        height: calc(var(--border-width) / 1.5);
         background-color: var(--color-accent);
         opacity: 0;
         transform: scaleX(0);
@@ -48,9 +48,16 @@ const TitleInputStyled = styled.textarea`
 
 `;
 
-const NoteTitleInputField = ({ title, setTitle }) => {
+const NoteTitleInputField = ({title, setTitle}) => {
     const [value, setValue] = useState(title);
     const textAreaRef = useRef(null);
+    const isValueFromInSite = useRef(false);
+
+    useEffect(() => {
+        if (!isValueFromInSite.current) {
+            setValue(title);
+        }
+    }, [title]);
 
     useEffect(() => {
         resizeTextArea();
@@ -60,14 +67,15 @@ const NoteTitleInputField = ({ title, setTitle }) => {
         return () => {
             window.removeEventListener("resize", resizeTextArea);
         };
-    }, []);
+    }, [title, value]);
 
     const resizeTextArea = () => {
         textAreaRef.current.style.height = 'auto';
         textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     };
 
-    const debouncedTitle = useMemo(() => debounce((newValue="") => {
+    const debouncedTitle = useMemo(() => debounce((newValue = "") => {
+        isValueFromInSite.current = true;
         setTitle(newValue);
     }, 300), [setTitle]);
 
@@ -82,7 +90,6 @@ const NoteTitleInputField = ({ title, setTitle }) => {
         }
 
         setValue(value);
-        resizeTextArea();
     };
 
     const onKeyUpUp = () => {

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const TabsWrapperStyled = styled.div`
+const TabsListWrapperStyled = styled.div`
     .react-tabs__tab-list {
         display: flex;
         align-items: center;
@@ -190,4 +190,4 @@ const ToolbarStyled = styled.div`
     }
 `
 
-export {TabStyled, ToolbarStyled, TabBodyStyled, TitleWrapperStyled, TabsWrapperStyled};
+export {TabStyled, ToolbarStyled, TabBodyStyled, TitleWrapperStyled, TabsListWrapperStyled};

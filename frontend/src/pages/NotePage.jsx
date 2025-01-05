@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { formatBytes, stringSizeInBytes } from "../utils";
+import React, {useCallback, useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {toast} from "react-toastify";
+import {formatBytes, stringSizeInBytes} from "../utils";
 import Navbar from "../components/navbar/Navbar";
 import Note from "../components/notes/Note";
 import Loader from "../components/common/Loader";
+import CacheService from "../api/cacheService"
 import noteService from "../api/noteService";
 
 const NotePage = () => {
-    const { id } = useParams();
+    const {id} = useParams();
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -18,7 +19,7 @@ const NotePage = () => {
 
         if (id === "new") {
             setNote({
-                id: null,
+                id: "new",
                 title: "",
                 content: "# Untitled",
                 isPinned: false,
@@ -35,41 +36,75 @@ const NotePage = () => {
             const result = await noteService.getById(id);
             setNote(result.data);
         } catch (error) {
-            toast.error(`"Failed to fetch note :${error.message}`);
+            toast.error(`Failed to fetch note :${error.message}`);
         } finally {
             setLoading(false);
         }
     }, [id]);
 
     useEffect(() => {
-        (async () => { await fetchNoteData() })();
+        (async () => {
+            await fetchNoteData()
+        })();
     }, [fetchNoteData]);
 
-    const handleSave = async ({id, isPinned, tags, title, content }) => {
-        setLoading(true);
-        let savedNote;
+    const createNote = async ({id, isPinned, tags, title, content}) => {
+        if (!id) return;
 
-        if (!note.id) {
-            try {
-                const result = await noteService.create({ isPinned, tags, title, content });
-                savedNote = result.data;
-                toast.success(`New note created with ID: ${savedNote.id}`);
-                navigate(`/note/${savedNote.id}`, { replace: true });
-            } catch (error){
-                toast.error(`Failed to create note: ${error.message}`);
-            }
-        } else {
-            try {
-                const result = await noteService.update(id, { isPinned, tags, title, content });
-                savedNote = result.data;
-                toast.success(`Content saved! ${formatBytes(stringSizeInBytes(content))}.`);
-            } catch(error) {
-                toast.error(`Failed to update note: ${error.message}`);
-            }
+        setLoading(true);
+        let savedNote = {};
+
+        try {
+            const result = await noteService.create({isPinned, tags, title, content});
+            savedNote = result.data;
+            toast.success(`New note created with ID: ${savedNote.id}`);
+            navigate(`/note/${savedNote.id}`, {replace: true});
+        } catch (error) {
+            throw new Error(`Failed to create note: ${error.message}`)
+        } finally {
+            setLoading(false);
         }
 
         setNote((preNote) => ({...preNote, ...savedNote}));
-        setLoading(false);
+    }
+
+    const saveNoteUpdates = async ({id, isPinned, tags, title, content}) => {
+        if (!id) return;
+        setLoading(true);
+        let savedNote = {};
+
+        try {
+            const result = await noteService.update(id, {isPinned, tags, title, content});
+            savedNote = result.data;
+            toast.success(`Content saved! ${formatBytes(stringSizeInBytes(content))}.`);
+        } catch (error) {
+            throw new Error(`Failed to update note: ${error.message}`)
+        } finally {
+            setLoading(false);
+        }
+
+        setNote((preNote) => ({...preNote, ...savedNote}));
+    }
+
+    const deleteNoteSavedChangesFromCache = async (id) => {
+        try {
+            await CacheService.delete(id)
+        } catch (error) {
+            toast.error(`Failed to delete cached note. ${error.message}`);
+        }
+    }
+
+    const handleSave = async ({id, isPinned, tags, title, content}) => {
+        try {
+            if (note.id === "new") {
+                await createNote({id, isPinned, tags, title, content});
+            } else {
+                await saveNoteUpdates({id, isPinned, tags, title, content});
+            }
+            await deleteNoteSavedChangesFromCache(id);
+        } catch (error) {
+            toast.error(error.message);
+        }
     };
 
     const handleDelete = async () => {
@@ -82,17 +117,20 @@ const NotePage = () => {
             navigate("/home");
         } catch (error) {
             toast.error(`Failed to delete note :${error.message}`);
+            return;
         } finally {
             setLoading(false);
         }
+
+        await deleteNoteSavedChangesFromCache(id);
     };
 
     return (
         <div className="page">
-            <Navbar showSearch={false} />
+            <Navbar showSearch={false}/>
             <div className="wrapper">
                 {loading ? (
-                    <Loader />
+                    <Loader/>
                 ) : (
                     note && (
                         <Note

@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import styled, { css, keyframes } from 'styled-components';
-import { toast } from 'react-toastify';
+import React, {useState} from 'react';
+import styled, {css, keyframes} from 'styled-components';
+import {toast} from 'react-toastify';
 import noteValidationSchema from "../../validations/noteValidtion";
 
 const EnterAnimation = css`
     ${keyframes`
-        0% { transform: scale(1); }
-        50% { transform: scale(0.9); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(0.9);
+        }
+        100% {
+            transform: scale(1);
+        }
     `}
 `;
 
@@ -23,10 +29,9 @@ const TagInputStyled = styled.input`
     font-weight: 600;
     transition: 0.3s ease;
 
-    ${({ animate }) => animate && css`
+    ${({animate}) => animate && css`
         animation: ${EnterAnimation} 0.3s ease-out;
     `}
-
     &::placeholder {
         color: var(--color-placeholder);
         font-size: 0.9em;
@@ -35,12 +40,16 @@ const TagInputStyled = styled.input`
     }
 
     &:hover::placeholder,
-    &:focus::placeholder{
+    &:focus::placeholder {
         color: var(--color-accent);
+    }
+
+    &:active {
+        scale: 0.9;
     }
 `;
 
-const TagsInput = ({ tags, setTags }) => {
+const TagsInput = ({tags, setTags}) => {
     const [animate, setAnimate] = useState(false);
 
     const onTagChange = (e) => {

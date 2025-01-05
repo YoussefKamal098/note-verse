@@ -1,5 +1,6 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useConfirmation} from "./ConfirmationContext";
+import cacheService from "../api/cacheService";
 import authService, {AUTH_EVENTS} from '../api/authService';
 
 const AuthContext = createContext({user: null});
@@ -34,9 +35,10 @@ const AuthProvider = ({children}) => {
         localStorage.setItem('user', JSON.stringify({firstname, lastname}));
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setUser(null);
-        localStorage.removeItem("user");
+        localStorage.clear();
+        await cacheService.flushDB();
     };
 
     const handleRefreshTokenFailure = () => {

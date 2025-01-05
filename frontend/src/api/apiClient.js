@@ -16,7 +16,7 @@ class ApiClient {
     #createInstance(baseURL) {
         return axios.create({
             baseURL,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             timeout: 5000, // (5 seconds)
             withCredentials: true
         });
@@ -34,7 +34,7 @@ class ApiClient {
         const backendMessage = error.response?.data?.message || null;
         const userFriendlyMessage = this.#getUserFriendlyMessage(statusCode, backendMessage);
 
-        this.#logError({ statusCode, backendMessage, userFriendlyMessage, stack: error.stack });
+        this.#logError({statusCode, backendMessage, userFriendlyMessage, stack: error.stack});
 
         return Promise.reject({
             ...error,
@@ -50,9 +50,9 @@ class ApiClient {
             case 404:
                 return "The requested resource was not found. Please check the URL or try a different search.";
             case 401:
-                return "You are not authorized to perform this action. Please log in.";
+                return "Your session has expired or you are not authenticated. Please log in to continue.";
             case 403:
-                return "You are not authorized to perform this action. Please check your permissions.";
+                return "You do not have the necessary permissions to perform this action. Please check your permissions.";
             case 'ECONNABORTED':
                 return "The request timed out. Please try again later.";
             default:
@@ -60,7 +60,7 @@ class ApiClient {
         }
     }
 
-    #logError({ statusCode, backendMessage, userFriendlyMessage, stack }) {
+    #logError({statusCode, backendMessage, userFriendlyMessage, stack}) {
         // I'll use winston logger later
         console.error("API Error:", {
             statusCode,
