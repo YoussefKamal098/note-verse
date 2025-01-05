@@ -229,8 +229,6 @@ notes_app/
 
 ## Potential Improvements
 
-Here are some **potential improvements** for your application:
-
 ### 1. **Unit Tests**
 
 - Implement unit tests for both backend routes (API endpoints) and frontend components. This will ensure that your

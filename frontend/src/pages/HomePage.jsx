@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {useEffect, useRef, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/common/Pagination";
-import NotesCard from "../components/notes/NoteCards";
+import NotesCard from "../components/noteCard/NoteCards";
 import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
-import { usePaginatedNotes } from "../hooks";
-import AppConfig  from "../config";
+import {usePaginatedNotes} from "../hooks";
+import AppConfig from "../config";
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -40,7 +40,7 @@ const HomePage = () => {
             replacedNoteIndexFromAdjacentPage.current += 1;
             return note;
         } catch (error) {
-            throw new Error (`Error fetch replaced note:  ${error.message}`);
+            throw new Error(`Error fetch replaced note:  ${error.message}`);
         }
     };
 
@@ -78,7 +78,7 @@ const HomePage = () => {
 
     useEffect(() => {
         if (!loading && pageSectionRef.current) {
-            pageSectionRef.current.scrollIntoView({ behavior: "smooth" });
+            pageSectionRef.current.scrollIntoView({behavior: "smooth"});
         }
     }, [loading]);
 
@@ -93,14 +93,14 @@ const HomePage = () => {
             />
 
             <div className="container">
-                {loading ? <Loader />: <></>}
+                {loading ? <Loader/> : <></>}
 
-                {notes.length === 0 && !loading ? ( <NoNotes>📝 No notes available!</NoNotes> ) : (
-                <NotesCard
-                    loading={loading}
-                    notes={notes}
-                    onDelete={deleteNote}
-                    fetchReplacedNote={fetchReplacedNote}/>
+                {notes.length === 0 && !loading ? (<NoNotes>📝 No notes available!</NoNotes>) : (
+                    <NotesCard
+                        loading={loading}
+                        notes={notes}
+                        onDelete={deleteNote}
+                        fetchReplacedNote={fetchReplacedNote}/>
                 )}
             </div>
 

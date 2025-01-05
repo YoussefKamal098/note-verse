@@ -1,5 +1,5 @@
 import React from "react";
-import { FaPlus } from "react-icons/fa"
+import {FaPlus} from "react-icons/fa"
 import styled from "styled-components";
 
 const StyledAddButton = styled.button`
@@ -35,8 +35,8 @@ const StyledAddButton = styled.button`
     }
 `;
 
-const AddNoteButton = ({ disable, onClick }) => {
-    return <StyledAddButton disabled={disable} onClick={onClick}> <FaPlus className="icon" /> </StyledAddButton>;
+const AddButton = ({disable, onClick}) => {
+    return <StyledAddButton disabled={disable} onClick={onClick}> <FaPlus className="icon"/> </StyledAddButton>;
 };
 
-export default AddNoteButton;
+export default AddButton;

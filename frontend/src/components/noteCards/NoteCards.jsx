@@ -1,11 +1,11 @@
 import React from "react";
-import { AnimatedListTranslateChildrenFade } from "../animations/ContainerAnimation";
-import { NoteCardsContainerStyled } from "../noteCard/NoteCardStyles";
-import NoteCard from "../noteCard/NoteCard";
+import {AnimatedListTranslateChildrenFade} from "../animations/ContainerAnimation";
+import {NoteCardsContainerStyled} from "./NoteCardStyles";
+import NoteCard from "./NoteCard";
 
-const NoteCards = React.memo(({ notes, onDelete, onTogglePin, fetchReplacedNote, loading=false }) => {
+const NoteCards = React.memo(({notes, onDelete, onTogglePin, fetchReplacedNote, loading = false}) => {
     return (
-        <NoteCardsContainerStyled loading={ loading ? "true": undefined }>
+        <NoteCardsContainerStyled loading={loading ? "true" : undefined}>
             <AnimatedListTranslateChildrenFade>
                 {notes.map((note, index) => (
                     <NoteCard

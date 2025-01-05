@@ -1,22 +1,22 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { useAuth } from "../../contexts/AuthContext";
-import { useTheme } from "../../contexts/ThemeContext";
+import {useNavigate} from "react-router-dom";
+import {toast} from "react-toastify";
+import {useAuth} from "../../contexts/AuthContext";
+import {useTheme} from "../../contexts/ThemeContext";
 import SearchBar from "../searchBar/SearchBar";
-import AddNoteButton from "../notes/AddNoteButton";
+import AddButton from "../buttons/AddButton";
 import authService from "../../api/authService";
-import { MdOutlineLightMode, MdOutlineDarkMode } from "react-icons/md";
-import { getInitials, capitalizeStringFirstLetter } from "../../utils";
+import {MdOutlineDarkMode, MdOutlineLightMode} from "react-icons/md";
+import {capitalizeStringFirstLetter, getInitials} from "../../utils";
 
 import {
-    NavbarContainerStyled,
-    NavbarWrapperContainerStyled,
-    NavbarTitleStyled,
-    LeftNavbarSideStyled,
-    RightNavbarSideStyled,
-    ProfileContainerStyled,
     AvatarStyled,
+    LeftNavbarSideStyled,
+    NavbarContainerStyled,
+    NavbarTitleStyled,
+    NavbarWrapperContainerStyled,
+    ProfileContainerStyled,
+    RightNavbarSideStyled,
     UserInfoStyled
 } from "./NavbarStyles";
 
@@ -24,11 +24,12 @@ const Navbar = ({
                     showSearch = false,
                     showAddNoteButton = false,
                     disableAddNoteButton = true,
-                    onAddNoteButtonClick = () => {},
+                    onAddNoteButtonClick = () => {
+                    },
                     onSearch = (searchText) => searchText
                 }) => {
-    const { user } = useAuth();
-    const { theme, setTheme } = useTheme();
+    const {user} = useAuth();
+    const {theme, setTheme} = useTheme();
     const navigate = useNavigate();
 
     const logoutUser = async () => {
@@ -67,7 +68,7 @@ const Navbar = ({
                             </UserInfoStyled>
                         </ProfileContainerStyled>
                         {showAddNoteButton && (
-                            <AddNoteButton
+                            <AddButton
                                 disable={disableAddNoteButton}
                                 onClick={onAddNoteButtonClick}
                             />
