@@ -3,7 +3,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {toast} from "react-toastify";
 import {formatBytes, stringSizeInBytes} from "../utils";
 import Navbar from "../components/navbar/Navbar";
-import Note from "../components/notes/Note";
+import Note from "../components/note/Note";
 import Loader from "../components/common/Loader";
 import CacheService from "../api/cacheService"
 import noteService from "../api/noteService";

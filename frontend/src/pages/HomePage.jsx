@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/common/Pagination";
-import NotesCard from "../components/noteCard/NoteCards";
+import NotesCard from "../components/noteCards/NoteCards";
 import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
 import {usePaginatedNotes} from "../hooks";
