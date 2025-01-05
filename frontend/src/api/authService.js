@@ -3,10 +3,11 @@ import apiClient from './apiClient';
 import tokenStorage from './tokenStorage';
 import userService from './userService';
 
-const AUTH_EVENTS = {
+const AUTH_EVENTS = Object.freeze({
     LOGIN: 'login',
     LOGOUT: 'logout',
-};
+    REFRESH_TOKEN_FAILURE: 'refreshTokenFailure',
+});
 
 const HEADERS = {
     AUTHORIZATION: 'Authorization',
@@ -67,7 +68,7 @@ class AuthService {
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { accessToken } = await this.#refreshAccessToken();
+                const {accessToken} = await this.#refreshAccessToken();
                 originalRequest.headers[HEADERS.AUTHORIZATION] = `Bearer ${accessToken}`;
                 return this.#apiClient.instance(originalRequest);
             } catch (refreshError) {
@@ -80,34 +81,41 @@ class AuthService {
 
     async #refreshAccessToken() {
         try {
-            const { data } = await this.#apiClient.instance.post(ENDPOINTS.REFRESH);
+            const {data} = await this.#apiClient.instance.post(ENDPOINTS.REFRESH);
             this.#tokenStorage.setAccessToken(data.accessToken);
-            return { accessToken: data.accessToken };
+            return {accessToken: data.accessToken};
         } catch (error) {
             this.#handleTokenFailure();
-            try { await this.logout() } catch (logoutError) {}
             throw new Error(`Token refresh failed: ${error}`);
         }
     }
 
     #handleTokenFailure() {
         this.#tokenStorage.clearAccessToken();
+        this.#eventEmitter.emit(AUTH_EVENTS.REFRESH_TOKEN_FAILURE);
+    }
+
+    #handleLogout() {
+        this.#tokenStorage.clearAccessToken();
         this.#eventEmitter.emit(AUTH_EVENTS.LOGOUT);
     }
 
-    async login({ email, password }) {
+    async login({email, password}) {
         try {
-            const response = await this.#apiClient.instance.post(ENDPOINTS.LOGIN, { email, password }, { withCredentials: true });
-            const { accessToken } = response.data;
+            const response = await this.#apiClient.instance.post(ENDPOINTS.LOGIN, {
+                email,
+                password
+            }, {withCredentials: true});
+            const {accessToken} = response.data;
 
             this.#tokenStorage.setAccessToken(accessToken);
 
             const user = await this.#userService.getUserInfo();
-            const { firstname, lastname } = user.data;
+            const {firstname, lastname} = user.data;
 
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, { user: { email, firstname, lastname } });
+            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
 
-            return { statusCode: response.status, data: response.data };
+            return {statusCode: response.status, data: response.data};
         } catch (error) {
             return this.#handleError(error, 'Login failed');
         }
@@ -116,22 +124,28 @@ class AuthService {
     async logout() {
         try {
             const response = await this.#apiClient.instance.post(ENDPOINTS.LOGOUT);
-            this.#handleTokenFailure();
-            return { statusCode: response.status, message: 'Logged out successfully' };
+            return {statusCode: response.status, message: 'Logged out successfully'};
         } catch (error) {
             return this.#handleError(error, 'Logout failed');
+        } finally {
+            this.#handleLogout();
         }
     }
 
-    async register({ email, password, firstname, lastname }) {
+    async register({email, password, firstname, lastname}) {
         try {
-            const response = await this.#apiClient.instance.post(ENDPOINTS.REGISTER, { email, password, firstname, lastname });
-            const { accessToken } = response.data;
+            const response = await this.#apiClient.instance.post(ENDPOINTS.REGISTER, {
+                email,
+                password,
+                firstname,
+                lastname
+            });
+            const {accessToken} = response.data;
 
             this.#tokenStorage.setAccessToken(accessToken);
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, { user: { email, firstname, lastname } });
+            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
 
-            return { statusCode: response.status, data: response.data };
+            return {statusCode: response.status, data: response.data};
         } catch (error) {
             return this.#handleError(error, 'Registration failed');
         }
@@ -150,4 +164,5 @@ class AuthService {
     }
 }
 
+export {AUTH_EVENTS};
 export default new AuthService(apiClient, tokenStorage, userService);
