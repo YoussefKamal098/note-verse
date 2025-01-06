@@ -344,7 +344,6 @@ notes_app/
 - Added frontend support for handling and displaying push notifications.
 - Updated backend to send notification payloads using a secure and efficient push notification protocol.
 - Enhanced user settings to allow toggling notification preferences.
-- Test
 
 ---
 
