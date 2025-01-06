@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
- const FormContainerStyled = styled.div`
+const FormContainerStyled = styled.div`
     max-width: 425px;
     margin: 2em auto;
     padding: 2.5em 2em;
@@ -10,7 +10,7 @@ import styled from "styled-components";
     box-shadow: var(--box-shadow);
 `;
 
- const FormHeaderStyled = styled.h1`
+const FormHeaderStyled = styled.h1`
     font-size: 1.8rem;
     font-weight: bold;
     text-align: center;
@@ -18,14 +18,14 @@ import styled from "styled-components";
     margin-bottom: 1.5em;
 `;
 
- const ErrorMessageStyled = styled.div`
+const ErrorMessageStyled = styled.div`
     color: var(--color-danger);
     margin: 1em auto;
     text-align: center;
     font-weight: 500;
 `;
 
- const SubmitButtonStyled = styled.button`
+const SubmitButtonStyled = styled.button`
     width: 100%;
     padding: 0.5em;
     font-size: 1.1em;
@@ -46,7 +46,7 @@ import styled from "styled-components";
     }
 `;
 
- const InputContainerStyled = styled.div`
+const InputContainerStyled = styled.div`
     margin-bottom: 1.5em;
     position: relative;
 
@@ -71,45 +71,45 @@ import styled from "styled-components";
 
     .input:has(input:focus),
     .input:hover {
-        border-color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+        border-color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
     }
-     
+
     .input:hover input::placeholder,
     .input:has(input:focus) input::placeholder {
-        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
     }
-     
+
     input {
         width: 100%;
         color: var(--color-text);
         font-size: 1em;
-        font-weight: 500;
-        transition: 0.3s ease;
-    }
-
-    input, .input__icon{
-         padding: 0.6em 0.7em;
-    }
-     
-    input::placeholder {
-        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
         font-weight: 600;
         transition: 0.3s ease;
     }
-     
+
+    input, .input__icon {
+        padding: 0.6em 0.7em;
+    }
+
+    input::placeholder {
+        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
     .input__icon {
         font-size: 1.2em;
         display: flex;
         justify-content: center;
         align-items: center;
         background-color: var(--color-background-secondary);
-        color: ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-primary)"};
+        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-primary)"};
     }
 
-     .input:has(input:focus) .input__icon,
-     .input:hover .input__icon{
-         color:  ${({ has_error }) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
-     }
+    .input:has(input:focus) .input__icon,
+    .input:hover .input__icon {
+        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+    }
 
     .error {
         color: var(--color-danger);
@@ -119,7 +119,7 @@ import styled from "styled-components";
     }
 `;
 
- const SensitiveInputStyled = styled.div`
+const SensitiveInputStyled = styled.div`
     width: 100%;
     padding-right: 0.5em;
     display: flex;
