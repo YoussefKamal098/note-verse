@@ -231,7 +231,7 @@ notes_app/
 
 ### 1. **Unit Tests**
 
-- Implement unit tests for both backend routes (API endpoints) and frontend components. This will ensure that your
+- Implement unit tests for both backend routes (API endpoints) and frontend components. This will ensure that
   codebase remains stable and is less prone to regressions.
 
 ### 2. **Authentication**
@@ -333,6 +333,18 @@ notes_app/
   for caching lightweight user preferences.
 - Backend Caching: Implement Redis or Memcached to cache API responses and database queries, and use CDN for static
   assets to improve performance and reduce server load.
+
+### 21. **Push Notification**
+
+- Integrated push notification service to notify users of key actions:
+    - Login activity.
+    - Password changes.
+    - Email updates.
+    - Other critical notifications.
+- Added frontend support for handling and displaying push notifications.
+- Updated backend to send notification payloads using a secure and efficient push notification protocol.
+- Enhanced user settings to allow toggling notification preferences.
+- Test
 
 ---
 
