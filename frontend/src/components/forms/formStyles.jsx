@@ -83,7 +83,7 @@ const InputContainerStyled = styled.div`
         width: 100%;
         color: var(--color-text);
         font-size: 1em;
-        font-weight: 600;
+        font-weight: 500;
         transition: 0.3s ease;
     }
 
@@ -93,7 +93,6 @@ const InputContainerStyled = styled.div`
 
     input::placeholder {
         color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
-        font-weight: 600;
         transition: 0.3s ease;
     }
 
