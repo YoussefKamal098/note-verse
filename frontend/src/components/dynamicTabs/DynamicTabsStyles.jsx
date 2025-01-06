@@ -7,53 +7,31 @@ const TabsListWrapperStyled = styled.div`
         padding: 0.3em 0;
         margin: 0 0 0.5em;
         border: none;
+        gap: 1.5em;
     }
 
     .react-tabs__tab,
     .react-tabs__tab:focus {
         position: relative;
         display: inline-block;
-        padding: 0.4em 0.5em;
-        font-size: 1em;
+        padding: 0.6em 0.9em;
+        font-size: 0.9em;
         font-weight: 500;
         color: var(--color-text);
         background: var(--color-background);
         border: var(--border-width) solid var(--color-border-secondary);
-        border-radius: calc(var(--border-radius) / 2);
+        border-radius: calc(var(--border-radius) / 1.5);
         box-shadow: var(--box-shadow);
-        scale: 0.9;
         transition: 0.3s ease;
-    }
-
-    .react-tabs__tab:not(:first-child),
-    .react-tabs__tab:not(:first-child):focus {
-        margin-left: calc(var(--border-width) * 9);
-    }
-
-    .react-tabs__tab:hover {
-        padding: 0.4em 0.75em;
-    }
-
-    .react-tabs__tab--selected:hover {
-        padding: 0.4em 0.5em;
     }
 
     .react-tabs__tab:hover,
     .react-tabs__tab--selected,
-    .react-tabs__tab--selected:hover,
     .react-tabs__tab--selected:focus {
         background: var(--color-accent);
         color: var(--color-background);
         border-color: transparent;
-    }
-
-    .react-tabs__tab--selected,
-    .react-tabs__tab--selected:focus {
-        scale: 1;
-    }
-
-    .react-tabs__tab--selected,
-    .react-tabs__tab--selected:focus {
+        padding: 0.6em 1.1em;
     }
 
     .react-tabs__tab:active {
@@ -83,8 +61,8 @@ const TabsListWrapperStyled = styled.div`
         border-radius: 1em;
         width: var(--border-width);
         height: 75%;
-        left: calc(100% + var(--border-width) * 6);
         top: 50%;
+        left: calc(100% + 0.75em + var(--border-width));
         transform: translateY(-50%);
     }
 
@@ -99,18 +77,13 @@ const TabsListWrapperStyled = styled.div`
             margin-left: 0;
         }
     
-        .react-tabs__tab:not(:last-child),
-        .react-tabs__tab:not(:last-child):focus {
-            margin-bottom: calc(var(--border-width) * 10);
-        }
-    
         .react-tabs__tab:not(:last-child):after,
         .react-tabs__tab:not(:last-child):focus:after,
         .react-tabs__tab--selected:not(:last-child):focus:after {
             height: var(--border-width);
-            width: 100%;
-            top: calc(100% + var(--border-width) * 5);
+            width: 75%;
             left: 50%;
+            top: calc(100% + 0.75em + var(--border-width));
             transform: translateX(-50%);
     }`}
 `

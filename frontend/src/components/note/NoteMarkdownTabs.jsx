@@ -9,6 +9,10 @@ import {FaBookOpenReader} from "react-icons/fa6";
 import DynamicTabs from "../dynamicTabs/DynamicTabs";
 import '../../styles/customMarkdownEditor.css';
 
+const NoteMarkdownTabsWrapperStyled = styled.div`
+    margin-top: 2em;
+`
+
 const PreviewStyled = styled(MarkdownPreview)`
     text-align: left;
     padding: 1em 2em;
@@ -73,7 +77,11 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
         }
     ], [value]);
 
-    return (<DynamicTabs tabs={tabs} initialTabIndex={initialTabIndex} onTabChange={onTabChange}/>);
+    return (
+        <NoteMarkdownTabsWrapperStyled>
+            <DynamicTabs tabs={tabs} initialTabIndex={initialTabIndex} onTabChange={onTabChange}/>
+        </NoteMarkdownTabsWrapperStyled>
+    );
 });
 
 export default NoteMarkdownTabs;

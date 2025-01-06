@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaTimes } from 'react-icons/fa';
-import { AnimatedListHeightChildrenFade } from "../animations/ContainerAnimation";
+import {FaTimes} from 'react-icons/fa';
+import {AnimatedListHeightChildrenFade} from "../animations/ContainerAnimation";
 
 const TagStyled = styled.span`
     color: var(--color-text);
@@ -15,7 +15,7 @@ const TagStyled = styled.span`
     align-items: center;
     transition: scale 0.3s;
     gap: 0.3em;
-    
+
     span {
         font-size: 1.3em;
         font-weight: bold;
@@ -30,6 +30,7 @@ const TagStyled = styled.span`
 const TagsContainerStyled = styled.div`
     display: flex;
     flex-wrap: wrap;
+    max-width: 25em;
     gap: 0.5em;
 `;
 
@@ -40,11 +41,11 @@ const CloseButtonStyled = styled(FaTimes)`
     transition: color 0.3s;
 
     &:hover {
-        color:  var(--color-danger-hover);
+        color: var(--color-danger-hover);
     }
 `;
 
-const EditableTagsList = ({ tags, setTags }) => {
+const EditableTagsList = ({tags, setTags}) => {
     const onTagDelete = (tag) => {
         setTags((prevTags) => {
             return prevTags.filter((t) => t !== tag);
@@ -55,7 +56,7 @@ const EditableTagsList = ({ tags, setTags }) => {
         <TagsContainerStyled>
             <AnimatedListHeightChildrenFade>
                 {tags.map((tag, index) => (
-                    <TagStyled key={`editable-tag-${index}`} >
+                    <TagStyled key={`editable-tag-${index}`}>
                         <span>#</span> {tag} {setTags && <CloseButtonStyled onClick={() => onTagDelete(tag)}/>}
                     </TagStyled>
                 ))}
