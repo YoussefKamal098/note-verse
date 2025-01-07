@@ -174,7 +174,7 @@ const Note = React.memo(function Note({
                     {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
                     <EditableTags tags={tags} setTags={setTags}/>
                     <ButtonsContainerStyled>
-                        <Button type="danger" disabled={!id} icon={MdDeleteForever}
+                        <Button type="danger" disabled={(id === null || id === "new")} icon={MdDeleteForever}
                                 onClick={onNoteDelete}> Delete </Button>
                         <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
                     </ButtonsContainerStyled>
