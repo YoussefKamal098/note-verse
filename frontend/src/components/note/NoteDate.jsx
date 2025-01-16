@@ -41,7 +41,7 @@ function NoteDate({createdAt = null, updatedAt = null}) {
             <div>
                 <span> Updated on </span>
                 <CiCalendarDate className="icon"/>
-                <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+                <time dateTime={createdAt}>{formatDate(updatedAt)}</time>
             </div>
         </DateInfo>
     )
