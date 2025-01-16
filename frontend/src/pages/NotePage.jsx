@@ -12,13 +12,12 @@ const NotePage = () => {
     const {id} = useParams();
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
+    const [unSavedChanges, setUnSavedChanges] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchNoteData = useCallback(async () => {
-        setLoading(true);
-
         if (id === "new") {
-            setNote({
+            return {
                 id: "new",
                 title: "",
                 content: "# Untitled",
@@ -26,25 +25,29 @@ const NotePage = () => {
                 tags: ["Tag"],
                 createdAt: null,
                 updatedAt: null
-            });
-
-            setLoading(false);
-            return;
+            };
         }
 
         try {
             const result = await noteService.getAuthenticatedUserNoteById(id);
-            setNote(result.data);
+            return result.data;
         } catch (error) {
-            toast.error(`Failed to fetch note :${error.message}`);
-        } finally {
-            setLoading(false);
+            throw new Error(`Failed to fetch note :${error.message}`);
         }
     }, [id]);
 
     useEffect(() => {
         (async () => {
-            await fetchNoteData()
+            try {
+                const note = await fetchNoteData();
+                const unSavedChanges = await loadUnSavedChanges();
+                setNote(note);
+                setUnSavedChanges(unSavedChanges);
+            } catch (error) {
+                toast.error(error.message);
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [fetchNoteData]);
 
@@ -85,6 +88,15 @@ const NotePage = () => {
 
         setNote((preNote) => ({...preNote, ...savedNote}));
     }
+
+    const loadUnSavedChanges = async () => {
+        try {
+            return await CacheService.get(id);
+        } catch (error) {
+            throw new Error(`Failed to load unsaved changes: ${error.message}.`);
+        }
+    };
+
 
     const deleteNoteSavedChangesFromCache = async (id) => {
         try {
@@ -141,6 +153,7 @@ const NotePage = () => {
                             origContent={note.content}
                             origIsPinned={note.isPinned}
                             origTags={note.tags}
+                            unSavedChanges={unSavedChanges}
                             onSave={handleSave}
                             onDelete={handleDelete}
                         />
