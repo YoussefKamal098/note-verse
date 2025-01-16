@@ -1,7 +1,8 @@
 # Full-stack note-taking application
 
-A React-based web application for managing markdown content notes. This application allows users to create, update,
-delete, and organize notes. It also provides features like text search and filtering to easily manage and retrieve
+A React-based web application for managing Markdown content notes.
+This application allows users to create, update, delete, and organize notes.
+It also provides features like text search and filtering to easily manage and retrieve
 information.
 
 ---
@@ -290,7 +291,7 @@ notes_app/
 
 ### 12. **Compression for Large Markdown Content (Frontend & Backend)**
 
-- Implement **compression for large markdown content** (using libraries like `pako` in the frontend and `zlib` in the
+- Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
   backend) to reduce the amount of data transmitted over the network.
 
 ### 13. **Archive and Collection Notes**
@@ -318,8 +319,8 @@ notes_app/
 
 ### 17. **Data Encryption (Security)**
 
-- Encrypt sensitive data (e.g., user data, notes content) both at rest and in transit. This will help improve the app's
-  security and protect user privacy.
+- Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
+  This will help improve the app's security and protect user privacy.
 
 ### 18. **Notification System**
 
