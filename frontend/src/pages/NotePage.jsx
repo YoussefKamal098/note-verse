@@ -33,7 +33,7 @@ const NotePage = () => {
         }
 
         try {
-            const result = await noteService.getById(id);
+            const result = await noteService.getAuthenticatedUserNoteById(id);
             setNote(result.data);
         } catch (error) {
             toast.error(`Failed to fetch note :${error.message}`);
@@ -74,7 +74,7 @@ const NotePage = () => {
         let savedNote = {};
 
         try {
-            const result = await noteService.update(id, {isPinned, tags, title, content});
+            const result = await noteService.updateAuthenticatedUserNoteById(id, {isPinned, tags, title, content});
             savedNote = result.data;
             toast.success(`Content saved! ${formatBytes(stringSizeInBytes(content))}.`);
         } catch (error) {
@@ -112,7 +112,7 @@ const NotePage = () => {
 
         try {
             setLoading(true);
-            await noteService.delete(id);
+            await noteService.deleteAuthenticatedUserNoteById(id);
             toast.success("Note deleted successfully!");
             navigate("/home");
         } catch (error) {

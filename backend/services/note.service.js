@@ -108,9 +108,10 @@ class NoteService {
 
     async deleteUserNoteById(userId = "", noteId = "") {
         await this.#ensureUserNoteExists(userId, noteId);
+        let deletedNote;
 
         try {
-            await this.#noteRepository.deleteById(noteId);
+            deletedNote = await this.#noteRepository.deleteById(noteId);
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTE_DELETION_FAILED,
@@ -118,6 +119,16 @@ class NoteService {
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );
         }
+
+        if (!deletedNote) {
+            throw new AppError(
+                statusMessages.NOTE_DELETION_FAILED,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        return deepFreeze(deletedNote);
     }
 
     async findUserNotes(userId = "", {

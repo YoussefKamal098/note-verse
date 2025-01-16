@@ -16,7 +16,7 @@ class NotesControllerUser {
             const {id: userId} = req.user;
             const {title, tags, content, isPinned} = req.body;
 
-            const newNote = await this.#noteService.create(userId, {title, tags, content, isPinned});
+            const newNote = await this.#noteService.create({userId, title, tags, content, isPinned});
             res.status(httpCodes.CREATED.code).json({
                 id: newNote.id,
                 userId: userId,

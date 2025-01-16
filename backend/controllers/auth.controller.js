@@ -65,9 +65,9 @@ class AuthController {
 
         try {
             await this.#jwtAuthService.logout(refreshToken);
-            const cookieOptions = this.#jwtAuthService.config.getCookieOptions(config.env);
+            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions(config.env);
 
-            res.clearCookie(this.#jwtAuthService.config.cookiesName, cookieOptions);
+            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
             res.sendStatus(httpCodes.NO_CONTENT.code);
         } catch (error) {
             next(error);

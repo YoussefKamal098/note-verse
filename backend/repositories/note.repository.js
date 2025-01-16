@@ -12,11 +12,15 @@ class NoteRepository {
         this.#paginator = new PaginatorService(model, {});
     }
 
+    #sanitizeNoteMongoObject(note) {
+        return {...sanitizeMongoObject(note), userId: note.userId.toString()};
+    }
+
     async create(noteData = {}) {
         try {
             const newNote = new this.#model(noteData);
             await newNote.save();
-            return sanitizeMongoObject(newNote.toObject());  // Sanitize before returning
+            return this.#sanitizeNoteMongoObject(newNote.toObject());
         } catch (error) {
             console.error("Error creating note:", error);
             throw new Error("Error creating note");
@@ -31,7 +35,7 @@ class NoteRepository {
                 new: true,
                 runValidators: true
             }).lean();
-            return updatedNote ? sanitizeMongoObject(updatedNote) : null;
+            return updatedNote ? this.#sanitizeNoteMongoObject(updatedNote) : null;
         } catch (error) {
             console.error("Error updating note:", error);
             throw new Error("Error updating note");
@@ -43,7 +47,7 @@ class NoteRepository {
 
         try {
             const note = await this.#model.findById(convertToObjectId(noteId)).lean();
-            return note ? sanitizeMongoObject(note) : null;
+            return note ? this.#sanitizeNoteMongoObject(note) : null;
         } catch (error) {
             console.error("Error finding note by ID:", error);
             throw new Error("Error finding note by ID");
@@ -53,7 +57,7 @@ class NoteRepository {
     async findOne(query = {}) {
         try {
             const note = await this.#model.findOne(query).lean();
-            return note ? sanitizeMongoObject(note) : null;
+            return note ? this.#sanitizeNoteMongoObject(note) : null;
         } catch (error) {
             console.error("Error finding note:", error);
             throw new Error("Error finding note");
@@ -64,8 +68,8 @@ class NoteRepository {
         if (!isValidObjectId(noteId)) return null;
 
         try {
-            const deletedNote = await this.#model.findByIdAndDelete(convertToObjectId(noteId));
-            return deletedNote ? sanitizeMongoObject(deletedNote) : null;
+            const deletedNote = await this.#model.findByIdAndDelete(convertToObjectId(noteId)).lean();
+            return deletedNote ? this.#sanitizeNoteMongoObject(deletedNote) : null;
         } catch (error) {
             console.error("Error deleting note:", error);
             throw new Error("Error deleting note");
@@ -82,7 +86,7 @@ class NoteRepository {
 
         try {
             const result = await this.#paginator.getPagination(query);
-            result.data = result.data.map(sanitizeMongoObject);
+            result.data = result.data.map(this.#sanitizeNoteMongoObject);
             return result;
         } catch (error) {
             console.error("Error fetching notes:", error);
@@ -116,7 +120,7 @@ class NoteRepository {
 
         try {
             const result = await this.#paginator.getPagination(baseQuery);
-            result.data = result.data.map(sanitizeMongoObject);
+            result.data = result.data.map(this.#sanitizeNoteMongoObject);
             return result;
         } catch (error) {
             console.error("Error fetching notes:", error);

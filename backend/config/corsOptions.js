@@ -9,14 +9,12 @@ const corsOptions = {
             callback(null, true);  // Allow requests from allowed origins or non-browser requests
         } else {
             // Deny the request for disallowed origins
-            callback(
-                new AppError(
-                    statusMessages.CORS_NOT_ALLOWED,
-                    httpCodes.FORBIDDEN.code,
-                    httpCodes.FORBIDDEN.name
-                ),
-                false
+            const error = new AppError(
+                statusMessages.CORS_NOT_ALLOWED,
+                httpCodes.FORBIDDEN.code,
+                httpCodes.FORBIDDEN.name
             );
+            callback(error, false);
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods

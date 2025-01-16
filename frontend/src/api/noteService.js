@@ -64,7 +64,7 @@ class NoteService {
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If fetching the note fails.
      */
-    async getById(noteId = '') {
+    async getAuthenticatedUserNoteById(noteId = '') {
         try {
             return await this.#apiClient.get(ENDPOINTS.GET_AUTH_USER_NOTE_BY_ID(noteId));
         } catch (error) {
@@ -83,7 +83,7 @@ class NoteService {
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note update fails.
      */
-    async update(noteId = '', {title, content, tags, isPinned}) {
+    async updateAuthenticatedUserNoteById(noteId = '', {title, content, tags, isPinned}) {
         try {
             return await this.#apiClient.put(
                 ENDPOINTS.UPDATE_AUTH_USER_NOTE_BY_ID(noteId),
@@ -100,7 +100,7 @@ class NoteService {
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note deletion fails.
      */
-    async delete(noteId = '') {
+    async deleteAuthenticatedUserNoteById(noteId = '') {
         try {
             return await this.#apiClient.delete(ENDPOINTS.DELETE_AUTH_USER_NOTE_BY_ID(noteId));
         } catch (error) {

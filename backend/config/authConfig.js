@@ -21,6 +21,13 @@ const authConfig = Object.freeze({
             expires,
         };
     },
+    getClearCookieOptions(env = process.env.NODE_ENV || 'development') {
+        return {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: env === 'production',
+        };
+    },
 });
 
 module.exports = authConfig;
