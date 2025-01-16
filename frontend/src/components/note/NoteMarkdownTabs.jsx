@@ -47,11 +47,9 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
         }, 300), [onContentChange]
     );
 
-    const handleOnChange = useMemo(
-        () => debounce((newValue = "") => {
-            setValue(newValue);
-        }, 300), [onContentChange]
-    );
+    const handleOnChange = (newValue = "") => {
+        setValue(newValue);
+    };
 
     const handleOnKeyUp = () => {
         debounceChange(value)
@@ -72,6 +70,7 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
                 value={memoizedContent}
                 onChange={handleOnChange}
                 onKeyUp={handleOnKeyUp}
+                onPaste={handleOnKeyUp}
                 enablePreview={false}
             />
         }
