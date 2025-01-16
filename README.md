@@ -104,14 +104,13 @@ npm run build
 
 The following routes are used for managing notes:
 
-| HTTP Method | Endpoint                  | Description             |
-|-------------|---------------------------|-------------------------|
-| `POST`      | `api/v1/notes`            | Create a new note       |
-| `GET`       | `api/v1/notes/all`        | Get all notes           |
-| `GET`       | `api/v1/notes/textSearch` | Perform text search     |
-| `GET`       | `api/v1/notes/:id`        | Get a note by its ID    |
-| `PUT`       | `api/v1/notes/:id`        | Update a note by its ID |
-| `DELETE`    | `api/v1/notes/:id`        | Delete a note by its ID |
+| HTTP Method | Endpoint                   | Description                                       |
+|-------------|----------------------------|---------------------------------------------------|
+| `POST`      | `api/v1/notes`             | Create a new note                                 |
+| `GET`       | `api/v1/notes/my_notes`    | Get authenticated user paginated notes with query |
+| `GET`       | `api/v1/notes/my_note/:id` | Get a note by its ID                              |
+| `PUT`       | `api/v1/notes/my_note/:id` | Update a note by its ID                           |
+| `DELETE`    | `api/v1/notes/my_note/:id` | Delete a note by its ID                           |
 
 ### User and Authentication API
 
@@ -133,14 +132,16 @@ The following routes are used for user management and authentication:
 
 ```
 notes_app/
-│
 ├── .idea/                         # IDE configuration files (e.g., for JetBrains tools)
-│
 ├── backend/                       # Backend application code (Node.js, Express)
 │   ├── config/                    # Configuration files for the backend
 │   │   ├── config.js              # General backend configuration (e.g., API URL, server port)
 │   │   ├── corsOptions.js         # CORS (Cross-Origin Resource Sharing) settings
 │   │   ├── db.js                  # Database connection configuration (e.g., MongoDB or SQL)
+│   │   ├── authConfig.js          # Authentication-related configurations
+│   ├── constants/                 # HTTP codes and status messages
+│   │   ├── httpCodes.js           # HTTP status codes (e.g., 200, 404, 500)
+│   │   ├── statusMessages.js      # Status messages for different responses (e.g., success, error)
 │   ├── controllers/               # Controller files for handling HTTP requests
 │   │   ├── auth.controller.js     # Logic for handling authentication requests (login, logout)
 │   │   ├── note.controller.js     # Logic for managing notes (CRUD operations)
@@ -175,9 +176,11 @@ notes_app/
 │   │   ├── rateLimiter.service.js # Service for rate-limiting requests
 │   │   ├── user.service.js        # Service for user-related logic (e.g., user management)
 │   ├── utils/                     # Utility functions for various tasks
+│   │   ├── date.utils.js          # Helper functions for date manipulations
+│   │   ├── env.utils.js           # Helper functions for environment variables
 │   │   ├── obj.utils.js           # Helper functions for working with objects
 │   │   ├── string.utils.js        # Helper functions for string manipulation
-│   ├── validations                # Validation logic for incoming requests (data validation)
+│   ├── validations/                # Validation logic for incoming requests (data validation)
 │   │   ├── note.validation.js     # Validation logic for note-related fields (e.g., title, content)
 │   │   ├── noteQuery.validation.js # Validation for note search/query parameters
 │   │   ├── user.validation.js     # Validation for user-related fields (e.g., email, password)
@@ -190,6 +193,7 @@ notes_app/
 │   │   ├── api/                   # API communication layer (making HTTP requests to backend)
 │   │   │   ├── apiClient.js       # Axios client for setting up API calls
 │   │   │   ├── authService.js     # Frontend service for authentication-related API calls
+│   │   │   ├── cacheService.js    # Service for frontend caching (e.g., using localStorage or sessionStorage)
 │   │   │   ├── noteService.js     # Frontend service for interacting with note-related API
 │   │   │   ├── tokenStorage.js    # Service for managing JWT tokens in localStorage/sessionStorage
 │   │   │   ├── userService.js     # Frontend service for interacting with user-related API
@@ -197,20 +201,19 @@ notes_app/
 │   │   │   ├── animations/        # Components for handling animations
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
+│   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)
+│   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
 │   │   │   ├── navbar/            # Navigation bar components
-│   │   │   ├── noteCard/          # Components for displaying notes
-│   │   │   ├── notes/             # Components related to note display and creation
+│   │   │   ├── note/              # Components related to note display and creation
+│   │   │   ├── noteCards/         # Components for displaying notes
+│   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   ├── contexts/              # React contexts for managing global state
-│   │   ├── pages/                 # Pages for the different app routes (Home, Login, etc.)
+│   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, etc.)
 │   │   ├── styles/                # Styles (CSS) for the app's UI
-│   │   │   ├── customMarkdownEditor.css # Custom styles for markdown editor
-│   │   │   ├── customTabs.css     # Styling for custom tab components
-│   │   │   ├── global.css         # Global CSS for the entire frontend app
-│   │   │   ├── pagination.css     # Pagination component styles
-│   │   ├── validations            # Frontend form validation logic (email, password, etc.)
+│   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── App.jsx                # Main React component for the app (entry point)
 │   │   ├── config.js              # Configuration file for frontend settings
 │   │   ├── hooks.js               # Custom React hooks (e.g., for managing user authentication)
@@ -221,6 +224,7 @@ notes_app/
 │   ├── package.json               # Node.js package manager file for frontend dependencies
 │
 ├── .gitignore                     # Git ignore file (e.g., node_modules, .env, build files)
+├── LICENSE                        # License file for the project
 ├── README.md                      # Project documentation (overview of the app, setup instructions)
 
 ```
