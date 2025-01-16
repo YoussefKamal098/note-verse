@@ -1,7 +1,8 @@
-const QueryValidationService = require('../validations/noteQuery.validation.js');
+const httpCodes = require('../constants/httpCodes');
+const NoteQueryValidationService = require('../validations/noteQuery.validation.js');
 const noteService = require('../services/note.service');
 
-class NoteController {
+class NotesControllerUser {
     #noteService;
     #queryValidationService;
 
@@ -12,12 +13,12 @@ class NoteController {
 
     async create(req, res, next) {
         try {
-            const { id:userId } = req.user;
-            const { title, tags, content, isPinned } = req.body;
+            const {id: userId} = req.user;
+            const {title, tags, content, isPinned} = req.body;
 
-            const newNote = await this.#noteService.create(userId, { title, tags, content, isPinned });
-            res.status(201).json({
-                id: newNote._id,
+            const newNote = await this.#noteService.create(userId, {title, tags, content, isPinned});
+            res.status(httpCodes.CREATED.code).json({
+                id: newNote.id,
                 userId: userId,
                 title: newNote.title,
                 tags: newNote.tags,
@@ -31,13 +32,13 @@ class NoteController {
         }
     }
 
-    async findById(req, res, next) {
+    async findMyNoteById(req, res, next) {
         try {
-            const { id:userId } = req.user;
-            const { noteId } = req.params;
+            const {id: userId} = req.user;
+            const {noteId} = req.params;
 
-            const note = await this.#noteService.findById(userId, noteId);
-            res.status(200).json({
+            const note = await this.#noteService.findUserNoteById(userId, noteId);
+            res.status(httpCodes.OK.code).json({
                 id: noteId,
                 userId: userId,
                 title: note.title,
@@ -52,14 +53,20 @@ class NoteController {
         }
     }
 
-    async update(req, res, next) {
+    async updateMyNote(req, res, next) {
         try {
-            const { id:userId } = req.user;
-            const { noteId } = req.params;
-            const { title, tags, content, isPinned } = req.body;
+            const {id: userId} = req.user;
+            const {noteId} = req.params;
+            const {title, tags, content, isPinned} = req.body;
 
-            const updatedNote = await this.#noteService.update(userId, noteId, { title, tags, content, isPinned });
-            res.status(200).json({
+            const updatedNote = await this.#noteService.updateUserNote(userId, noteId, {
+                title,
+                tags,
+                content,
+                isPinned
+            });
+
+            res.status(httpCodes.OK.code).json({
                 id: noteId,
                 userId: userId,
                 title: updatedNote.title,
@@ -74,13 +81,13 @@ class NoteController {
         }
     }
 
-    async deleteById(req, res, next) {
+    async deleteMyNoteById(req, res, next) {
         try {
-            const { id:userId } = req.user;
-            const { noteId } = req.params;
+            const {id: userId} = req.user;
+            const {noteId} = req.params;
 
-            const deletedNote = await this.#noteService.deleteById(userId, noteId);
-            res.status(200).json({
+            const deletedNote = await this.#noteService.deleteUserNoteById(userId, noteId);
+            res.status(httpCodes.OK.code).json({
                 id: noteId,
                 userId: userId,
                 title: deletedNote.title,
@@ -96,52 +103,33 @@ class NoteController {
     }
 
     // Fetch notes with pagination and sorting
-    async findByQuery(req, res, next) {
+    async findMyNotes(req, res, next) {
         try {
-            const { id:userId } = req.user;
+            const {id: userId} = req.user;
             const value = this.#queryValidationService.validateQuery(req.query);
 
-            const { page, perPage, sort } = value;
-            const result = await this.#noteService.findByQuery(userId, { userId }, { page, perPage, sort });
+            const {page, perPage, sort, searchText} = value;
+            const result = await this.#noteService.findUserNotes(userId, {
+                searchText,
+                options: {page, perPage, sort}
+            });
 
-            res.status(200).json({...result, data: result.data.map((note) => ({
-                id: note._id,
-                userId: note.userId,
-                title: note.title,
-                tags: note.tags,
-                content: note.content,
-                isPinned: note.isPinned,
-                createdAt: note.createdAt,
-                updatedAt: note.updatedAt
-            }))});
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    // Search notes with substring and pagination, sorting
-    async findWithSearchText(req, res, next) {
-        try {
-            const { id:userId } = req.user;
-            const value = this.#queryValidationService.validateQuery(req.query);
-
-            const { page, perPage, sort, searchText } = value;
-            const result = await this.#noteService.findWithSearchText(userId, searchText, { userId }, { page, perPage, sort });
-
-            res.status(200).json({...result, data: result.data.map((note) => ({
-                id: note._id,
-                userId: note.userId,
-                title: note.title,
-                tags: note.tags,
-                content: note.content,
-                isPinned: note.isPinned,
-                createdAt: note.createdAt,
-                updatedAt: note.updatedAt
-            }))});
+            res.status(httpCodes.OK.code).json({
+                ...result, data: result.data.map((note) => ({
+                    id: note.id,
+                    userId: note.userId,
+                    title: note.title,
+                    tags: note.tags,
+                    content: note.content,
+                    isPinned: note.isPinned,
+                    createdAt: note.createdAt,
+                    updatedAt: note.updatedAt
+                }))
+            });
         } catch (error) {
             next(error);
         }
     }
 }
 
-module.exports = new NoteController(noteService, new QueryValidationService());
+module.exports = new NotesControllerUser(noteService, new NoteQueryValidationService());

@@ -1,7 +1,10 @@
+const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
+const AppError = require('../errors/app.error');
 const PasswordHasherService = require('../services/passwordHasher.service');
-const userValidationService  = require('../validations/user.validation');
+const userValidationService = require('../validations/user.validation');
 const userRepository = require("../repositories/user.repository");
-const  { deepFreeze } = require('../utils/obj.utils');
+const {deepFreeze} = require('../utils/obj.utils');
 
 class UserService {
     #userValidationService;
@@ -14,7 +17,17 @@ class UserService {
         this.#userRepository = userRepository;
     }
 
-    async create({ firstname="", lastname="", email="", password="" }) {
+    async ensureUserExists(userId = "") {
+        if (!userId || !(await this.findById(userId))) {
+            throw new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+    }
+
+    async create({firstname = "", lastname = "", email = "", password = ""} = {}) {
         this.#userValidationService.validateEmail('email', email);
         this.#userValidationService.validatePassword('password', password);
         this.#userValidationService.validateName('firstname', firstname);
@@ -33,114 +46,136 @@ class UserService {
         try {
             savedUser = this.#userRepository.create(userData);
         } catch (error) {
-            console.error('Error creating user', error);
-            throw new Error("Error creating user");
+            throw new AppError(
+                statusMessages.USER_CREATION_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
         return deepFreeze(savedUser);
     }
 
-    async findById(userId="") {
+    async findById(userId = "") {
         let user;
 
         try {
             user = await this.#userRepository.findById(userId);
-            if (!user) return null;
         } catch (error) {
-            console.error('Error finding user by id', error);
-            throw new Error("Error finding user by id");
+            throw new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(user);
+        return user ? deepFreeze(user) : null;
     }
 
-    async findByEmail(email="") {
+    async findByEmail(email = "") {
         let user;
 
         try {
-            user = await this.#userRepository.findOne({ email });
-            if (!user) return null;
+            user = await this.#userRepository.findOne({email});
         } catch (error) {
-            console.error('Error finding user by email', error);
-            throw new Error("Error finding user by email");
+            throw new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(user);
+        return user ? deepFreeze(user) : null;
     }
 
-    async findByRefreshToken(refreshToken="") {
+    async findByRefreshToken(refreshToken = "") {
         let user;
 
         try {
-            user = await this.#userRepository.findOne({ refreshToken });
-            if (!user) return null;
+            user = await this.#userRepository.findOne({refreshToken});
         } catch (error) {
-            console.error('Error finding user by refreshToken', error);
-            throw new Error("Error finding user by refreshToken");
+            throw new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(user);
+        return user ? deepFreeze(user) : null;
     }
 
-    async updatePassword(userId="", newPassword="") {
+    async updatePassword(userId = "", newPassword = "") {
+        await this.ensureUserExists(userId);
         this.#userValidationService.validatePassword('password', newPassword);
-        let updatedUser;
+        let user;
 
         try {
             const hashedPassword = await this.passwordHasherService.hash(newPassword);
-             updatedUser = await this.#userRepository.findByIdAndUpdate(userId, { password: hashedPassword });
-            if (!updatedUser) return null;
-        } catch(error) {
-            console.error("Error updating user's password", error);
-            throw new Error("Error updating user's password");
+            user = await this.#userRepository.findByIdAndUpdate(userId, {password: hashedPassword});
+        } catch (error) {
+            throw new AppError(
+                statusMessages.PASSWORD_UPDATE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(updatedUser);
+        return user ? deepFreeze(user) : null;
     }
 
-    async updateEmail(userId="", newEmail="") {
+    async updateEmail(userId = "", newEmail = "") {
+        await this.ensureUserExists(userId);
         this.#userValidationService.validateEmail('email', newEmail);
-        let updatedUser;
+        let user;
 
         try {
-            updatedUser = await this.#userRepository.findByIdAndUpdate(userId, { email: newEmail });
-            if (!updatedUser) return null;
-        }catch(error) {
-            console.error("Error updating user's email", error);
-            throw new Error("Error updating user's email");
+            user = await this.#userRepository.findByIdAndUpdate(userId, {email: newEmail});
+            if (!user) return null;
+        } catch (error) {
+            throw new AppError(
+                statusMessages.EMAIL_UPDATE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(updatedUser);
+        return user ? deepFreeze(user) : null;
     }
 
-    async updateFullname(userId="", { firstname="", lastname="" }) {
+    async updateFullname(userId = "", {firstname = "", lastname = ""} = {}) {
+        await this.ensureUserExists(userId);
         this.#userValidationService.validateName('firstname', firstname);
         this.#userValidationService.validateName('lastname', lastname);
-        let updatedUser;
+        let user;
 
         try {
-            updatedUser = await this.#userRepository.findByIdAndUpdate(userId, { firstname, lastname });
-            if (!updatedUser) return null;
-        } catch (error){
-            console.error("Error updating user's fullname", error);
-            throw new Error("Error updating user's fullname");
+            user = await this.#userRepository.findByIdAndUpdate(userId, {firstname, lastname});
+        } catch (error) {
+            throw new AppError(
+                statusMessages.FULLNAME_UPDATE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(updatedUser);
+        return user ? deepFreeze(user) : null;
     }
 
-    async updateRefreshToken(userId="", newRefreshToken=null) {
-        let updatedUser;
+    async updateRefreshToken(userId = "", newRefreshToken = null) {
+        await this.ensureUserExists(userId);
+        let user;
 
         try {
-            updatedUser = await this.#userRepository.findByIdAndUpdate(userId, { refreshToken: newRefreshToken });
-            if (!updatedUser) return null;
+            user = await this.#userRepository.findByIdAndUpdate(userId, {refreshToken: newRefreshToken});
         } catch (error) {
-            console.error("Error updating user's refreshToken", error);
-            throw new Error("Error updating user's refreshToken");
+            throw new AppError(
+                statusMessages.REFRESH_TOKEN_UPDATE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
-        return deepFreeze(updatedUser);
+        return user ? deepFreeze(user) : null;
     }
 }
 

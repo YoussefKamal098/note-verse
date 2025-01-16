@@ -1,3 +1,5 @@
+const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
 const config = require('./config');
 const AppError = require('../errors/app.error');
 
@@ -6,14 +8,22 @@ const corsOptions = {
         if (config.allowedOrigins.includes(origin) || !origin) {
             callback(null, true);  // Allow requests from allowed origins or non-browser requests
         } else {
-            callback(new AppError('CORS not allowed', 403), false);  // Deny request with AppError
+            // Deny the request for disallowed origins
+            callback(
+                new AppError(
+                    statusMessages.CORS_NOT_ALLOWED,
+                    httpCodes.FORBIDDEN.code,
+                    httpCodes.FORBIDDEN.name
+                ),
+                false
+            );
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'],  // Allowed headers
     credentials: true,  // Allow credentials (cookies, headers, etc.)
     preflightContinue: false,  // Handle preflight requests automatically
-    optionsSuccessStatus: 204  // Return a successful status code for OPTIONS requests
+    optionsSuccessStatus: httpCodes.NO_CONTENT.code // Return a successful status code for OPTIONS requests
 };
 
 module.exports = corsOptions;

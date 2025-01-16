@@ -1,11 +1,12 @@
 const Joi = require('joi');
 const AppError = require('../errors/app.error');
+const httpCodes = require("../constants/httpCodes");
 
 class NoteQueryValidationService {
     constructor() {
         this.querySchema = Joi.object({
             page: Joi.number().integer().min(0).default(0),
-            perPage: Joi.number().integer().min(1).max(100).default(10),
+            perPage: Joi.number().integer().min(1).max(50).default(10),
             sort: Joi.object({
                 createdAt: Joi.number().valid(-1, 1).default(-1),
                 updatedAt: Joi.number().valid(-1, 1).default(-1),
@@ -24,9 +25,13 @@ class NoteQueryValidationService {
     }
 
     validateQuery(query) {
-        const { error, value } = this.querySchema.validate(query);
+        const {error, value} = this.querySchema.validate(query);
         if (error) {
-            throw new AppError(`Notes Query Parameters: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `Notes Query Parameters: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return value;
     }

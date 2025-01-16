@@ -1,6 +1,7 @@
 const PaginatorService = require("../services/paginator.service");
 const Note = require("../models/note.model");
-const { sanitizeString, isValidObjectId, convertToObjectId} = require('../utils/string.utils');
+const {sanitizeString, isValidObjectId, convertToObjectId} = require('../utils/string.utils');
+const {sanitizeMongoObject} = require('../utils/obj.utils');
 
 class NoteRepository {
     #model;
@@ -11,18 +12,18 @@ class NoteRepository {
         this.#paginator = new PaginatorService(model, {});
     }
 
-    async create(noteData={}) {
+    async create(noteData = {}) {
         try {
             const newNote = new this.#model(noteData);
             await newNote.save();
-            return newNote;
+            return sanitizeMongoObject(newNote.toObject());  // Sanitize before returning
         } catch (error) {
             console.error("Error creating note:", error);
-            throw new Error("Unable to create note");
+            throw new Error("Error creating note");
         }
     }
 
-    async findByIdAndUpdate(noteId="", updates={}) {
+    async findByIdAndUpdate(noteId = "", updates = {}) {
         if (!isValidObjectId(noteId)) return null;
 
         try {
@@ -30,85 +31,82 @@ class NoteRepository {
                 new: true,
                 runValidators: true
             }).lean();
-            return updatedNote || null;
+            return updatedNote ? sanitizeMongoObject(updatedNote) : null;
         } catch (error) {
             console.error("Error updating note:", error);
-            return null;
+            throw new Error("Error updating note");
         }
     }
 
-    async findById(noteId="") {
+    async findById(noteId = "") {
         if (!isValidObjectId(noteId)) return null;
 
         try {
             const note = await this.#model.findById(convertToObjectId(noteId)).lean();
-            return note || null;
+            return note ? sanitizeMongoObject(note) : null;
         } catch (error) {
             console.error("Error finding note by ID:", error);
-            return null;
+            throw new Error("Error finding note by ID");
         }
     }
 
-    async findOne(query={}) {
+    async findOne(query = {}) {
         try {
             const note = await this.#model.findOne(query).lean();
-            return note || null;
+            return note ? sanitizeMongoObject(note) : null;
         } catch (error) {
             console.error("Error finding note:", error);
-            return null;
+            throw new Error("Error finding note");
         }
     }
 
-    async deleteById(noteId="") {
+    async deleteById(noteId = "") {
         if (!isValidObjectId(noteId)) return null;
 
         try {
             const deletedNote = await this.#model.findByIdAndDelete(convertToObjectId(noteId));
-            return deletedNote || null;
+            return deletedNote ? sanitizeMongoObject(deletedNote) : null;
         } catch (error) {
             console.error("Error deleting note:", error);
-            return null;
+            throw new Error("Error deleting note");
         }
     }
 
     // Find notes with pagination and sorting
-    async find(query={}, options= {}) {
-        const { page = 1, perPage = 10, sort = { createdAt: -1 } } = options;
+    async find(query = {}, options = {}) {
+        const {page = 1, perPage = 10, sort = {createdAt: -1}} = options;
 
         this.#paginator.page = page;
         this.#paginator.perPage = perPage;
         this.#paginator.sort = sort;
 
         try {
-            return await this.#paginator.getPagination(query);
+            const result = await this.#paginator.getPagination(query);
+            result.data = result.data.map(sanitizeMongoObject);
+            return result;
         } catch (error) {
             console.error("Error fetching notes:", error);
-            return [];
+            throw new Error("Error fetching notes");
         }
     }
 
     // Find notes based on a substring search and additional query filters and with pagination and sorting (user-specific)
-    async findWithSearchText(searchText="", query={}, options={}) {
-        const { page = 1, perPage = 10, sort = { createdAt: -1 } } = options;
+    async findWithSearchText(searchText = "", query = {}, options = {}) {
+        const {page = 1, perPage = 10, sort = {createdAt: -1}} = options;
 
         // Escape the substring to prevent regex injection
         const sanitizedSearchText = sanitizeString(searchText);
-        let baseQuery = { ...query};
+        let baseQuery = {...query};
 
         if (sanitizedSearchText) {
             const regex = new RegExp(sanitizedSearchText, "i");
 
             baseQuery = {
                 ...baseQuery,
-                // Text search: Match full-text search in indexed fields
-                // { $text: { $search: substring } },
-                // Or use
-                // Regex search: Match substrings in specific fields
                 $or: [
-                    { title: { $regex: regex } },
-                    { tags: { $in: [regex] } }
+                    {title: {$regex: regex}},
+                    {tags: {$in: [regex]}}
                 ]
-                // (I will implement N-gram search later!)
             };
         }
 
@@ -117,10 +115,12 @@ class NoteRepository {
         this.#paginator.sort = sort;
 
         try {
-            return await this.#paginator.getPagination(baseQuery);
+            const result = await this.#paginator.getPagination(baseQuery);
+            result.data = result.data.map(sanitizeMongoObject);
+            return result;
         } catch (error) {
             console.error("Error fetching notes:", error);
-            return [];
+            throw new Error("Error fetching notes");
         }
     }
 }

@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
-const { isValidObjectId, convertToObjectId } = require('../utils/string.utils');
+const {isValidObjectId, convertToObjectId} = require('../utils/string.utils');
+const {sanitizeMongoObject} = require('../utils/obj.utils');
 
 class UserRepository {
     #model;
@@ -12,7 +13,7 @@ class UserRepository {
         try {
             const newUser = new this.#model(userData);
             await newUser.save();
-            return newUser;
+            return sanitizeMongoObject(newUser.toObject()); // Sanitize the created user
         } catch (error) {
             console.error("Error creating user:", error);
             throw new Error("Unable to create user");
@@ -27,10 +28,10 @@ class UserRepository {
                 new: true,
                 runValidators: true
             }).lean();
-            return updatedUser || null;
+            return updatedUser ? sanitizeMongoObject(updatedUser) : null;
         } catch (error) {
             console.error("Error updating user:", error);
-            return null;
+            throw new Error("Error updating user");
         }
     }
 
@@ -39,20 +40,20 @@ class UserRepository {
 
         try {
             const user = await this.#model.findById(convertToObjectId(userId)).lean();
-            return user || null;
+            return user ? sanitizeMongoObject(user) : null;
         } catch (error) {
             console.error("Error finding user by ID:", error);
-            return null;
+            throw new Error("Error finding user by ID");
         }
     }
 
     async findOne(query = {}) {
         try {
-            const user = await this.#model.findOne(query).exec()
-            return user || null;
+            const user = await this.#model.findOne(query).lean();
+            return user ? sanitizeMongoObject(user) : null;
         } catch (error) {
             console.error("Error finding user:", error);
-            return null;
+            throw new Error("Error finding user");
         }
     }
 }

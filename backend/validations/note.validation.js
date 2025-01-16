@@ -1,4 +1,6 @@
+const httpCodes = require('../constants/httpCodes');
 const Joi = require('joi');
+const {convertToBytes} = require('../utils/string.utils');
 const AppError = require('../errors/app.error');
 
 class NoteValidationService {
@@ -29,7 +31,7 @@ class NoteValidationService {
 
         this.contentSchema = Joi.string()
             .required()
-            .max(1024 * 10) // 10KB
+            .max(convertToBytes("10KB"))
             .messages({
                 'string.base': 'Content must be a string.',
                 'string.empty': 'Content is required.',
@@ -46,34 +48,49 @@ class NoteValidationService {
     }
 
     validateTitle(value) {
-        const { error } = this.titleSchema.validate(value);
+        const {error} = this.titleSchema.validate(value);
         if (error) {
-            throw new AppError(`Title: ${error.details[0].message}`, 400);
+            throw new AppError(`Title: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }
 
     validateTags(value) {
-        const { error } = this.tagsSchema.validate(value);
+        const {error} = this.tagsSchema.validate(value);
         if (error) {
-            throw new AppError(`Tags: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `Tags: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }
 
     validateContent(value) {
-        const { error } = this.contentSchema.validate(value);
+        const {error} = this.contentSchema.validate(value);
         if (error) {
-            throw new AppError(`Content: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `Content: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }
 
 
     validateIsPinned(value) {
-        const { error } = this.isPinnedSchema.validate(value);
+        const {error} = this.isPinnedSchema.validate(value);
         if (error) {
-            throw new AppError(`IsPinned: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `IsPinned: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }

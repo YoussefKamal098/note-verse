@@ -1,3 +1,5 @@
+const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const config = require('../config/config');
 const jwtAuthService = require('../services/jwtAuth.service');
@@ -12,23 +14,20 @@ class AuthController {
     }
 
     #sendTokens(res, accessToken, refreshToken) {
-        const expires = new Date(new Date().getTime() + this.#jwtAuthService.config.cookiesMaxAge);
-
-        res.cookie(this.#jwtAuthService.config.cookiesName, refreshToken, {
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: config.env === 'production',
-            maxAge:  this.#jwtAuthService.config.cookiesMaxAge * 1000,  // in milliseconds
-            expires
-        });
-
-        res.json({ accessToken });
+        const cookieOptions = this.#jwtAuthService.config.getCookieOptions(config.env);
+        res.cookie(this.#jwtAuthService.config.cookiesName, refreshToken, cookieOptions);
+        res.json({accessToken});
     }
 
     async register(req, res, next) {
         try {
-            const { firstname, lastname, email, password } = req.body;
-            const { accessToken, refreshToken } = await this.#jwtAuthService.register({ firstname, lastname, email, password });
+            const {firstname, lastname, email, password} = req.body;
+            const {accessToken, refreshToken} = await this.#jwtAuthService.register({
+                firstname,
+                lastname,
+                email,
+                password
+            });
 
             this.#sendTokens(res, accessToken, refreshToken);
         } catch (error) {
@@ -37,13 +36,17 @@ class AuthController {
     }
 
     async login(req, res, next) {
-        const { email, password } = req.body;
+        const {email, password} = req.body;
         if (!email || !password) {
-            return next(new AppError("Email and password are required", 400));
+            return next(new AppError(
+                statusMessages.CREDENTIALS_REQUIRED,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            ));
         }
 
         try {
-            const { accessToken, refreshToken } = await this.#jwtAuthService.login({ email, password });
+            const {accessToken, refreshToken} = await this.#jwtAuthService.login({email, password});
             this.#sendTokens(res, accessToken, refreshToken);
         } catch (error) {
             next(error);
@@ -53,17 +56,19 @@ class AuthController {
     async logout(req, res, next) {
         const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
         if (!refreshToken) {
-            return next(new AppError('Refresh Token is required', 401));
+            return next(new AppError(
+                statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            ));
         }
 
         try {
             await this.#jwtAuthService.logout(refreshToken);
+            const cookieOptions = this.#jwtAuthService.config.getCookieOptions(config.env);
 
-            res.clearCookie(this.#jwtAuthService.config.cookiesName,{
-                sameSite: 'strict',
-                secure: config.env === 'production'
-            });
-            res.sendStatus(204); // No Content
+            res.clearCookie(this.#jwtAuthService.config.cookiesName, cookieOptions);
+            res.sendStatus(httpCodes.NO_CONTENT.code);
         } catch (error) {
             next(error);
         }
@@ -72,12 +77,16 @@ class AuthController {
     async refreshToken(req, res, next) {
         const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
         if (!refreshToken) {
-            return next(new AppError('Refresh Token is required', 401));
+            return next(new AppError(
+                statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            ));
         }
 
         try {
-            const { accessToken } = await this.#jwtAuthService.refreshToken(refreshToken);
-            res.json({ accessToken });
+            const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
+            res.json({accessToken});
         } catch (error) {
             next(error);
         }

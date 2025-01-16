@@ -1,16 +1,18 @@
+const httpCodes = require('../constants/httpCodes');
+const {timeUnit, time, timeFromNow} = require('../utils/date.utils');
 const AppError = require('../errors/app.error');
 
 class BlockerService {
     #cacheService;
     #blockTime;
 
-    constructor(cacheService, blockTime = 60 * 15) {
+    constructor(cacheService, blockTime = time({[timeUnit.MINUTE]: 15}, timeUnit.SECOND)) {
         this.#cacheService = cacheService;
-        this.#blockTime = blockTime; // in seconds
+        this.#blockTime = blockTime;
     }
 
     #generateBlockKey(key) {
-        return `${key}:blockedUntil:${(this.#blockTime / 60).toFixed()}d`;
+        return `${key}:blockedUntil:${(time({[timeUnit.SECOND]: this.#blockTime}, timeUnit.MINUTE)).toFixed()}M`;
     }
 
     async isBlocked(key) {
@@ -26,7 +28,7 @@ class BlockerService {
 
     async blockUser(key) {
         key = this.#generateBlockKey(key);
-        const blockUntil = Date.now() + this.#blockTime * 1000;
+        const blockUntil = timeFromNow({[timeUnit.SECOND]: this.#blockTime});
         await this.#cacheService.set(key, blockUntil);
         await this.#cacheService.expire(key, this.#blockTime);
     }
@@ -38,21 +40,24 @@ class RateLimiterService {
     #windowSize;
     #maxRequests;
 
-    constructor(cacheService, blockerService, { windowSize = 60, maxRequests = 60 } = {}) {
+    constructor(cacheService, blockerService, {
+        windowSize = time({[timeUnit.SECOND]: 60}, timeUnit.SECOND),
+        maxRequests = 60
+    } = {}) {
         this.#cacheService = cacheService;
         this.#blockerService = blockerService;
-        this.#windowSize = windowSize; // in seconds
+        this.#windowSize = windowSize;
         this.#maxRequests = maxRequests;
     }
 
     #generateLimitKey(req) {
-        const { ip, headers: { 'user-agent': userAgent }, user, originalUrl: url } = req;
+        const {ip, headers: {'user-agent': userAgent}, user, originalUrl: url} = req;
         const userId = user ? user.id : 'anonymous';
         return `${ip}:${userAgent}:${userId}:${url}:limit`;
     }
 
     #generateBlockKey(req) {
-        const { ip, headers: { 'user-agent': userAgent }, user } = req;
+        const {ip, headers: {'user-agent': userAgent}, user} = req;
         const userId = user ? user.id : 'anonymous';
         return `${ip}:${userAgent}:${userId}:block`;
     }
@@ -78,11 +83,15 @@ class RateLimiterService {
         return false;
     }
 
-    async limitOrThrow(req, message = 'Too many requests, please try again later.') {
+    async limitOrThrow(req, message = httpCodes.TOO_MANY_REQUESTS.message) {
         if (await this.isRateLimited(req)) {
-            throw new AppError(message, 429);
+            throw new AppError(
+                httpCodes.TOO_MANY_REQUESTS.message,
+                httpCodes.TOO_MANY_REQUESTS.code,
+                httpCodes.TOO_MANY_REQUESTS.name
+            );
         }
     }
 }
 
-module.exports = { RateLimiterService, BlockerService };
+module.exports = {RateLimiterService, BlockerService};

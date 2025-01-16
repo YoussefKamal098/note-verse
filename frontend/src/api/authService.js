@@ -26,6 +26,12 @@ class AuthService {
     #eventEmitter;
     #userService;
 
+    /**
+     * Creates an instance of AuthService.
+     * @param {ApiClient} apiClient - The API client instance for making HTTP requests.
+     * @param {TokenStorage} tokenStorage - The token storage instance to manage access tokens.
+     * @param {UserService} userService - The user service instance to retrieve user information.
+     */
     constructor(apiClient, tokenStorage, userService) {
         this.#apiClient = apiClient;
         this.#tokenStorage = tokenStorage;
@@ -35,18 +41,27 @@ class AuthService {
         this.#setupInterceptors();
     }
 
+    /**
+     * Sets up request and response interceptors for the API client.
+     * Adds the authentication token to outgoing requests and handles token refresh on 401 errors.
+     */
     #setupInterceptors() {
-        this.#apiClient.instance.interceptors.request.use(
+        this.#apiClient.addRequestInterceptor(
             (config) => this.#addAuthTokenToRequest(config),
             (error) => Promise.reject(error)
         );
 
-        this.#apiClient.instance.interceptors.response.use(
+        this.#apiClient.addResponseInterceptor(
             (response) => response,
             async (error) => this.#handleResponseError(error)
         );
     }
 
+    /**
+     * Adds the access token to the request headers.
+     * @param {Object} config - The request configuration object.
+     * @returns {Object} The modified request configuration with the access token.
+     */
     #addAuthTokenToRequest(config) {
         const token = this.#tokenStorage.getAccessToken();
         if (token) {
@@ -55,6 +70,11 @@ class AuthService {
         return config;
     }
 
+    /**
+     * Handles response errors, including token expiration and refresh.
+     * @param {Object} error - The error object from the failed response.
+     * @returns {Promise} The promise rejection or retry of the original request.
+     */
     async #handleResponseError(error) {
         const originalRequest = error.config;
 
@@ -79,9 +99,14 @@ class AuthService {
         return Promise.reject(error);
     }
 
+    /**
+     * Refreshes the access token using the refresh token endpoint.
+     * @returns {Object} The new access token.
+     * @throws {Error} If token refresh fails.
+     */
     async #refreshAccessToken() {
         try {
-            const {data} = await this.#apiClient.instance.post(ENDPOINTS.REFRESH);
+            const {data} = await this.#apiClient.post(ENDPOINTS.REFRESH);
             this.#tokenStorage.setAccessToken(data.accessToken);
             return {accessToken: data.accessToken};
         } catch (error) {
@@ -90,22 +115,33 @@ class AuthService {
         }
     }
 
+    /**
+     * Handles token failure by clearing the stored access token and emitting a failure event.
+     */
     #handleTokenFailure() {
         this.#tokenStorage.clearAccessToken();
         this.#eventEmitter.emit(AUTH_EVENTS.REFRESH_TOKEN_FAILURE);
     }
 
+    /**
+     * Handles user logout by clearing the stored access token and emitting a logout event.
+     */
     #handleLogout() {
         this.#tokenStorage.clearAccessToken();
         this.#eventEmitter.emit(AUTH_EVENTS.LOGOUT);
     }
 
+    /**
+     * Logs in a user by posting the credentials to the login endpoint and storing the access token.
+     * @param {Object} credentials - The user credentials.
+     * @param {string} credentials.email - The user's email.
+     * @param {string} credentials.password - The user's password.
+     * @returns {Promise<Object>} Response with status code and data.
+     * @throws {Error} If login fails.
+     */
     async login({email, password}) {
         try {
-            const response = await this.#apiClient.instance.post(ENDPOINTS.LOGIN, {
-                email,
-                password
-            }, {withCredentials: true});
+            const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password});
             const {accessToken} = response.data;
 
             this.#tokenStorage.setAccessToken(accessToken);
@@ -115,16 +151,21 @@ class AuthService {
 
             this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
 
-            return {statusCode: response.status, data: response.data};
+            return response;
         } catch (error) {
             return this.#handleError(error, 'Login failed');
         }
     }
 
+    /**
+     * Logs out the current user by calling the logout endpoint and clearing the stored token.
+     * @returns {Promise<Object>} Response with status code and a message.
+     * @throws {Error} If logout fails.
+     */
     async logout() {
         try {
-            const response = await this.#apiClient.instance.post(ENDPOINTS.LOGOUT);
-            return {statusCode: response.status, message: 'Logged out successfully'};
+            const response = await this.#apiClient.post(ENDPOINTS.LOGOUT);
+            return {...response, message: 'Logged out successfully'};
         } catch (error) {
             return this.#handleError(error, 'Logout failed');
         } finally {
@@ -132,33 +173,59 @@ class AuthService {
         }
     }
 
+    /**
+     * Registers a new user by posting their information to the register endpoint.
+     * @param {Object} user - The user registration data.
+     * @param {string} user.email - The user's email.
+     * @param {string} user.password - The user's password.
+     * @param {string} user.firstname - The user's first name.
+     * @param {string} user.lastname - The user's last name.
+     * @returns {Promise<Object>} Response with status code and data.
+     * @throws {Error} If registration fails.
+     */
     async register({email, password, firstname, lastname}) {
         try {
-            const response = await this.#apiClient.instance.post(ENDPOINTS.REGISTER, {
+            const response = await this.#apiClient.post(ENDPOINTS.REGISTER, {
                 email,
                 password,
                 firstname,
-                lastname
+                lastname,
             });
             const {accessToken} = response.data;
 
             this.#tokenStorage.setAccessToken(accessToken);
             this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
 
-            return {statusCode: response.status, data: response.data};
+            return response;
         } catch (error) {
             return this.#handleError(error, 'Registration failed');
         }
     }
 
+    /**
+     * Adds an event listener for a specific authentication event.
+     * @param {string} event - The event to listen for.
+     * @param {Function} listener - The listener function to execute when the event is emitted.
+     */
     on(event, listener) {
         this.#eventEmitter.on(event, listener);
     }
 
+    /**
+     * Removes an event listener for a specific authentication event.
+     * @param {string} event - The event to stop listening for.
+     * @param {Function} listener - The listener function to remove.
+     */
     off(event, listener) {
         this.#eventEmitter.off(event, listener);
     }
 
+    /**
+     * Handles errors by throwing a new error with a meaningful message.
+     * @param {Error} error - The error object.
+     * @param {string} defaultMessage - The default message to use if the error does not have one.
+     * @throws {Error} A wrapped error with a meaningful message.
+     */
     #handleError(error, defaultMessage) {
         throw new Error(error.message || defaultMessage);
     }

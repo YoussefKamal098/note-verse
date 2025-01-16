@@ -4,7 +4,7 @@ class PaginatorService {
     #perPage;
     #sort;
 
-    constructor(model, { page = 0, perPage = 10, sort = {} }) {
+    constructor(model, {page = 0, perPage = 10, sort = {}}) {
         this.#page = page;
         this.#perPage = perPage;
         this.#sort = sort;
@@ -15,28 +15,28 @@ class PaginatorService {
         return this.#page;
     }
 
-    get perPage() {
-        return this.#perPage;
-    }
-
-    get sort() {
-        return this.#sort;
-    }
-
-    get skip(){
-        return this.page * this.perPage;
-    }
-
     set page(page) {
         this.#page = page;
+    }
+
+    get perPage() {
+        return this.#perPage;
     }
 
     set perPage(perPage) {
         this.#perPage = perPage;
     }
 
+    get sort() {
+        return this.#sort;
+    }
+
     set sort(sort) {
         this.#sort = sort;
+    }
+
+    get skip() {
+        return this.page * this.perPage;
     }
 
     async getPagination(query = {}) {
@@ -44,17 +44,19 @@ class PaginatorService {
 
         try {
             const result = await this.#model.aggregate([
-                { $match: query },
-                { $facet: {
+                {$match: query},
+                {
+                    $facet: {
                         metadata: [
-                            { $count: "totalItems" }
+                            {$count: "totalItems"}
                         ],
                         data: [
-                            { $sort: this.sort },
-                            { $skip: this.skip },
-                            { $limit: this.perPage }
+                            {$sort: this.sort},
+                            {$skip: this.skip},
+                            {$limit: this.perPage}
                         ]
-                    }}
+                    }
+                }
             ]);
 
             const totalItems = result[0]?.metadata[0]?.totalItems || 0;
@@ -72,7 +74,7 @@ class PaginatorService {
 
         } catch (error) {
             console.error("Pagination Error:", error);
-            return [];
+            throw new Error("Pagination Error");
         }
     }
 

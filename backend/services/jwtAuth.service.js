@@ -1,3 +1,5 @@
+const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const userService = require('../services/user.service');
 const JwtProviderService = require('../services/jwtProvider.service');
@@ -16,29 +18,41 @@ class JwtAuthService {
         this.config = config; // Authentication-related configurations
     }
 
-    #getPayload(user={}) {
-        return { id: user._id};
+    #getPayload(user = {}) {
+        return {id: user.id};
     }
 
-    async register({firstname, lastname, email, password }) {
+    async register({firstname, lastname, email, password}) {
         const existingUser = await this.#userService.findByEmail(email);
         if (existingUser) {
-            throw new AppError('User already exists', 409);
+            throw new AppError(
+                statusMessages.USER_ALREADY_EXISTS,
+                httpCodes.CONFLICT.code,
+                httpCodes.CONFLICT.name
+            );
         }
 
-        await this.#userService.create({ email, password, firstname, lastname });
+        await this.#userService.create({email, password, firstname, lastname});
         // Automatically log the user in after registration
-        return await this.login({ email, password });
+        return await this.login({email, password});
     }
 
     async login({email, password}) {
         const user = await this.#userService.findByEmail(email);
         if (!user) {
-            throw new AppError('Invalid email or password', 400);
+            throw new AppError(
+                statusMessages.INVALID_CREDENTIALS,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
         }
 
         if (!await this.#userService.passwordHasherService.verify(password, user.password)) {
-            throw new AppError('Invalid email or password', 400);
+            throw new AppError(
+                statusMessages.INVALID_CREDENTIALS,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
         }
 
         const accessToken = await this.#jwtProviderService.generateToken(
@@ -53,42 +67,58 @@ class JwtAuthService {
             this.config.refreshTokenExpiry
         );
 
-        await this.#userService.updateRefreshToken(user._id, refreshToken);
+        await this.#userService.updateRefreshToken(user.id, refreshToken);
 
-        return { accessToken, refreshToken };
+        return {accessToken, refreshToken};
     }
 
-    async verify(accessToken="") {
+    async verify(accessToken = "") {
         try {
             const payload = await this.#jwtProviderService.verifyToken(accessToken, this.config.accessTokenSecret);
             const user = await this.#userService.findById(payload.id);
             if (user.refreshToken === null) throw new Error();
             return payload;
         } catch (error) {
-            throw new AppError('Invalid or expired token', 401);
+            throw new AppError(
+                statusMessages.INVALID_OR_EXPIRED_TOKEN,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            );
         }
     }
 
-    async logout(refreshToken="") {
+    async logout(refreshToken = "") {
         const user = await this.#userService.findByRefreshToken(refreshToken);
         if (!user) {
-            throw new AppError('Invalid or expired token', 401);
+            throw new AppError(
+                statusMessages.INVALID_REFRESH_TOKEN,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            );
         }
 
-        await this.#userService.updateRefreshToken(user._id, null);
+        await this.#userService.updateRefreshToken(user.id, null);
     }
 
-    async refreshToken(refreshToken="") {
+    async refreshToken(refreshToken = "") {
         const user = await this.#userService.findByRefreshToken(refreshToken);
-        if (!user){
-            throw new AppError('Invalid or expired token', 401);
+        if (!user) {
+            throw new AppError(
+                statusMessages.INVALID_REFRESH_TOKEN,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            );
         }
 
         try {
             await this.#jwtProviderService.verifyToken(refreshToken, this.config.refreshTokenSecret);
         } catch (error) {
-            await this.#userService.updateRefreshToken(user._id, null);
-            throw new AppError('Invalid or expired token', 401);
+            await this.#userService.updateRefreshToken(user.id, null);
+            throw new AppError(
+                statusMessages.INVALID_REFRESH_TOKEN,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            );
         }
 
         const accessToken = await this.#jwtProviderService.generateToken(
@@ -97,7 +127,7 @@ class JwtAuthService {
             this.config.accessTokenExpiry
         );
 
-        return { accessToken };
+        return {accessToken};
     }
 }
 

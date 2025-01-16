@@ -1,10 +1,17 @@
+const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
+const {timeUnit, time} = require('../utils/date.utils');
 const timeoutHandler = require('express-timeout-handler');
 const AppError = require("../errors/app.error");
 
 const timeoutOptions = {
-    timeout: 15000, // Timeout duration in milliseconds (e.g., 15 seconds)
-    onTimeout: function(req, res, next) {
-        next(new AppError('The request timed out. Please try again later.', 408));
+    timeout: time({[timeUnit.SECOND]: 15}, timeUnit.MILLISECOND),
+    onTimeout: function (req, res, next) {
+        next(new AppError(
+            statusMessages.REQUEST_TIMEOUT,
+            httpCodes.REQUEST_TIMEOUT.code,
+            httpCodes.REQUEST_TIMEOUT.name
+        ));
     },
 };
 

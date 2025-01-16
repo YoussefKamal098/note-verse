@@ -1,10 +1,10 @@
+const httpCodes = require("../constants/httpCodes");
 const Joi = require('joi');
 const AppError = require('../errors/app.error');
-const { capitalizeFirstLetter } = require("../utils/string.utils");
+const {capitalizeFirstLetter} = require("../utils/string.utils");
 
 class UserValidationService {
     constructor() {
-        // I will sanitize the strings in title and tags and content later
         this.nameSchema = Joi.string()
             .required()
             .regex(/^(?!\d)[a-zA-Z0-9_]{3,15}$/)
@@ -37,25 +37,37 @@ class UserValidationService {
     }
 
     validateName(fieldName, value) {
-        const { error } = this.nameSchema.validate(value);
+        const {error} = this.nameSchema.validate(value);
         if (error) {
-            throw new AppError(`${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }
 
     validateEmail(fieldName, value) {
-        const { error } = this.emailSchema.validate(value);
+        const {error} = this.emailSchema.validate(value);
         if (error) {
-            throw new AppError(`${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }
 
     validatePassword(fieldName, value) {
-        const { error } = this.passwordSchema.validate(value);
+        const {error} = this.passwordSchema.validate(value);
         if (error) {
-            throw new AppError(`${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`, 400);
+            throw new AppError(
+                `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
+                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.name
+            );
         }
         return true;
     }

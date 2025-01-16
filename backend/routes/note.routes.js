@@ -1,13 +1,12 @@
 const express = require('express');
-const noteController = require('../controllers/note.controller');
+const notesController = require('../controllers/note.controller');
 
 const router = express.Router();
 
-router.post('/', noteController.create.bind(noteController));
-router.get('/all', noteController.findByQuery.bind(noteController));
-router.get('/textSearch', noteController.findWithSearchText.bind(noteController));
-router.get('/:noteId', noteController.findById.bind(noteController));
-router.put('/:noteId', noteController.update.bind(noteController));
-router.delete('/:noteId', noteController.deleteById.bind(noteController));
+router.post('/', notesController.create.bind(notesController));
+router.get('/my_notes', notesController.findMyNotes.bind(notesController));
+router.get('/me_note/:noteId', notesController.findMyNoteById.bind(notesController));
+router.put('/my_note/:noteId', notesController.updateMyNote.bind(notesController));
+router.delete('/my_note/:noteId', notesController.deleteMyNoteById.bind(notesController));
 
 module.exports = router;

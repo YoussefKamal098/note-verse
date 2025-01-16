@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { toast } from "react-toastify";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {toast} from "react-toastify";
 import noteService from "./api/noteService";
 
 const useFormNavigation = (fieldRefs) => {
@@ -23,7 +23,7 @@ const useFormNavigation = (fieldRefs) => {
         }
     };
 
-    return { handleKeyDown };
+    return {handleKeyDown};
 };
 
 const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
@@ -39,16 +39,14 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
                 searchText: search,
                 page,
                 perPage: notesPerPage,
-                sort: { isPinned: -1, updatedAt: -1, title: 1, createdAt: -1 },
+                sort: {isPinned: -1, updatedAt: -1, title: 1, createdAt: -1},
             };
 
-            const result = search
-                ? await noteService.textSearch(search, queryParams)
-                : await noteService.getAll(queryParams);
+            const result = await noteService.getAuthenticatedUserNotes(queryParams);
 
             return result.data;
         } catch (error) {
-            throw new Error (`Error fetching page notes:  ${error.message}`);
+            throw new Error(`Error fetching page notes:  ${error.message}`);
         }
     }, [notesPerPage]);
 
@@ -61,7 +59,7 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
                 setCurrentPage(result.totalPages - 1);
             }
 
-            const { data, totalPages: total, totalItems } = result;
+            const {data, totalPages: total, totalItems} = result;
 
             totalNotes.current = totalItems;
             setTotalPages(total);
@@ -91,4 +89,4 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
     };
 };
 
-export  { useFormNavigation,  usePaginatedNotes };
+export {useFormNavigation, usePaginatedNotes};
