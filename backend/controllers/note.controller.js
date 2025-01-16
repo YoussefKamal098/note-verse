@@ -102,7 +102,7 @@ class NotesControllerUser {
         }
     }
 
-    // Fetch notes with pagination and sorting
+    // Retrieve notes with pagination, sorting, and text search filtering
     async findMyNotes(req, res, next) {
         try {
             const {id: userId} = req.user;

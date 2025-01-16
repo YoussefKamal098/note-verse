@@ -7,7 +7,6 @@ const {RateLimiterService, BlockerService} = require("../services/rateLimiter.se
 
 const router = express.Router();
 
-// Create a single BlockerService instance to be shared
 const blockerService = new BlockerService(cacheService);
 
 // Configure RateLimiterServices with specific maxRequests for each route

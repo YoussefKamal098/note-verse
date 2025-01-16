@@ -1,5 +1,6 @@
 const {parseString, parseNumber} = require('../utils/env.utils');
 const {timeUnit, time, timeFromNow} = require('../utils/date.utils');
+require('dotenv').config();
 
 const authConfig = Object.freeze({
     accessTokenSecret: parseString(process.env.ACCESS_TOKEN_SECRET, 'your-access-token-secret'),
