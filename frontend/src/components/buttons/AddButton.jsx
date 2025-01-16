@@ -10,18 +10,18 @@ const StyledAddButton = styled.button`
     height: 1.75em;
     bottom: 0.7em;
     right: 0.5em;
-    font-size: 1.5em;
-    border: calc(var(--border-width)) solid var(--color-border);
+    font-size: 1.4em;
+    border: calc(var(--border-width) / 1.5) solid var(--color-border-secondary);
     border-radius: calc(var(--border-radius) / 1.5);
     background: var(--color-background);
     box-shadow: var(--box-shadow-hoverable);
-    color: var(--color-accent);
+    color: var(--color-secondary);
     transition: 0.3s ease;
     cursor: pointer;
 
     &:hover {
+        color: var(--color-accent);
         box-shadow: var(--box-shadow-hover);
-        border-color: var(--color-accent);
     }
 
     &:active {
