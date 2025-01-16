@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { ToastContainer } from 'react-toastify';
+import {ToastContainer} from 'react-toastify';
 
 const CustomToastContainer = styled(ToastContainer)`
     .Toastify__toast--success {
@@ -8,14 +8,14 @@ const CustomToastContainer = styled(ToastContainer)`
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
     }
-   
+
     .Toastify__toast--error {
         color: var(--color-danger);
         background-color: var(--color-background);
         border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
     }
-    
+
     .Toastify__toast--info {
         color: var(--color-primary);
         background-color: var(--color-background);
@@ -26,8 +26,8 @@ const CustomToastContainer = styled(ToastContainer)`
     .Toastify__progress-bar--error {
         background-color: var(--color-danger);
     }
-    
-    .Toastify__progress-bar--info{
+
+    .Toastify__progress-bar--info {
         background-color: var(--color-primary);
     }
 
@@ -36,7 +36,7 @@ const CustomToastContainer = styled(ToastContainer)`
     }
 
     .Toastify__toast--success .Toastify__toast-icon svg {
-        fill:  var(--color-accent);
+        fill: var(--color-accent);
     }
 
     .Toastify__toast--error .Toastify__toast-icon svg {
@@ -50,6 +50,16 @@ const CustomToastContainer = styled(ToastContainer)`
     .Toastify__toast-body {
         color: var(--color-placeholder);
         font-size: 1.1em;
+    }
+
+
+    .Toastify__close-button {
+        color: var(--color-text);
+    }
+
+    .Toastify__close-button:hover,
+    .Toastify__close-button:focus {
+        color: var(--color-accent);
     }
 `;
 
