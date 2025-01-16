@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
-import { CiCalendarDate } from "react-icons/ci"
-import { formatDate } from "../../utils";
+import {CiCalendarDate} from "react-icons/ci"
+import {formatDate} from "../../utils";
 
 const DateInfo = styled.div`
     font-size: 0.8em;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-text);
     display: flex;
     justify-content: space-between;
@@ -22,30 +22,26 @@ const DateInfo = styled.div`
         gap: 5px;
     }
 
-    div span {
-        font-weight: 600;
-        color: var(--color-text);
-    }
-
-    svg {
+    .icon {
         font-size: 1.5em;
         transition: transform 0.3s ease;
     }
 `;
 
-function NoteDate({createdAt=null, updatedAt=null }) {
+function NoteDate({createdAt = null, updatedAt = null}) {
 
     return (
         <DateInfo>
             <div>
-                <span> Created: </span>
-                <span>{formatDate(createdAt)}</span>
-                <CiCalendarDate />
+                <span> Created on </span>
+                <CiCalendarDate className="icon"/>
+                <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+
             </div>
             <div>
-                <span> Updated: </span>
-                <span>{formatDate(updatedAt)}</span>
-                <CiCalendarDate />
+                <span> Updated on </span>
+                <CiCalendarDate className="icon"/>
+                <time dateTime={createdAt}>{formatDate(createdAt)}</time>
             </div>
         </DateInfo>
     )
