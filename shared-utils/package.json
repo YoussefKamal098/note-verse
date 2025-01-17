@@ -1,11 +1,19 @@
 {
   "name": "shared-utils",
-  "version": "0.0.1",
-  "author": "youssef-samuel-kamal",
-  "description": "",
+  "version": "0.1.0",
+  "author": "Youssef Samuel Kamal",
+  "description": "A collection of shared utility functions for backend and frontend applications.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No test specified\" && exit 1"
   },
-  "keywords": [],
-  "license": "ISC"
+  "keywords": [
+    "shared",
+    "utilities",
+    "backend",
+    "frontend",
+    "utils"
+  ],
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {}
 }
