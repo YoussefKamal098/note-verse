@@ -177,10 +177,7 @@ notes_app/
 │   │   ├── rateLimiter.service.js # Service for rate-limiting requests
 │   │   ├── user.service.js        # Service for user-related logic (e.g., user management)
 │   ├── utils/                     # Utility functions for various tasks
-│   │   ├── date.utils.js          # Helper functions for date manipulations
-│   │   ├── env.utils.js           # Helper functions for environment variables
 │   │   ├── obj.utils.js           # Helper functions for working with objects
-│   │   ├── string.utils.js        # Helper functions for string manipulation
 │   ├── validations/                # Validation logic for incoming requests (data validation)
 │   │   ├── note.validation.js     # Validation logic for note-related fields (e.g., title, content)
 │   │   ├── noteQuery.validation.js # Validation for note search/query parameters
@@ -223,13 +220,11 @@ notes_app/
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── App.jsx                # Main React component for the app (entry point)
 │   │   ├── config.js              # Configuration file for frontend settings
-│   │   ├── hooks.js               # Custom React hooks (e.g., for managing user authentication)
 │   │   ├── index.css              # Main CSS for styling the frontend app
 │   │   ├── index.js               # React app entry point (rendering the app)
 │   │   ├── reportWebVitals.js     # For measuring performance in the app
-│   │   ├── utils.js               # Helper functions for frontend
 │   ├── package.json               # Node.js package manager file for frontend dependencies
-│
+├── shared-utils/                  # Contains shared utility functions and modules used across both frontend and backend applications. This folder includes reusable logic, helper functions, and other tools designed to be used consistently throughout the project for code modularity and maintainability.
 ├── .gitignore                     # Git ignore file (e.g., node_modules, .env, build files)
 ├── LICENSE                        # License file for the project
 ├── README.md                      # Project documentation (overview of the app, setup instructions)
