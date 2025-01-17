@@ -1,14 +1,17 @@
-import React from "react";
-import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
+import React, {Suspense} from "react";
+import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
 import {useTheme} from "./contexts/ThemeContext";
+import Loader from "./components/common/Loader";
 import AuthProvider, {useAuth} from "./contexts/AuthContext";
 import ConfirmationPopUpProvider from "./contexts/ConfirmationContext";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import NotePage from "./pages/NotePage";
-import NotFoundPage from "./pages/NotFoundPage";
 import ToastNotifications from "./components/notifications/ToastNotifications";
+
+// Lazy load components
+const HomePage = React.lazy(() => import("./pages/HomePage"));
+const LoginPage = React.lazy(() => import("./pages/LoginPage"));
+const RegisterPage = React.lazy(() => import("./pages/RegisterPage"));
+const NotePage = React.lazy(() => import("./pages/NotePage"));
+const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 const PrivateRoute = ({children}) => {
     const {user} = useAuth();
@@ -20,21 +23,6 @@ const AuthRoute = ({children}) => {
     return user ? <Navigate to="/home" replace/> : children;
 };
 
-const routes = (
-    <Router>
-        <Routes>
-            <Route path="/login" element={<AuthRoute><LoginPage/></AuthRoute>}/>
-            <Route path="/register" element={<AuthRoute><RegisterPage/></AuthRoute>}/>
-            <Route path="/" element={<Navigate to="/home" replace/>}/>
-            {/* Protected Route */}
-            <Route path="/home" element={<PrivateRoute><HomePage/></PrivateRoute>}/>
-            <Route path="/note/:id" element={<PrivateRoute><NotePage/></PrivateRoute>}/>
-            {/* Catch-all route for unknown pages */}
-            <Route path="*" element={<NotFoundPage/>}/>
-        </Routes>
-    </Router>
-);
-
 function App() {
     const {theme} = useTheme();
 
@@ -42,7 +30,20 @@ function App() {
         <div className="App" data-theme={theme}>
             <ConfirmationPopUpProvider>
                 <AuthProvider>
-                    {routes}
+                    <Router>
+                        <Suspense fallback={<Loader/>}>
+                            <Routes>
+                                <Route path="/login" element={<AuthRoute><LoginPage/></AuthRoute>}/>
+                                <Route path="/register" element={<AuthRoute><RegisterPage/></AuthRoute>}/>
+                                <Route path="/" element={<Navigate to="/home" replace/>}/>
+                                {/* Protected Route */}
+                                <Route path="/home" element={<PrivateRoute><HomePage/></PrivateRoute>}/>
+                                <Route path="/note/:id" element={<PrivateRoute><NotePage/></PrivateRoute>}/>
+                                {/* Catch-all route for unknown pages */}
+                                <Route path="*" element={<NotFoundPage/>}/>
+                            </Routes>
+                        </Suspense>
+                    </Router>
                     <ToastNotifications/>
                 </AuthProvider>
             </ConfirmationPopUpProvider>
