@@ -39,7 +39,7 @@ note search, filtering, and CRUD operations.
 
 ```shell script
 git clone https://github.com/YoussefKamal098/note_app.git
-   cd full-stack-note-app
+   cd note-app
 ```
 
 2. Install dependencies:
