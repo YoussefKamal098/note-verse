@@ -12,9 +12,9 @@ import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
 import Button, {ButtonsContainerStyled} from "../buttons/Button";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
-import {deepArrayEqual} from "../../utils";
 import noteValidationSchema from "../../validations/noteValidtion";
-import CacheService from "../../api/cacheService"
+import cacheService from "../../services/cacheService"
+import {deepEqual} from "shared-utils/obj.utils";
 
 const NoteContainerStyled = styled.div`
     position: relative;
@@ -64,7 +64,7 @@ const BackHome = () => {
 }
 
 const Note = React.memo(function Note({
-                                          id = null,
+                                          id = "",
                                           origCreateAt = null,
                                           origUpdatedAt = null,
                                           origTitle = 'Untitled',
@@ -93,7 +93,7 @@ const Note = React.memo(function Note({
 
     const checkChanges = useCallback(() => {
         return origTitle !== title ||
-            !deepArrayEqual(origTags, tags) ||
+            !deepEqual(origTags, tags) ||
             origContent !== content ||
             isPinned !== origIsPinned;
     }, [title, content, tags, isPinned]);
@@ -119,7 +119,7 @@ const Note = React.memo(function Note({
 
     const saveUnsavedChanges = async () => {
         try {
-            await CacheService.save(id, {title, content, tags, isPinned});
+            await cacheService.save(id, {title, content, tags, isPinned});
         } catch (error) {
             toast.error(`Failed to save unsaved changes: ${error.message}.`);
         }
@@ -158,14 +158,19 @@ const Note = React.memo(function Note({
                 <BackHome/>
                 <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
             </HeaderContainerStyled>
+
             <NoteTitleInputField title={title} setTitle={setTitle}/>
+
             {origCreateAt && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
+
             <EditableTags tags={tags} setTags={setTags}/>
+
             <ButtonsContainerStyled>
                 <Button type="danger" disabled={(id === null || id === "new")} icon={MdDeleteForever}
                         onClick={onNoteDelete}> Delete </Button>
                 <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
             </ButtonsContainerStyled>
+
             <NoteMarkdownTabs content={content} onContentChange={setContent}/>
         </NoteContainerStyled>
     );

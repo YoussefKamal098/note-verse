@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import apiClient from './apiClient';
-import tokenStorage from './tokenStorage';
+import tokenStorageService from '../services/tokenStorageService';
 import userService from './userService';
 
 const AUTH_EVENTS = Object.freeze({
@@ -22,19 +22,19 @@ const ENDPOINTS = {
 
 class AuthService {
     #apiClient;
-    #tokenStorage;
+    #tokenStorageService;
     #eventEmitter;
     #userService;
 
     /**
      * Creates an instance of AuthService.
      * @param {ApiClient} apiClient - The API client instance for making HTTP requests.
-     * @param {TokenStorage} tokenStorage - The token storage instance to manage access tokens.
+     * @param {TokenStorageService} tokenStorageService - The token storage instance to manage access tokens.
      * @param {UserService} userService - The user service instance to retrieve user information.
      */
-    constructor(apiClient, tokenStorage, userService) {
+    constructor(apiClient, tokenStorageService, userService) {
         this.#apiClient = apiClient;
-        this.#tokenStorage = tokenStorage;
+        this.#tokenStorageService = tokenStorageService;
         this.#eventEmitter = new EventEmitter();
         this.#userService = userService;
 
@@ -63,7 +63,7 @@ class AuthService {
      * @returns {Object} The modified request configuration with the access token.
      */
     #addAuthTokenToRequest(config) {
-        const token = this.#tokenStorage.getAccessToken();
+        const token = this.#tokenStorageService.getAccessToken();
         if (token) {
             config.headers[HEADERS.AUTHORIZATION] = `Bearer ${token}`;
         }
@@ -107,7 +107,7 @@ class AuthService {
     async #refreshAccessToken() {
         try {
             const {data} = await this.#apiClient.post(ENDPOINTS.REFRESH);
-            this.#tokenStorage.setAccessToken(data.accessToken);
+            this.#tokenStorageService.setAccessToken(data.accessToken);
             return {accessToken: data.accessToken};
         } catch (error) {
             this.#handleTokenFailure();
@@ -119,7 +119,7 @@ class AuthService {
      * Handles token failure by clearing the stored access token and emitting a failure event.
      */
     #handleTokenFailure() {
-        this.#tokenStorage.clearAccessToken();
+        this.#tokenStorageService.clearAccessToken();
         this.#eventEmitter.emit(AUTH_EVENTS.REFRESH_TOKEN_FAILURE);
     }
 
@@ -127,7 +127,7 @@ class AuthService {
      * Handles user logout by clearing the stored access token and emitting a logout event.
      */
     #handleLogout() {
-        this.#tokenStorage.clearAccessToken();
+        this.#tokenStorageService.clearAccessToken();
         this.#eventEmitter.emit(AUTH_EVENTS.LOGOUT);
     }
 
@@ -144,7 +144,7 @@ class AuthService {
             const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password});
             const {accessToken} = response.data;
 
-            this.#tokenStorage.setAccessToken(accessToken);
+            this.#tokenStorageService.setAccessToken(accessToken);
 
             const user = await this.#userService.getUserInfo();
             const {firstname, lastname} = user.data;
@@ -193,7 +193,7 @@ class AuthService {
             });
             const {accessToken} = response.data;
 
-            this.#tokenStorage.setAccessToken(accessToken);
+            this.#tokenStorageService.setAccessToken(accessToken);
             this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
 
             return response;
@@ -231,5 +231,7 @@ class AuthService {
     }
 }
 
+const authService = new AuthService(apiClient, tokenStorageService, userService)
+
 export {AUTH_EVENTS};
-export default new AuthService(apiClient, tokenStorage, userService);
+export default authService;

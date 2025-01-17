@@ -1,4 +1,4 @@
-const {parseString, parseNumber, parseArray} = require('../utils/env.utils');
+const {parseString, parseNumber, parseArray} = require('shared-utils/env.utils');
 const authConfig = require('./authConfig');
 require('dotenv').config();
 

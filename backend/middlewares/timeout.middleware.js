@@ -1,6 +1,6 @@
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
-const {timeUnit, time} = require('../utils/date.utils');
+const {timeUnit, time} = require('shared-utils/date.utils');
 const timeoutHandler = require('express-timeout-handler');
 const AppError = require("../errors/app.error");
 

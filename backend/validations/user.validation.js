@@ -1,7 +1,7 @@
-const httpCodes = require("../constants/httpCodes");
 const Joi = require('joi');
+const {capitalizeFirstLetter} = require("shared-utils/string.utils");
+const httpCodes = require("../constants/httpCodes");
 const AppError = require('../errors/app.error');
-const {capitalizeFirstLetter} = require("../utils/string.utils");
 
 class UserValidationService {
     constructor() {

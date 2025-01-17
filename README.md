@@ -194,9 +194,7 @@ notes_app/
 │   │   ├── api/                   # API communication layer (making HTTP requests to backend)
 │   │   │   ├── apiClient.js       # Axios client for setting up API calls
 │   │   │   ├── authService.js     # Frontend service for authentication-related API calls
-│   │   │   ├── cacheService.js    # Service for frontend caching (e.g., using localStorage or sessionStorage)
 │   │   │   ├── noteService.js     # Frontend service for interacting with note-related API
-│   │   │   ├── tokenStorage.js    # Service for managing JWT tokens in localStorage/sessionStorage
 │   │   │   ├── userService.js     # Frontend service for interacting with user-related API
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
@@ -212,7 +210,15 @@ notes_app/
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   ├── contexts/              # React contexts for managing global state
+│   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
+│   │   │   ├── usePaginatedNotes.js   # Hook for managing pagination logic, fetching notes, and handling page transitions
+│   │   │   ├── useNoteData.js         # Hook for fetching and managing the state of a specific note, including unsaved changes
+│   │   │   ├── useNoteActions.js      # Hook for handling actions related to notes, such as creating, updating, and deleting
+│   │   │   ├── useFormNavigation.js   # Hook for managing keyboard navigation within forms (e.g., using arrow keys and Enter)
 │   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, etc.)
+│   │   ├── services/              # Contains utility services for managing various frontend functionalities
+│   │   │   ├── tokenStorageService.js # Service for managing JWT tokens in localStorage/sessionStorage
+│   │   │   ├── cacheService.js    # Service for frontend caching (e.g., using indexedDB)
 │   │   ├── styles/                # Styles (CSS) for the app's UI
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── App.jsx                # Main React component for the app (entry point)

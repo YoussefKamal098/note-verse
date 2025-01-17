@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import {CiCalendarDate} from "react-icons/ci"
-import {formatDate} from "../../utils";
+import {formatDate} from "shared-utils/date.utils";
 
 const DateInfo = styled.div`
     font-size: 0.8em;

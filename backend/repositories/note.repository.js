@@ -1,7 +1,7 @@
 const PaginatorService = require("../services/paginator.service");
 const Note = require("../models/note.model");
-const {sanitizeString, isValidObjectId, convertToObjectId} = require('../utils/string.utils');
-const {sanitizeMongoObject} = require('../utils/obj.utils');
+const {sanitizeString} = require('shared-utils/string.utils');
+const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 
 class NoteRepository {
     #model;

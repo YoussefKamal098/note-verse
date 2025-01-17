@@ -4,7 +4,7 @@ const AppError = require('../errors/app.error');
 const PasswordHasherService = require('../services/passwordHasher.service');
 const userValidationService = require('../validations/user.validation');
 const userRepository = require("../repositories/user.repository");
-const {deepFreeze} = require('../utils/obj.utils');
+const {deepFreeze} = require('shared-utils/obj.utils');
 
 class UserService {
     #userValidationService;

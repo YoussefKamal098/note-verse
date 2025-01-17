@@ -2,12 +2,12 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 
 const ThemeContext = createContext({
     theme: "dark",
-    setTheme: ({}) => {}
+    setTheme: (theme) => (theme)
 });
 
 const useTheme = () => useContext(ThemeContext);
 
-const ThemeProvider = ({ children }) => {
+const ThemeProvider = ({children}) => {
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
 
     useEffect(() => {
@@ -15,12 +15,12 @@ const ThemeProvider = ({ children }) => {
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, setTheme }}>
+        <ThemeContext.Provider value={{theme, setTheme}}>
             {children}
         </ThemeContext.Provider>
     );
 };
 
-export { useTheme };
+export {useTheme};
 export default ThemeProvider;
 

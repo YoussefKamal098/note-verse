@@ -1,5 +1,5 @@
 const express = require('express');
-const {timeUnit, time} = require('../utils/date.utils');
+const {timeUnit, time} = require('shared-utils/date.utils');
 const cacheService = require("../services/cache.service");
 const authController = require('../controllers/auth.controller');
 const {rateLimiterMiddleware, generalRateLimiterMiddleware} = require("../middlewares/rateLimiter.middleware");

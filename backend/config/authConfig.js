@@ -1,5 +1,5 @@
-const {parseString, parseNumber} = require('../utils/env.utils');
-const {timeUnit, time, timeFromNow} = require('../utils/date.utils');
+const {parseString, parseNumber} = require('shared-utils/env.utils');
+const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
 require('dotenv').config();
 
 const authConfig = Object.freeze({

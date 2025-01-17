@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { Formik, Form, Field } from "formik";
-import { FadeInAnimatedText } from "../animations/TextAnimation";
-import { HeightTransitionContainer } from "../animations/ContainerAnimation";
-import { FormContainerStyled, FormHeaderStyled, ErrorMessageStyled, LinkStyled } from "./formStyles";
+import React, {useState} from "react";
+import {Field, Form, Formik} from "formik";
+import {FadeInAnimatedText} from "../animations/TextAnimation";
+import {HeightTransitionContainer} from "../animations/ContainerAnimation";
+import useFormNavigation from "../../hooks/useFormNavigation";
+import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./formStyles";
 import SubmitButton from "./SubmitButtom";
-import { useFormNavigation } from "../../hooks";
 
 const DynamicForm = ({
                          formHeader,
@@ -20,7 +20,7 @@ const DynamicForm = ({
                      }) => {
     const [loading, setLoading] = useState(false);
     const fieldRefs = fields.map(() => React.createRef());
-    const { handleKeyDown } = useFormNavigation(fieldRefs);
+    const {handleKeyDown} = useFormNavigation(fieldRefs);
 
     return (
         <HeightTransitionContainer keyProp={formHeader}>
@@ -30,7 +30,7 @@ const DynamicForm = ({
                 <HeightTransitionContainer keyProp={errorMessage}>
                     {errorMessage && (
                         <ErrorMessageStyled>
-                            <FadeInAnimatedText text={errorMessage} />
+                            <FadeInAnimatedText text={errorMessage}/>
                         </ErrorMessageStyled>
                     )}
                 </HeightTransitionContainer>
@@ -44,7 +44,7 @@ const DynamicForm = ({
                         setLoading(false);
                     }}
                 >
-                    {({ isSubmitting }) => (
+                    {({isSubmitting}) => (
                         <Form onKeyDown={(event) => handleKeyDown(event, isSubmitting)}>
                             {fields.map((FieldComponent, index) => (
                                 <Field

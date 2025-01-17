@@ -1,6 +1,5 @@
 const User = require("../models/user.model");
-const {isValidObjectId, convertToObjectId} = require('../utils/string.utils');
-const {sanitizeMongoObject} = require('../utils/obj.utils');
+const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 
 class UserRepository {
     #model;

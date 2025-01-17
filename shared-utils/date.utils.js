@@ -102,4 +102,29 @@ function timeFromNow(duration = {}) {
     return currentDate;
 }
 
-module.exports = {timeUnit, time, timeFromNow};
+/**
+ * Formats a date into a readable string (e.g., "Fri, Jan 17, 2025, at 10:30 AM").
+ *
+ * @param {Date | string} date - The date to format.
+ * @returns {string} - The formatted date string.
+ */
+function formatDate(date) {
+    if (!date) return 'N/A';
+
+    const dateObj = new Date(date);
+    const weekday = dateObj.toLocaleDateString(undefined, {weekday: 'short'});
+    const month = dateObj.toLocaleDateString(undefined, {month: 'short'});
+    const day = dateObj.getDate();
+    const year = dateObj.getFullYear();
+
+    let hours = dateObj.getHours();
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert to 12-hour format
+    hours = hours % 12 || 12; // If hours are 0, set to 12
+
+    return `${weekday}, ${month} ${day}, ${year}, at ${hours}:${minutes} ${ampm}`;
+}
+
+module.exports = {timeUnit, time, timeFromNow, formatDate};

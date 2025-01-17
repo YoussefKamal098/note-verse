@@ -1,5 +1,5 @@
+const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
 const httpCodes = require('../constants/httpCodes');
-const {timeUnit, time, timeFromNow} = require('../utils/date.utils');
 const AppError = require('../errors/app.error');
 
 class BlockerService {
@@ -83,7 +83,7 @@ class RateLimiterService {
         return false;
     }
 
-    async limitOrThrow(req, message = httpCodes.TOO_MANY_REQUESTS.message) {
+    async limitOrThrow(req) {
         if (await this.isRateLimited(req)) {
             throw new AppError(
                 httpCodes.TOO_MANY_REQUESTS.message,

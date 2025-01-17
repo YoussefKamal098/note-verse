@@ -1,16 +1,11 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { FaSearch } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
-import { debounce } from "lodash";
-import { WidthTransitionContainer } from "../animations/ContainerAnimation";
-import {
-    SearchBarWrapperStyled,
-    SearchBarContainerStyled,
-    InputStyled,
-    IconWrapperStyled,
-} from "./SearchBarStyles";
+import React, {useEffect, useMemo, useState} from "react";
+import {FaSearch} from "react-icons/fa";
+import {IoClose} from "react-icons/io5";
+import {debounce} from "lodash";
+import {WidthTransitionContainer} from "../animations/ContainerAnimation";
+import {IconWrapperStyled, InputStyled, SearchBarContainerStyled, SearchBarWrapperStyled,} from "./SearchBarStyles";
 
-const SearchBar = ({ onSearch = (value) => value }) => {
+const SearchBar = ({onSearch = (value) => value}) => {
     const storedSearchText = localStorage.getItem("searchText") || "";
     const [searchText, setSearchText] = useState(storedSearchText);
     const [value, setValue] = useState(searchText);
@@ -22,14 +17,18 @@ const SearchBar = ({ onSearch = (value) => value }) => {
 
     const debouncedSearch = useMemo(
         () =>
-            debounce((value="") => { if (onSearch) onSearch(value) }, 300),
+            debounce((value = "") => {
+                if (onSearch) onSearch(value)
+            }, 300),
         [onSearch]
     );
 
-    const handleChange = (e) => { setValue(e.target.value) };
+    const handleChange = (e) => {
+        setValue(e.target.value)
+    };
 
     const handleKeyUp = () => {
-        if (setSearchText) debouncedSearch(searchText);
+        debouncedSearch(searchText);
     };
 
     const handleClear = () => {
@@ -50,9 +49,9 @@ const SearchBar = ({ onSearch = (value) => value }) => {
                     />
                     <IconWrapperStyled>
                         {value && (
-                            <IoClose className="close-icon" onClick={handleClear} />
+                            <IoClose className="close-icon" onClick={handleClear}/>
                         )}
-                        <FaSearch className="search-icon" />
+                        <FaSearch className="search-icon"/>
                     </IconWrapperStyled>
                 </SearchBarContainerStyled>
             </WidthTransitionContainer>

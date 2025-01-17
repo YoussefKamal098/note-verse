@@ -1,6 +1,6 @@
-const httpCodes = require('../constants/httpCodes');
 const Joi = require('joi');
-const {convertToBytes} = require('../utils/string.utils');
+const {convertToBytes} = require('shared-utils/string.utils');
+const httpCodes = require('../constants/httpCodes');
 const AppError = require('../errors/app.error');
 
 class NoteValidationService {

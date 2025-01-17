@@ -119,4 +119,5 @@ class NoteService {
     }
 }
 
-export default new NoteService(apiClient);
+const noteService = new NoteService(apiClient)
+export default noteService;

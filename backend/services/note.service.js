@@ -4,8 +4,8 @@ const AppError = require('../errors/app.error');
 const NoteValidationService = require("../validations/note.validation");
 const noteRepository = require("../repositories/note.repository");
 const userService = require('../services/user.service');
-const {convertToObjectId} = require('../utils/string.utils');
-const {deepFreeze} = require('../utils/obj.utils');
+const {deepFreeze} = require('shared-utils/obj.utils');
+const {convertToObjectId} = require('../utils/obj.utils');
 
 const DEFAULT_NOTE_PAGINATION_OPTIONS = {page: 0, perPage: 10, sort: {isPinned: -1, createdAt: -1}};
 

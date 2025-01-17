@@ -156,4 +156,5 @@ class ApiClient {
     }
 }
 
-export default new ApiClient({baseURL: AppConfig.API_BASE_URL});
+const apiClient = new ApiClient({baseURL: AppConfig.API_BASE_URL});
+export default apiClient;

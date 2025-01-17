@@ -1,5 +1,4 @@
 import React from 'react';
-import {useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 import Navbar from "../components/navbar/Navbar";
 import {TbError404Off} from "react-icons/tb";
@@ -51,8 +50,6 @@ const Message = styled.div`
 `;
 
 const NotFoundPage = () => {
-    const navigate = useNavigate();
-
     return (
         <div className="page">
             <Navbar showSearch={false}/>
@@ -63,7 +60,7 @@ const NotFoundPage = () => {
                     <Message>
                         <h1>Page Not Found</h1>
                         <p>Sorry, but we can't find the page you are looking for...</p>
-                        <a onClick={() => navigate('/home')}>Go to Home</a>
+                        <a href="/home">Go to Home</a>
                     </Message>
 
                 </NotFoundContainer>

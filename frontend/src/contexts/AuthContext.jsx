@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useConfirmation} from "./ConfirmationContext";
-import cacheService from "../api/cacheService";
+import cacheService from "../services/cacheService";
 import authService, {AUTH_EVENTS} from '../api/authService';
 
 const AuthContext = createContext({user: null});

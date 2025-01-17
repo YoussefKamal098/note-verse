@@ -7,7 +7,7 @@ import SearchBar from "../searchBar/SearchBar";
 import AddButton from "../buttons/AddButton";
 import authService from "../../api/authService";
 import {MdOutlineDarkMode, MdOutlineLightMode} from "react-icons/md";
-import {capitalizeStringFirstLetter, getInitials} from "../../utils";
+import {capitalizeStringFirstLetter, getInitials} from "shared-utils/string.utils";
 
 import {
     AvatarStyled,

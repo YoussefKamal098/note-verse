@@ -1,0 +1,11 @@
+{
+  "name": "shared-utils",
+  "version": "0.0.1",
+  "author": "youssef-samuel-kamal",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "license": "ISC"
+}

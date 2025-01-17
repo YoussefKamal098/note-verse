@@ -23,7 +23,7 @@ function DynamicTabs({
     const handleTabChange = useCallback((index) => {
         setTabIndex(index);
         onTabChange(index);
-    }, []);
+    }, [onTabChange]);
 
     const tabAnimation = (index) => {
         return new useSpring({

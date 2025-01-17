@@ -89,7 +89,7 @@
 
 }
 
-*::selection{
+*::selection {
     background: var(--color-accent);
     color: var(--color-background-light);
 }
@@ -102,13 +102,14 @@
     background-color: var(--color-background-primary);
 }
 
-.page{
+.page {
     position: relative;
     max-width: 1100px;
-    margin: 6em auto 1em;
+    margin: 0 auto 1em;
+    padding-top: 6em;
 }
 
-.wrapper{
+.wrapper {
     margin: 1em;
 }
 

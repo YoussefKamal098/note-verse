@@ -42,4 +42,5 @@ class UserService {
     }
 }
 
-export default new UserService(apiClient);
+const userService = new UserService(apiClient);
+export default userService;

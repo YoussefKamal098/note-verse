@@ -1,19 +1,74 @@
-const mongoose = require("mongoose");
-const {Types} = mongoose;
+/**
+ * Returns the initials of the given first and last names.
+ *
+ * @param {string} firstName - The first name.
+ * @param {string} lastName - The last name.
+ * @returns {string} - A string containing the initials (first letter of first and last name).
+ */
+function getInitials(firstName, lastName) {
+    if (!firstName || !lastName) return '';
+
+    // Getting initials
+    const firstInitial = firstName.charAt(0).toUpperCase();
+    const lastInitial = lastName.charAt(0).toUpperCase();
+
+    return `${firstInitial}${lastInitial}`;
+}
+
+/**
+ * Capitalizes the first letter of a string and converts the rest to lowercase.
+ *
+ * @param {string} str - The string to capitalize.
+ * @returns {string} - The string with the first letter capitalized.
+ */
+function capitalizeStringFirstLetter(str) {
+    if (!str) return '';
+
+    // Capitalizing the first letter of the string
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Calculates the size of a string in bytes.
+ *
+ * @param {string} str - The string to calculate the size of.
+ * @returns {number} - The size of the string in bytes.
+ */
+function stringSizeInBytes(str) {
+    new TextEncoder().encode(str).length;
+}
+
+/**
+ * Formats a size in bytes to a human-readable string (e.g., "10.5 MB").
+ *
+ * @param {number} sizeInBytes - The size in bytes to format.
+ * @returns {string} - The formatted size string with units (e.g., "10.5 MB").
+ */
+function formatBytes(sizeInBytes) {
+    const units = [
+        {threshold: 1024 ** 3, suffix: 'GB'},
+        {threshold: 1024 ** 2, suffix: 'MB'},
+        {threshold: 1024, suffix: 'KB'},
+        {threshold: 1, suffix: 'Bytes'},
+    ];
+
+    const unit = units.find(({threshold}) => sizeInBytes >= threshold);
+    return `${(sizeInBytes / unit.threshold).toFixed(2)} ${unit.suffix}`;
+}
 
 /**
  * Capitalizes the first letter of a string.
  *
- * @param {string} [fieldName=""] - The string to capitalize.
+ * @param {string} [fieldName] - The string to capitalize.
  * @returns {string} - The input string with the first letter capitalized.
  * @throws {Error} - Throws an error if the input is not a string or is empty.
  */
-const capitalizeFirstLetter = (fieldName = "") => {
+function capitalizeFirstLetter(fieldName) {
     if (typeof fieldName !== 'string' || fieldName.length === 0) {
         throw new Error(`${fieldName} is not a string`);
     }
     return fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
-};
+}
 
 /**
  * Sanitizes a string by escaping special characters.
@@ -27,28 +82,6 @@ function sanitizeString(str) {
     return str.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, "\\$&").trim();
 }
 
-/**
- * Checks if the given string is a valid MongoDB ObjectId.
- *
- * @param {string} [id=""] - The string to check.
- * @returns {boolean} - True if the string is a valid ObjectId, otherwise false.
- */
-function isValidObjectId(id = "") {
-    return mongoose.isValidObjectId(id);
-}
-
-/**
- * Converts a valid string ID into a MongoDB ObjectId.
- *
- * @param {string} [id=""] - The string ID to convert.
- * @returns {mongoose.Types.ObjectId|null} - The ObjectId corresponding to the string ID, or null if the ID is invalid.
- */
-function convertToObjectId(id = "") {
-    if (!mongoose.isValidObjectId(id))
-        return null;
-
-    return new Types.ObjectId(id);
-}
 
 /**
  * Convert a size string (e.g., "10KB", "1MB", "1.5KB") into its byte value.
@@ -88,4 +121,12 @@ function convertToBytes(input) {
     return value * unitToBytes[unit];
 }
 
-module.exports = {capitalizeFirstLetter, sanitizeString, isValidObjectId, convertToObjectId, convertToBytes};
+module.exports = {
+    capitalizeFirstLetter,
+    sanitizeString,
+    convertToBytes,
+    getInitials,
+    capitalizeStringFirstLetter,
+    stringSizeInBytes,
+    formatBytes
+};

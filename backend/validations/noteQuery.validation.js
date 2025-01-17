@@ -1,6 +1,6 @@
 const Joi = require('joi');
-const AppError = require('../errors/app.error');
 const httpCodes = require("../constants/httpCodes");
+const AppError = require('../errors/app.error');
 
 class NoteQueryValidationService {
     constructor() {

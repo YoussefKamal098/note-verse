@@ -1,7 +1,7 @@
-class TokenStorage {
+class TokenStorageService {
     #accessToken = null;
 
-    setAccessToken(token="") {
+    setAccessToken(token = "") {
         this.#accessToken = token;
     }
 
@@ -14,4 +14,5 @@ class TokenStorage {
     }
 }
 
-export default new TokenStorage();
+const tokenStorageService = new TokenStorageService();
+export default tokenStorageService;

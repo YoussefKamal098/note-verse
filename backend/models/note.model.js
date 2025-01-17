@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const {Schema} = mongoose;
+
 /**
  * I'll modify this schema to enable n-gram text search for the title, tags, and
  * content fields to facilitate fast text searching. Additionally,
@@ -44,9 +45,9 @@ const noteSchema = new Schema({
 });
 
 // Compound index for filtering and sorting
-noteSchema.index({ userId: 1, isPinned: -1, title: 1, createdAt: -1, updatedAt: -1 });
+noteSchema.index({userId: 1, isPinned: -1, title: 1, createdAt: -1, updatedAt: -1});
 // Full-text search index
-noteSchema.index({ title: "text", tags: "text"});
+noteSchema.index({title: "text", tags: "text"});
 
 const Note = mongoose.model('Note', noteSchema);
 (async () => (await Note.ensureIndexes()))();

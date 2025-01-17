@@ -5,7 +5,7 @@ import Pagination from "../components/common/Pagination";
 import NotesCard from "../components/noteCards/NoteCards";
 import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
-import {usePaginatedNotes} from "../hooks";
+import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config";
 
 const HomePage = () => {
@@ -78,7 +78,7 @@ const HomePage = () => {
 
     useEffect(() => {
         if (!loading && pageSectionRef.current) {
-            pageSectionRef.current.scrollIntoView({behavior: "smooth"});
+            pageSectionRef.current.scrollIntoView({behavior: "smooth", block: "start"});
         }
     }, [loading]);
 

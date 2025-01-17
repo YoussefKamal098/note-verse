@@ -1,22 +1,20 @@
 import React, {useState} from "react";
 import {Link} from "react-router-dom";
 import {toast} from "react-toastify";
-import {formatDate} from "../../utils";
 import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NoteCardStyles";
 import noteService from "../../api/noteService";
+import {formatDate} from "shared-utils/date.utils";
 
 const NoteCard = React.memo(({
-                                 note, index,
-                                 togglePin = () => {
-                                 },
-                                 onDelete = () => {
-                                 },
-                                 fetchReplacedNote = () => {
-                                 }
+                                 index = 0,
+                                 note = {},
+                                 togglePin = () => ({}),
+                                 onDelete = () => ({}),
+                                 fetchReplacedNote = async () => ({})
                              }) => {
     const [isPinned, setIsPinned] = useState(note.isPinned);
     const [loading, setLoading] = useState(false);
