@@ -1,4 +1,4 @@
-const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
+const {timeUnit, time, timeFromNow, compareDates} = require('shared-utils/date.utils');
 const httpCodes = require('../constants/httpCodes');
 const AppError = require('../errors/app.error');
 
@@ -12,15 +12,15 @@ class BlockerService {
     }
 
     #generateBlockKey(key) {
-        return `${key}:blockedUntil:${(time({[timeUnit.SECOND]: this.#blockTime}, timeUnit.MINUTE)).toFixed()}M`;
+        return `${key}:blockTime:${(time({[timeUnit.SECOND]: this.#blockTime}, timeUnit.MINUTE)).toFixed()}m`;
     }
 
     async isBlocked(key) {
         key = this.#generateBlockKey(key);
-        const blockEndTime = await this.#cacheService.get(key);
-        if (blockEndTime && parseInt(blockEndTime) > Date.now()) {
+        const blockUntil = await this.#cacheService.get(key);
+        if (blockUntil && compareDates(blockUntil, new Date()) > 0) {
             return true;
-        } else if (blockEndTime) {
+        } else if (blockUntil) {
             await this.#cacheService.delete(key);
         }
         return false;
@@ -28,9 +28,8 @@ class BlockerService {
 
     async blockUser(key) {
         key = this.#generateBlockKey(key);
-        const blockUntil = timeFromNow({[timeUnit.SECOND]: this.#blockTime});
-        await this.#cacheService.set(key, blockUntil);
-        await this.#cacheService.expire(key, this.#blockTime);
+        const blockUntil = timeFromNow({[timeUnit.SECOND]: this.#blockTime}).toISOString();
+        await this.#cacheService.set(key, blockUntil, this.#blockTime);
     }
 }
 
@@ -53,13 +52,13 @@ class RateLimiterService {
     #generateLimitKey(req) {
         const {ip, headers: {'user-agent': userAgent}, user, originalUrl: url} = req;
         const userId = user ? user.id : 'anonymous';
-        return `${ip}:${userAgent}:${userId}:${url}:limit`;
+        return `${ip}:${userAgent}:${userId}:${url}:rate-limited`;
     }
 
     #generateBlockKey(req) {
         const {ip, headers: {'user-agent': userAgent}, user} = req;
         const userId = user ? user.id : 'anonymous';
-        return `${ip}:${userAgent}:${userId}:block`;
+        return `${ip}:${userAgent}:${userId}:blocked`;
     }
 
     async isRateLimited(req) {

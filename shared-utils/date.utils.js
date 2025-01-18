@@ -127,4 +127,27 @@ function formatDate(date) {
     return `${weekday}, ${month} ${day}, ${year}, at ${hours}:${minutes} ${ampm}`;
 }
 
-module.exports = {timeUnit, time, timeFromNow, formatDate};
+/**
+ * Compares two dates and returns a comparison result.
+ *
+ * @param {Date|string|number} date1 - The first date to compare. Accepts a Date object, a string in a valid date format, or a timestamp.
+ * @param {Date|string|number} date2 - The second date to compare. Accepts a Date object, a string in a valid date format, or a timestamp.
+ * @returns {number} - Returns:
+ *   0 if both dates are equal,
+ *   1 if date1 is greater than date2,
+ *  -1 if date1 is less than date2.
+ * @throws {TypeError} - Throws an error if the input is not a valid date or cannot be converted to a date.
+ */
+function compareDates(date1, date2) {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+        throw new TypeError("Invalid date input. Ensure inputs can be parsed as dates.");
+    }
+
+    if (d1.getTime() === d2.getTime()) return 0;
+    return d1.getTime() > d2.getTime() ? 1 : -1;
+}
+
+module.exports = {timeUnit, time, timeFromNow, formatDate, compareDates};
