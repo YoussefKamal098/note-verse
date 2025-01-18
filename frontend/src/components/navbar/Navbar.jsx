@@ -24,8 +24,7 @@ const Navbar = ({
                     showSearch = false,
                     showAddNoteButton = false,
                     disableAddNoteButton = true,
-                    onAddNoteButtonClick = () => {
-                    },
+                    onAddNoteButtonClick = () => ({}),
                     onSearch = (searchText) => searchText
                 }) => {
     const {user} = useAuth();
@@ -55,20 +54,25 @@ const Navbar = ({
                         {theme === "dark" ? <MdOutlineDarkMode/> : <MdOutlineLightMode/>}
                     </div>
                 </LeftNavbarSideStyled>
+
                 {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
+
                 {user && (
                     <RightNavbarSideStyled>
                         <ProfileContainerStyled>
                             <AvatarStyled>
                                 {getInitials(user.firstname, user.lastname)}
                             </AvatarStyled>
+
                             <UserInfoStyled>
                                 <p>{capitalizeStringFirstLetter(user.firstname)}</p>
                                 <button onClick={logoutUser}>Logout</button>
                             </UserInfoStyled>
                         </ProfileContainerStyled>
+
                         {showAddNoteButton && (
                             <AddButton
+                                title="Add a new Note"
                                 disable={disableAddNoteButton}
                                 onClick={onAddNoteButtonClick}
                             />

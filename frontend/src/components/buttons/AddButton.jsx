@@ -1,16 +1,14 @@
 import React from "react";
-import {FaPlus} from "react-icons/fa"
+import {BiSolidMessageSquareAdd} from "react-icons/bi";
 import styled from "styled-components";
+import Tooltip from '../tooltip/Tooltip';
 
 const StyledAddButton = styled.button`
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 1.75em;
-    height: 1.75em;
-    bottom: 0.7em;
-    right: 0.5em;
-    font-size: 1.4em;
+    padding: 0.15em;
+    font-size: 1.75em;
     border: calc(var(--border-width) / 1.5) solid var(--color-border-secondary);
     border-radius: calc(var(--border-radius) / 1.5);
     background: var(--color-background);
@@ -20,7 +18,6 @@ const StyledAddButton = styled.button`
     cursor: pointer;
 
     &:hover {
-        color: var(--color-accent);
         box-shadow: var(--box-shadow-hover);
     }
 
@@ -35,8 +32,14 @@ const StyledAddButton = styled.button`
     }
 `;
 
-const AddButton = ({disable, onClick}) => {
-    return <StyledAddButton disabled={disable} onClick={onClick}> <FaPlus className="icon"/> </StyledAddButton>;
+const AddButton = ({disable = true, onClick = () => ({}), title = ""}) => {
+    return (
+        <Tooltip title={title}>
+            <StyledAddButton disabled={disable} onClick={onClick}>
+                <BiSolidMessageSquareAdd className="icon"/>
+            </StyledAddButton>
+        </Tooltip>
+    );
 };
 
 export default AddButton;
