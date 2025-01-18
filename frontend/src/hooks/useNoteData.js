@@ -24,7 +24,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
             const result = await noteService.getAuthenticatedUserNoteById(id);
             return result.data;
         } catch (error) {
-            throw new Error(`Failed to fetch note: ${error.message}`);
+            throw new Error(error.message);
         }
     }, [id]);
 
@@ -37,7 +37,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);
             } catch (error) {
-                toast.error(error.message);
+                toast.error(`Failed to fetch note: ${error.message}`);
             } finally {
                 setLoading(false);
             }

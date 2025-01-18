@@ -22,7 +22,7 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
 
             return result.data;
         } catch (error) {
-            throw new Error(`Error fetching page notes:  ${error.message}`);
+            throw new Error(error.message);
         }
     }, [notesPerPage]);
 
@@ -41,7 +41,7 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
             setTotalPages(total);
             setNotes(data);
         } catch (error) {
-            toast.error(`Error fetching notes: ${error.message}`);
+            toast.error(`Error fetching page notes: ${error.message}`);
         } finally {
             setLoading(false);
         }

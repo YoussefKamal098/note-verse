@@ -39,7 +39,7 @@ class CacheService {
             const request = store.put({key, data});
 
             request.onsuccess = () => resolve();
-            request.onerror = (e) => reject(new Error(`Failed to save cache for key ${key}: ${e.target.error}`));
+            request.onerror = (e) => reject(new Error(`Failed to save cache for key ${key}! ${e.target.error}`));
         });
     }
 
@@ -52,7 +52,7 @@ class CacheService {
             const request = store.get(key);
 
             request.onsuccess = () => resolve(request.result ? request.result.data : null);
-            request.onerror = (e) => reject(new Error(`Failed to retrieve cache for key ${key}: ${e.target.error}`));
+            request.onerror = (e) => reject(new Error(`Failed to retrieve cache for key ${key}! ${e.target.error}`));
         });
     }
 
@@ -65,7 +65,7 @@ class CacheService {
             const request = store.delete(key);
 
             request.onsuccess = () => resolve();
-            request.onerror = (e) => reject(new Error(`Failed to delete cache for key ${key}: ${e.target.error}`));
+            request.onerror = (e) => reject(new Error(`Failed to delete cache for key ${key}! ${e.target.error}`));
         });
     }
 
@@ -78,7 +78,7 @@ class CacheService {
             const request = store.clear();
 
             request.onsuccess = () => resolve();
-            request.onerror = (e) => reject(new Error(`Failed to clear all cache: ${e.target.error}`));
+            request.onerror = (e) => reject(new Error(`Failed to clear all cache! ${e.target.error}`));
         });
     }
 }

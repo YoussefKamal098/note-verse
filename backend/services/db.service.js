@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-const config = require('./config');
+const config = require('../config/config');
 
+// Function to connect to DB
 const connectDB = async () => {
     try {
         await mongoose.connect(config.mongoUri, {
@@ -18,4 +19,20 @@ const connectDB = async () => {
     }
 };
 
-module.exports = connectDB;
+// Function to disconnect from DB
+const disconnectDB = async () => {
+    try {
+        await mongoose.disconnect();
+        console.log('MongoDB disconnected successfully');
+    } catch (error) {
+        console.error('MongoDB disconnection failed:', error.message);
+        throw new Error('Database disconnection failed.');
+    }
+};
+
+// Function to check if DB is already connected
+const isDBConnected = async () => {
+    return mongoose.connection.readyState === 1;
+};
+
+module.exports = {connectDB, disconnectDB, isDBConnected};

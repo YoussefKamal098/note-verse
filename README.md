@@ -138,7 +138,6 @@ notes_app/
 │   ├── config/                    # Configuration files for the backend
 │   │   ├── config.js              # General backend configuration (e.g., API URL, server port)
 │   │   ├── corsOptions.js         # CORS (Cross-Origin Resource Sharing) settings
-│   │   ├── db.js                  # Database connection configuration (e.g., MongoDB or SQL)
 │   │   ├── authConfig.js          # Authentication-related configurations
 │   ├── constants/                 # HTTP codes and status messages
 │   │   ├── httpCodes.js           # HTTP status codes (e.g., 200, 404, 500)
@@ -169,6 +168,7 @@ notes_app/
 │   │   ├── user.routes.js         # Routes for managing user actions (profile, registration)
 │   ├── services/                  # Service layer for business logic and external integrations
 │   │   ├── cache.service.js       # Service for caching (e.g., using Redis)
+│   │   ├── db.service.js          # Database connection configuration (e.g., MongoDB or SQL)
 │   │   ├── jwtAuth.service.js     # JWT authentication service (creating, verifying tokens)
 │   │   ├── jwtProvider.service.js # Service for generating JWT tokens
 │   │   ├── note.service.js        # Service for business logic around notes
@@ -178,10 +178,12 @@ notes_app/
 │   │   ├── user.service.js        # Service for user-related logic (e.g., user management)
 │   ├── utils/                     # Utility functions for various tasks
 │   │   ├── obj.utils.js           # Helper functions for working with objects
-│   ├── validations/                # Validation logic for incoming requests (data validation)
+│   │   ├── system.utils.js        # Contains utility functions for system-level operations, such as graceful shutdown and other core utilities.
+│   ├── validations/               # Validation logic for incoming requests (data validation)
 │   │   ├── note.validation.js     # Validation logic for note-related fields (e.g., title, content)
 │   │   ├── noteQuery.validation.js # Validation for note search/query parameters
 │   │   ├── user.validation.js     # Validation for user-related fields (e.g., email, password)
+│   ├── serverInitializer.js       # Responsible for initializing the server by setting up middleware, routing, and other core configurations for the application.
 │   ├── app.js                     # Main application setup (e.g., middleware, routing)
 │   ├── package.json               # Node.js package manager file for backend dependencies
 │
@@ -206,6 +208,8 @@ notes_app/
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
+│   │   ├── constants/              # Contains constants used throughout the application, such as HTTP codes and status messages.
+│   │   │   ├── httpCodes.js       # Defines HTTP status codes and their descriptions (e.g., 200 OK, 404 Not Found, 500 Internal Server Error).
 │   │   ├── contexts/              # React contexts for managing global state
 │   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
 │   │   │   ├── usePaginatedNotes.js   # Hook for managing pagination logic, fetching notes, and handling page transitions

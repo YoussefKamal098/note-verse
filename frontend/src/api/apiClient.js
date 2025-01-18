@@ -1,5 +1,8 @@
 import axios from 'axios';
+import {httpCodes, httpMessages} from "../constants/httpCodes";
+import {time, timeUnit} from "shared-utils/date.utils"
 import AppConfig from '../config';
+
 
 /**
  * A class that handles API requests using Axios.
@@ -14,7 +17,10 @@ class ApiClient {
      * Defaults to AppConfig.API_BASE_URL.
      * @param {number} [options.timeout=5000] - Request timeout in milliseconds (default is 5000 ms).
      */
-    constructor({baseURL = AppConfig.API_BASE_URL, timeout = 5000} = {}) {
+    constructor({
+                    baseURL = AppConfig.API_BASE_URL,
+                    timeout = time({[timeUnit.SECOND]: 5}, timeUnit.MILLISECOND)
+                } = {}) {
         this.#api = this.#createInstance(baseURL, timeout);
         this.#setupInterceptors();
     }
@@ -71,9 +77,8 @@ class ApiClient {
      * @returns {Promise<Error>} A rejected promise with the formatted error.
      */
     #handleError(error) {
-        const statusCode = error.response?.status || 500;
-        const backendMessage = error.response?.data?.message || "An unexpected error occurred. Please try again later.";
-
+        const statusCode = error.response?.status || (error.code === 'ECONNABORTED' ? httpCodes.REQUEST_TIMEOUT : httpCodes.INTERNAL_SERVER_ERROR);
+        const backendMessage = error.response?.data?.message || httpMessages[statusCode] || "An unexpected error occurred. Please try again later.";
         this.#logError({statusCode, backendMessage, stack: error.stack});
 
         return Promise.reject({
@@ -92,7 +97,11 @@ class ApiClient {
      * @param {string} [errorDetails.stack] - The stack trace of the error (optional).
      */
     #logError({statusCode, backendMessage, stack}) {
-        console.error("API Error:", {statusCode, backendMessage});
+        console.error("API Error:", {
+            statusCode,
+            backendMessage,
+            // stack: stack || "No stack trace available"
+        });
     }
 
     /**
