@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {StyledArrow, StyledTooltipWrapper} from "./TooltipStyled";
+import PropTypes from "prop-types";
 
 const Tooltip = ({title, children, position = "bottom"}) => {
     const [show, setShow] = useState(false);
@@ -43,6 +44,12 @@ const Tooltip = ({title, children, position = "bottom"}) => {
             </StyledTooltipWrapper>
         </div>
     );
+};
+
+Tooltip.propTypes = {
+    title: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
+    position: PropTypes.oneOf(["top", "bottom"]),
 };
 
 export default Tooltip;
