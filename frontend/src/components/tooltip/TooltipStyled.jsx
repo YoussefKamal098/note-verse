@@ -10,7 +10,7 @@ const StyledTooltipWrapper = styled.div`
     white-space: wrap;
     font-size: 0.9em;
     padding: 0.3em 0.4em;
-    border: var(--border-width) solid var(--color-border);
+    border: calc(var(--border-width) / 2) solid var(--color-border);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     opacity: ${(props) => (props.show ? 1 : 0)};
@@ -26,7 +26,7 @@ const StyledArrow = styled.div`
     width: 1em;
     height: 1em;
     background-color: var(--color-background);
-    border: var(--border-width) solid var(--color-border);
+    border: calc(var(--border-width) / 2) solid var(--color-border);
     border-top-left-radius: calc(var(--border-radius) / 2);
     left: 50%;
     rotate: 45deg;
