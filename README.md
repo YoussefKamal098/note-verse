@@ -208,7 +208,8 @@ notes_app/
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
-│   │   ├── constants/              # Contains constants used throughout the application, such as HTTP codes and status messages.
+│   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
+│   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
 │   │   │   ├── httpCodes.js       # Defines HTTP status codes and their descriptions (e.g., 200 OK, 404 Not Found, 500 Internal Server Error).
 │   │   ├── contexts/              # React contexts for managing global state
 │   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
