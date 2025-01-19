@@ -197,6 +197,7 @@ notes_app/
 │   │   │   ├── userService.js     # Frontend service for interacting with user-related API
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
+│   │   │   ├── avatar/            # Components for displaying user avatars
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
 │   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)

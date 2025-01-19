@@ -19,10 +19,11 @@ const StyledAddButton = styled.button`
 
     &:hover {
         box-shadow: var(--box-shadow-hover);
+        transform: scale(0.9);
     }
 
     &:active {
-        transform: scale(0.9);
+        transform: scale(1.1);
     }
 
     &:disabled {

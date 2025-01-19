@@ -1,23 +1,24 @@
 import React from "react";
-import {useNavigate} from "react-router-dom";
 import {toast} from "react-toastify";
+import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../contexts/AuthContext";
-import {useTheme} from "../../contexts/ThemeContext";
 import SearchBar from "../searchBar/SearchBar";
 import AddButton from "../buttons/AddButton";
+import ColorModeButton from "../buttons/ColorModeButton";
+import Avatar from "../avatar/Avatar";
+import {capitalizeStringFirstLetter} from "shared-utils/string.utils";
 import authService from "../../api/authService";
-import {MdOutlineDarkMode, MdOutlineLightMode} from "react-icons/md";
-import {capitalizeStringFirstLetter, getInitials} from "shared-utils/string.utils";
 
 import {
-    AvatarStyled,
+    FlexColumnAlignedStartStyled,
     LeftNavbarSideStyled,
+    LogoutButtonStyled,
+    MiddleNavbarSideStyled,
     NavbarContainerStyled,
-    NavbarTitleStyled,
+    NavbarLogoStyled,
     NavbarWrapperContainerStyled,
-    ProfileContainerStyled,
     RightNavbarSideStyled,
-    UserInfoStyled
+    UserNameStyled
 } from "./NavbarStyles";
 
 const Navbar = ({
@@ -28,7 +29,6 @@ const Navbar = ({
                     onSearch = (searchText) => searchText
                 }) => {
     const {user} = useAuth();
-    const {theme, setTheme} = useTheme();
     const navigate = useNavigate();
 
     const logoutUser = async () => {
@@ -41,34 +41,25 @@ const Navbar = ({
         navigate("/login");
     };
 
-    const onColorModeIconClick = () => {
-        setTheme(theme === "dark" ? "light" : "dark");
-    }
-
     return (
         <NavbarContainerStyled>
             <NavbarWrapperContainerStyled className="container">
                 <LeftNavbarSideStyled>
-                    <NavbarTitleStyled>Notes</NavbarTitleStyled>
-                    <div className="color-mode-icon" onClick={onColorModeIconClick}>
-                        {theme === "dark" ? <MdOutlineDarkMode/> : <MdOutlineLightMode/>}
-                    </div>
+                    <NavbarLogoStyled>Notes</NavbarLogoStyled>
                 </LeftNavbarSideStyled>
 
-                {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
+                <MiddleNavbarSideStyled>
+                    {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
+                </MiddleNavbarSideStyled>
 
-                {user && (
+                {user &&
                     <RightNavbarSideStyled>
-                        <ProfileContainerStyled>
-                            <AvatarStyled>
-                                {getInitials(user.firstname, user.lastname)}
-                            </AvatarStyled>
-
-                            <UserInfoStyled>
-                                <p>{capitalizeStringFirstLetter(user.firstname)}</p>
-                                <button onClick={logoutUser}>Logout</button>
-                            </UserInfoStyled>
-                        </ProfileContainerStyled>
+                        <Avatar/>
+                        <FlexColumnAlignedStartStyled>
+                            <UserNameStyled>{capitalizeStringFirstLetter(user.firstname)}</UserNameStyled>
+                            <LogoutButtonStyled onClick={logoutUser}>Logout</LogoutButtonStyled>
+                        </FlexColumnAlignedStartStyled>
+                        <ColorModeButton/>
 
                         {showAddNoteButton && (
                             <AddButton
@@ -77,8 +68,7 @@ const Navbar = ({
                                 onClick={onAddNoteButtonClick}
                             />
                         )}
-                    </RightNavbarSideStyled>
-                )}
+                    </RightNavbarSideStyled>}
             </NavbarWrapperContainerStyled>
         </NavbarContainerStyled>
     );

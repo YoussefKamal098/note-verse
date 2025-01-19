@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, {css} from "styled-components";
 
 const NavbarContainerStyled = styled.div`
     position: fixed;
@@ -21,96 +21,69 @@ const NavbarWrapperContainerStyled = styled.div`
     gap: 1em;
 `;
 
-const NavbarTitleStyled = styled.h2`
+const NavbarLogoStyled = styled.h2`
     margin-right: 0.25em;
     font-size: 1.75em;
     font-weight: 600;
     font-family: "Pacifico", cursive;
     color: var(--color-accent);
+    user-select: none;
 `;
 
-const LeftNavbarSideStyled= styled.div`
+const sharedNavbarSideStyles = css`
     display: flex;
     align-items: center;
+    background-color: var(--color-background);
     gap: 0.5em;
-    
-    .color-mode-icon{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 1.75em;
-        height: 1.75em;
-        font-size: 1.5em;
-        color: var(--color-placeholder);
-        border-radius: 50%;
-        transition: 0.3s ease;
-        cursor: pointer;
-    }
+`;
 
-    .color-mode-icon:hover {
-        background-color: var(--color-background-secondary);
-        color: var(--color-primary);
-    }
-`
+const LeftNavbarSideStyled = styled.div`
+    ${sharedNavbarSideStyles}
+`;
+
+const MiddleNavbarSideStyled = styled.div`
+    max-width: calc(100% / 3);
+    ${sharedNavbarSideStyles}
+`;
 
 const RightNavbarSideStyled = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
+    ${sharedNavbarSideStyles};
 `;
 
-const ProfileContainerStyled = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.75em;
-`;
-
-const AvatarStyled = styled.div`
-    width: 2.5em;
-    height: 2.5em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: var(--color-background-secondary);
-    color: var(--color-text);
-    font-size: 1.25em;
-    font-weight: bold;
-`;
-
-const UserInfoStyled = styled.div`
+const FlexColumnAlignedStartStyled = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+`;
 
-    p {
-        font-size: 1em;
-        font-weight: bold;
-        color: var(--color-placeholder);
-        margin: 0;
-    }
+const UserNameStyled = styled.p`
+    font-size: 1em;
+    font-weight: bold;
+    color: var(--color-placeholder);
+    margin: 0;
+`;
 
-    button {
-        font-size: 0.875em;
-        font-weight: 600;
-        color: var(--color-accent);
-        text-decoration: none;
-        cursor: pointer;
-        padding: 0;
-    }
+const LogoutButtonStyled = styled.button`
+    font-size: 0.875em;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0;
 
-    button:hover {
-        text-decoration: 0.1em underline;
+    &:hover {
+        text-decoration: underline;
     }
 `;
 
 export {
     NavbarContainerStyled,
     NavbarWrapperContainerStyled,
-    NavbarTitleStyled,
+    NavbarLogoStyled,
     LeftNavbarSideStyled,
     RightNavbarSideStyled,
-    ProfileContainerStyled,
-    AvatarStyled,
-    UserInfoStyled,
+    MiddleNavbarSideStyled,
+    FlexColumnAlignedStartStyled,
+    UserNameStyled,
+    LogoutButtonStyled
 };
