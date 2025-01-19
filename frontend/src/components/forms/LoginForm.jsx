@@ -1,7 +1,8 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import * as Yup from "yup";
-import {emailValidation, requiredField} from "../../validations/userValidation";
+import {FieldTypes, requiredField} from "../../validations/fieldTypeValidators";
+import {emailValidation} from "../../validations/userValidation";
 import AuthService from '../../api/authService';
 import DynamicForm from "./DynamicForm";
 import EmailInput from "./EmailInput";
@@ -9,7 +10,7 @@ import PasswordInput from "./PasswordInput";
 
 const loginValidationSchema = Yup.object({
     email: emailValidation,
-    password: requiredField("password", "string"),
+    password: requiredField("password", FieldTypes.STRING)
 });
 
 const LoginForm = () => {
