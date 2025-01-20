@@ -7,8 +7,8 @@ const NavbarContainerStyled = styled.div`
     width: 100%;
     font-size: 0.9em;
     background-color: var(--color-background);
-    box-shadow: var(--box-shadow);
     border-bottom: calc(var(--border-width) / 2) solid var(--color-border);
+    box-shadow: var(--box-shadow);
     z-index: 888;
 `;
 
@@ -43,7 +43,22 @@ const LeftNavbarSideStyled = styled.div`
 
 const MiddleNavbarSideStyled = styled.div`
     max-width: calc(100% / 3);
-    ${sharedNavbarSideStyles}
+    ${sharedNavbarSideStyles} ;
+
+    @media (max-width: 550px) {
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        max-width: 100vw;
+        padding: 1em;
+        left: 0;
+        bottom: 0;
+        border-top: calc(var(--border-width) / 2) solid var(--color-border);
+        background-color: var(--color-background);
+        box-shadow: var(--box-shadow);
+    }
 `;
 
 const RightNavbarSideStyled = styled.div`

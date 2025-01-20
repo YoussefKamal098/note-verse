@@ -28,6 +28,7 @@ function App() {
 
     return (
         <div className="App" data-theme={theme}>
+            <ToastNotifications/>
             <ConfirmationPopUpProvider>
                 <AuthProvider>
                     <Router>
@@ -44,7 +45,6 @@ function App() {
                             </Routes>
                         </Suspense>
                     </Router>
-                    <ToastNotifications/>
                 </AuthProvider>
             </ConfirmationPopUpProvider>
         </div>

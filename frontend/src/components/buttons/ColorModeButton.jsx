@@ -33,7 +33,7 @@ const ColorModeButton = () => {
     return (
         <Tooltip title={theme === "dark" ? "Light Mode" : "Dark Mode"}>
             <ColorModeIconStyled onClick={onColorModeIconClick}>
-                {theme === "dark" ? <MdOutlineDarkMode/> : <MdOutlineLightMode/>}
+                {theme === "dark" ? <MdOutlineLightMode/> : <MdOutlineDarkMode/>}
             </ColorModeIconStyled>
         </Tooltip>
     );

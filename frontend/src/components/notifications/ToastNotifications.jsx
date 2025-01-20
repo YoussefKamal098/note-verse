@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import {ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CustomToastContainer = styled(ToastContainer)`
     .Toastify__toast--success {
@@ -50,8 +51,8 @@ const CustomToastContainer = styled(ToastContainer)`
     .Toastify__toast-body {
         color: var(--color-placeholder);
         font-size: 1.1em;
+        align-items: flex-start;
     }
-
 
     .Toastify__close-button {
         color: var(--color-text);

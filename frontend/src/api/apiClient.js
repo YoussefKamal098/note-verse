@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {httpCodes, httpMessages} from "../constants/httpCodes";
+import {HttpStatusCode, HttpStatusMessages} from "../constants/httpStatus";
 import {time, timeUnit} from "shared-utils/date.utils"
 import AppConfig from '../config';
 
@@ -77,8 +77,8 @@ class ApiClient {
      * @returns {Promise<Error>} A rejected promise with the formatted error.
      */
     #handleError(error) {
-        const statusCode = error.response?.status || (error.code === 'ECONNABORTED' ? httpCodes.REQUEST_TIMEOUT : httpCodes.INTERNAL_SERVER_ERROR);
-        const backendMessage = error.response?.data?.message || httpMessages[statusCode] || "An unexpected error occurred. Please try again later.";
+        const statusCode = error.response?.status || (error.code === 'ECONNABORTED' ? HttpStatusCode.CONNECTION_ABORTED : HttpStatusCode.INTERNAL_SERVER_ERROR);
+        const backendMessage = error.response?.data?.message || HttpStatusMessages[statusCode] || "An unexpected error occurred. Please try again later.";
         this.#logError({statusCode, backendMessage, stack: error.stack});
 
         return Promise.reject({

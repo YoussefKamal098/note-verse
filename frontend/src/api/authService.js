@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import {httpCodes} from "../constants/httpCodes";
+import {HttpStatusCode} from "../constants/httpStatus";
 import apiClient from './apiClient';
 import tokenStorageService from '../services/tokenStorageService';
 import userService from './userService';
@@ -86,7 +86,7 @@ class AuthService {
             return Promise.reject(error);
         }
 
-        if (error.response?.status === httpCodes.UNAUTHORIZED && !originalRequest._retry) {
+        if (error.response?.status === HttpStatusCode.UNAUTHORIZED && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
                 const {accessToken} = await this.#refreshAccessToken();
