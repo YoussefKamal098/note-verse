@@ -1,5 +1,27 @@
 import styled from "styled-components";
 
+const SearchBarBoxStyled = styled.div`
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    @media (max-width: 550px) {
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        max-width: 100vw;
+        padding: 0.8em 1em;
+        left: 0;
+        bottom: 0;
+        border-top: calc(var(--border-width) / 2) solid var(--color-border);
+        background-color: var(--color-background);
+        box-shadow: var(--box-shadow);
+    }
+`;
+
 const SearchBarWrapperStyled = styled.div`
     width: 24rem;
     border-radius: var(--border-radius);
@@ -65,4 +87,10 @@ const IconWrapperStyled = styled.div`
     }
 `;
 
-export { SearchBarWrapperStyled, SearchBarContainerStyled, InputStyled, IconWrapperStyled };
+export {
+    SearchBarBoxStyled,
+    SearchBarWrapperStyled,
+    SearchBarContainerStyled,
+    InputStyled,
+    IconWrapperStyled
+};

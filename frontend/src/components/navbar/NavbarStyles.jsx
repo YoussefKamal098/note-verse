@@ -44,21 +44,6 @@ const LeftNavbarSideStyled = styled.div`
 const MiddleNavbarSideStyled = styled.div`
     max-width: calc(100% / 3);
     ${sharedNavbarSideStyles} ;
-
-    @media (max-width: 550px) {
-        position: fixed;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100vw;
-        max-width: 100vw;
-        padding: 1em;
-        left: 0;
-        bottom: 0;
-        border-top: calc(var(--border-width) / 2) solid var(--color-border);
-        background-color: var(--color-background);
-        box-shadow: var(--box-shadow);
-    }
 `;
 
 const RightNavbarSideStyled = styled.div`

@@ -31,7 +31,6 @@ const Tooltip = ({title, children, position = "bottom"}) => {
             ref={targetRef}
             onMouseEnter={() => setShow(true)}
             onMouseLeave={() => setShow(false)}
-            style={{display: "inline-block"}}
         >
             {children}
             <StyledTooltipWrapper

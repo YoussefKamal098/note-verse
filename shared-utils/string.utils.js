@@ -35,7 +35,7 @@ function capitalizeStringFirstLetter(str) {
  * @returns {number} - The size of the string in bytes.
  */
 function stringSizeInBytes(str) {
-    new TextEncoder().encode(str).length;
+    return new TextEncoder().encode(str).length;
 }
 
 /**
