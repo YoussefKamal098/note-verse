@@ -11,4 +11,3 @@ const ErrorFallbackPage = () => (
 );
 
 export default ErrorFallbackPage;
-
