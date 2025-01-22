@@ -152,7 +152,7 @@ notes_app/
 │   │   ├── auth.middleware.js     # Middleware to protect routes and check JWT token
 │   │   ├── csp.middleware.js      # Middleware for Content Security Policy headers
 │   │   ├── errorHandler.middleware.js  # Global error handler middleware
-│   │   ├── notFound.middleware.js  # Middleware for handling 404 errors
+│   │   ├── notFound.middleware.js # Middleware for handling 404 errors
 │   │   ├── rateLimiter.middleware.js  # Rate-limiting middleware to prevent abuse
 │   │   ├── timeout.middleware.js  # Timeout middleware to avoid long-running requests
 │   ├── models/                    # Database models using ORM/ODM (e.g., Mongoose schemas)
@@ -162,10 +162,10 @@ notes_app/
 │   │   ├── note.repository.js     # Repository for interacting with the notes data in DB
 │   │   ├── user.repository.js     # Repository for interacting with the users data in DB
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
-│   │   ├── auth.RoutesPaths.js         # Routes for authentication (login, register, logout)
+│   │   ├── auth.RoutesPaths.js    # Routes for authentication (login, register, logout)
 │   │   ├── index.js               # Main entry point for all backend routes
-│   │   ├── note.RoutesPaths.js         # Routes for managing notes (CRUD operations)
-│   │   ├── user.RoutesPaths.js         # Routes for managing user actions (profile, registration)
+│   │   ├── note.RoutesPaths.js    # Routes for managing notes (CRUD operations)
+│   │   ├── user.RoutesPaths.js    # Routes for managing user actions (profile, registration)
 │   ├── services/                  # Service layer for business logic and external integrations
 │   │   ├── cache.service.js       # Service for caching (e.g., using Redis)
 │   │   ├── db.service.js          # Database connection configuration (e.g., MongoDB or SQL)
