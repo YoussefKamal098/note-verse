@@ -4,6 +4,7 @@ import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NoteCardStyles";
 import noteService from "../../api/noteService";
 import {formatDate} from "shared-utils/date.utils";
@@ -26,7 +27,7 @@ const NoteCard = React.memo(({
     const handleDelete = (noteId) => {
         setDeleteButtonLoading(true);
         showConfirmation({
-            type: "danger",
+            type: POPUP_TYPE.DANGER,
             confirmationMessage: "Are you sure you want to delete this note?",
             onConfirm: () => deleteNote(noteId),
             onCancel: () => setDeleteButtonLoading(false),

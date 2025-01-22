@@ -6,8 +6,8 @@ const NoteCardsContainerStyled = styled.div`
     flex-direction: column;
     border-top: var(--border-width) solid var(--color-border);
     transition: 0.3s ease;
-    
-    ${({ loading }) => loading && `
+
+    ${({loading}) => loading && `
         opacity: 0.5;
         pointer-events: none; 
         cursor: not-allowed;
@@ -18,25 +18,25 @@ const CardContainerStyled = styled.div`
     position: relative;
     display: flex;
     justify-content: space-between;
-    background-color: ${({ index }) => index % 2 === 0 ? "var(--color-background)" : "var(--color-background-primary)"};
+    background-color: ${({index}) => index % 2 === 0 ? "var(--color-background)" : "var(--color-background-primary)"};
     padding: 1em 1em 0.5em 1em;
     transition: 0.3s ease;
     overflow: hidden;
     gap: 1em;
-    
-    .left{
+
+    .left {
         flex-direction: column;
         justify-content: space-between;
         max-width: 50%;
     }
-    
+
     .right {
         display: flex;
         align-items: center;
         gap: 1em;
         max-width: 50%;
     }
-    
+
     .controllers {
         display: flex;
         align-items: center;
@@ -47,20 +47,20 @@ const CardContainerStyled = styled.div`
     @media (max-width: 600px) {
         flex-direction: column;
 
-        .left, .right{
+        .left, .right {
             max-width: 100%;
         }
-        
+
         .right {
             align-self: flex-end;
         }
-        
+
         .controllers {
             flex-wrap: wrap;
         }
     }
-    
-    ${({ loading }) => loading && `
+
+    ${({loading}) => loading && `
         pointer-events: none; 
         cursor: not-allowed;
     `}

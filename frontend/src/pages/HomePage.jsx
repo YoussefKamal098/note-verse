@@ -9,13 +9,16 @@ import NoNotes from "../components/common/NoNotes";
 import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config/config";
 
+const HOME_SEARCH_TEXT_STORED_KEY = "homeSearchText";
+const HOME_CURRENT_PAGE_STORED_KEY = "homeCurrentPage";
+
 const HomePage = () => {
     const navigate = useNavigate();
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
-    const [searchText, setSearchText] = useState(localStorage.getItem("homeSearchText") || "");
+    const [searchText, setSearchText] = useState(localStorage.getItem(HOME_SEARCH_TEXT_STORED_KEY) || "");
     const replacedNoteIndexFromAdjacentPage = useRef(0);
     const pageSectionRef = useRef(null);
-    
+
     const {
         notes,
         loading,
@@ -26,7 +29,7 @@ const HomePage = () => {
         setCurrentPage,
         fetchPageNotes,
         totalNotes
-    } = usePaginatedNotes(Number(localStorage.getItem("homeCurrentPage")) || 0, searchText, notesPerPage);
+    } = usePaginatedNotes(Number(localStorage.getItem(HOME_CURRENT_PAGE_STORED_KEY)) || 0, searchText, notesPerPage);
 
     const fetchReplacedNote = async () => {
         try {
@@ -73,8 +76,8 @@ const HomePage = () => {
     const handleAddNoteButtonClick = () => navigate(RoutesPaths.NOTE("new"));
 
     useEffect(() => {
-        localStorage.setItem("homeSearchText", searchText);
-        localStorage.setItem("homeCurrentPage", currentPage.toString());
+        localStorage.setItem(HOME_SEARCH_TEXT_STORED_KEY, searchText);
+        localStorage.setItem(HOME_CURRENT_PAGE_STORED_KEY, currentPage.toString());
     }, [searchText, currentPage]);
 
     useEffect(() => {

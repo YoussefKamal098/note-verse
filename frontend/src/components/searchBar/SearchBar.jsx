@@ -12,14 +12,16 @@ import {
     SearchBarWrapperStyled,
 } from "./SearchBarStyles";
 
+const SEARCH_BAR_SEARCH_TEXT_STORED_KEY = "searchBarSearchText";
+
 const SearchBar = ({onSearch = (value) => value}) => {
-    const storedSearchText = localStorage.getItem("searchText") || "";
+    const storedSearchText = localStorage.getItem(SEARCH_BAR_SEARCH_TEXT_STORED_KEY) || "";
     const [searchText, setSearchText] = useState(storedSearchText);
     const [value, setValue] = useState(searchText);
 
     useEffect(() => {
         setSearchText(value.trim());
-        localStorage.setItem("searchText", value);
+        localStorage.setItem(SEARCH_BAR_SEARCH_TEXT_STORED_KEY, value);
     }, [value]);
 
     const debouncedSearch = useMemo(

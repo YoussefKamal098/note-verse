@@ -7,10 +7,11 @@ import PinButton from "../buttons/PinButton";
 import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
-import Button, {ButtonsContainerStyled} from "../buttons/Button";
+import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
 import BackHomeButton from "../buttons/BackHomeButton";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import noteValidationSchema from "../../validations/noteValidtion";
 import cacheService from "../../services/cacheService"
 import {deepEqual} from "shared-utils/obj.utils";
@@ -121,7 +122,7 @@ const Note = React.memo(function Note({
 
     const onNoteDelete = () => {
         showConfirmation({
-            type: "danger",
+            type: POPUP_TYPE.DANGER,
             confirmationMessage: "Are you sure you want to delete this note?",
             onConfirm: () => onDelete(),
         });
@@ -141,9 +142,14 @@ const Note = React.memo(function Note({
             <EditableTags tags={tags} setTags={setTags}/>
 
             <ButtonsContainerStyled>
-                <Button type="danger" disabled={(!id || id === "new")} icon={MdDeleteForever}
-                        onClick={onNoteDelete}> Delete </Button>
-                <Button type="primary" disabled={!hasChanges} icon={MdSave} onClick={onNoteSave}> Save </Button>
+                <Button type={BUTTON_TYPE.DANGER}
+                        disabled={(!id || id === "new")}
+                        icon={MdDeleteForever}
+                        onClick={onNoteDelete}>Delete</Button>
+                <Button type={BUTTON_TYPE.SUCCESS}
+                        disabled={!hasChanges}
+                        icon={MdSave}
+                        onClick={onNoteSave}> Save </Button>
             </ButtonsContainerStyled>
 
             <NoteMarkdownTabs content={content} onContentChange={setContent}/>

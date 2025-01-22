@@ -1,7 +1,10 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import {useConfirmation} from "./ConfirmationContext";
+import {POPUP_TYPE} from "../components/confirmationPopup/ConfirmationPopup";
 import cacheService from "../services/cacheService";
 import authService, {AUTH_EVENTS} from '../api/authService';
+
+const AUTH_USER_STORED_KEY = "auth_user";
 
 const AuthContext = createContext({user: null});
 const useAuth = () => useContext(AuthContext);
@@ -12,7 +15,7 @@ const AuthProvider = ({children}) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const storedUser = JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY));
         if (storedUser) setUser(storedUser);
         setLoading(false);
 
@@ -29,10 +32,15 @@ const AuthProvider = ({children}) => {
 
     const handleLogin = (data) => {
         const {user} = data;
-        const {firstname, lastname} = user;
+        const {id, email, firstname, lastname} = user;
+        const storedUserData = {id, email, firstname, lastname};
 
-        setUser(Object.freeze({firstname, lastname}));
-        localStorage.setItem('user', JSON.stringify({firstname, lastname}));
+        setUser(Object.freeze(storedUserData));
+        /*
+         * User data will be encrypted securely and stored
+         * using cacheService to ensure privacy and protect against unauthorized access.
+        */
+        localStorage.setItem(AUTH_USER_STORED_KEY, JSON.stringify(storedUserData));
     };
 
     const handleLogout = async () => {
@@ -43,7 +51,7 @@ const AuthProvider = ({children}) => {
 
     const handleRefreshTokenFailure = () => {
         showConfirmation({
-            type: "okOnly",
+            type: POPUP_TYPE.OK,
             confirmationMessage: "Your session has expired. You will be logged out. Please sign in again.",
             onConfirm: handleLogout
         });

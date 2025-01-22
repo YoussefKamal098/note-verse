@@ -148,9 +148,9 @@ class AuthService {
             this.#tokenStorageService.setAccessToken(accessToken);
 
             const user = await this.#userService.getUserInfo();
-            const {firstname, lastname} = user.data;
+            const {id, firstname, lastname} = user.data;
 
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
+            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
 
             return response;
         } catch (error) {

@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useState} from "react";
-import ConfirmationPopup from "../components/confirmationPopup/ConfirmationPopup";
+import ConfirmationPopup, {POPUP_TYPE} from "../components/confirmationPopup/ConfirmationPopup";
 
 const ConfirmationContext = createContext({showConfirmation: (config) => (config)});
 const useConfirmation = () => useContext(ConfirmationContext);
@@ -7,7 +7,7 @@ const useConfirmation = () => useContext(ConfirmationContext);
 const ConfirmationPopUpProvider = ({children}) => {
     const [popupConfig, setPopupConfig] = useState({isVisible: false});
 
-    const showConfirmation = ({type = "info", confirmationMessage, onConfirm, onCancel}) => {
+    const showConfirmation = ({type = POPUP_TYPE.INFO, confirmationMessage, onConfirm, onCancel}) => {
         setPopupConfig({
             isVisible: true,
             type,
