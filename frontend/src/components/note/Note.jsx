@@ -37,7 +37,6 @@ const HeaderContainerStyled = styled.div`
     margin-bottom: 2em;
 `
 
-
 const Note = React.memo(function Note({
                                           id = "",
                                           origCreateAt = null,
