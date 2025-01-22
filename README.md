@@ -210,22 +210,23 @@ notes_app/
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
+│   │   ├── config                 # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
 │   │   │   ├── httpCodes.js       # Defines HTTP status codes and their descriptions (e.g., 200 OK, 404 Not Found, 500 Internal Server Error).
+│   │   │   ├── RoutesPaths.js     # Defines the paths and URLs used for routing within the application, ensuring that navigation is consistent and easy to manage across different components.
 │   │   ├── contexts/              # React contexts for managing global state
 │   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
 │   │   │   ├── usePaginatedNotes.js   # Hook for managing pagination logic, fetching notes, and handling page transitions
 │   │   │   ├── useNoteData.js         # Hook for fetching and managing the state of a specific note, including unsaved changes
 │   │   │   ├── useNoteActions.js      # Hook for handling actions related to notes, such as creating, updating, and deleting
 │   │   │   ├── useFormNavigation.js   # Hook for managing keyboard navigation within forms (e.g., using arrow keys and Enter)
-│   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, etc.)
+│   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, Errors, etc.)
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
 │   │   │   ├── tokenStorageService.js # Service for managing JWT tokens in localStorage/sessionStorage
 │   │   │   ├── cacheService.js    # Service for frontend caching (e.g., using indexedDB)
 │   │   ├── styles/                # Styles (CSS) for the app's UI
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── App.jsx                # Main React component for the app (entry point)
-│   │   ├── config.js              # Configuration file for frontend settings
 │   │   ├── index.css              # Main CSS for styling the frontend app
 │   │   ├── index.js               # React app entry point (rendering the app)
 │   │   ├── reportWebVitals.js     # For measuring performance in the app
