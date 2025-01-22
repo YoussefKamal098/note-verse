@@ -113,7 +113,7 @@ const TabBodyStyled = styled.div`
 `
 
 const TabStyled = styled.div`
-    .tap:has(.tool.full-screen) {
+    .tap:has(.full-screen) {
         position: fixed;
         top: 0;
         left: 0;
@@ -126,12 +126,15 @@ const TabStyled = styled.div`
         z-index: 1000;
     }
 
-    .tap:has(.tool.full-screen) .tab-body > * {
+    .tap:has(.full-screen) .tab-body > * {
         min-height: 100vh;
     }
 
-    .tap:has(.tool.full-screen) .tab-body .cm-editor,
-    .tap:has(.tool.full-screen) .tab-body .cm-content {
+
+    // This is especially for markdown editor tab
+
+    .tap:has(.full-screen) .tab-body .cm-editor,
+    .tap:has(.full-screen) .tab-body .cm-content {
         min-height: 100vh;
     }
 `
@@ -140,6 +143,7 @@ const ToolbarStyled = styled.div`
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    flex-wrap: wrap;
     background-color: var(--color-background-primary);
     border-bottom: var(--border-width) solid var(--color-border);
     border-radius: calc(var(--border-radius) / 2);
@@ -149,18 +153,31 @@ const ToolbarStyled = styled.div`
     padding: 0.2em 0.3em;
     margin-bottom: 0.5em;
     gap: 0.5em;
+`
 
-    .tool {
-        border-radius: calc(var(--border-radius) / 4);
-        font-size: 1.3em;
-        color: var(--color-primary);
-        transition: 0.3s ease;
-        cursor: pointer;
-    }
+const ToolStyled = styled.div`
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1em;
+    aspect-ratio: 1/1;
+    border-radius: calc(var(--border-radius) / 4);
+    font-size: 1.3em;
+    color: var(--color-primary);
+    transition: 0.3s ease;
+    cursor: pointer;
 
-    .tool:hover {
+    &:hover {
         background-color: var(--color-background-secondary);
     }
 `
 
-export {TabStyled, ToolbarStyled, TabBodyStyled, TitleWrapperStyled, TabsListWrapperStyled};
+export {
+    TabStyled,
+    ToolbarStyled,
+    TabBodyStyled,
+    TitleWrapperStyled,
+    TabsListWrapperStyled,
+    ToolStyled
+};

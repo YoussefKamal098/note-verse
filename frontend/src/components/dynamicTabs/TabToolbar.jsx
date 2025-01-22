@@ -1,14 +1,16 @@
 import React, {useState} from "react";
 import {MdFullscreen} from "react-icons/md";
-import {ToolbarStyled} from "./DynamicTabsStyles";
+import {ToolbarStyled, ToolStyled} from "./DynamicTabsStyles";
 
 const TabToolbar = () => {
     const [fullScreen, setFullScreen] = useState(false);
 
     return (
         <ToolbarStyled>
-            <MdFullscreen onClick={() => setFullScreen(!fullScreen)}
-                          className={fullScreen ? "tool full-screen" : "tool"}/>
+            <ToolStyled onClick={() => setFullScreen(!fullScreen)}
+                        className={fullScreen ? "full-screen" : ""}>
+                <MdFullscreen/>
+            </ToolStyled>
         </ToolbarStyled>
     )
 }
