@@ -162,10 +162,10 @@ notes_app/
 │   │   ├── note.repository.js     # Repository for interacting with the notes data in DB
 │   │   ├── user.repository.js     # Repository for interacting with the users data in DB
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
-│   │   ├── auth.routes.js         # Routes for authentication (login, register, logout)
+│   │   ├── auth.RoutesPaths.js         # Routes for authentication (login, register, logout)
 │   │   ├── index.js               # Main entry point for all backend routes
-│   │   ├── note.routes.js         # Routes for managing notes (CRUD operations)
-│   │   ├── user.routes.js         # Routes for managing user actions (profile, registration)
+│   │   ├── note.RoutesPaths.js         # Routes for managing notes (CRUD operations)
+│   │   ├── user.RoutesPaths.js         # Routes for managing user actions (profile, registration)
 │   ├── services/                  # Service layer for business logic and external integrations
 │   │   ├── cache.service.js       # Service for caching (e.g., using Redis)
 │   │   ├── db.service.js          # Database connection configuration (e.g., MongoDB or SQL)

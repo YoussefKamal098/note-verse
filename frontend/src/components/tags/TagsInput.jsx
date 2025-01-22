@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import styled, {css, keyframes} from 'styled-components';
-import {toast} from 'react-toastify';
 import noteValidationSchema from "../../validations/noteValidtion";
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 
 const EnterAnimation = css`
     ${keyframes`
@@ -50,6 +50,7 @@ const TagInputStyled = styled.input`
 `;
 
 const TagsInput = ({tags, setTags}) => {
+    const {notify} = useToastNotification();
     const [animate, setAnimate] = useState(false);
 
     const onTagChange = (e) => {
@@ -63,7 +64,7 @@ const TagsInput = ({tags, setTags}) => {
                 noteValidationSchema.tag.validateSync(newTag);
                 noteValidationSchema.tags.validateSync([...tags, newTag]);
             } catch (error) {
-                toast.error(error.message);
+                notify.warn(error.message);
                 return;
             }
 

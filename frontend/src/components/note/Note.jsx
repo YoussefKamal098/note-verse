@@ -1,16 +1,15 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
-import {toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {MdDeleteForever, MdSave} from "react-icons/md";
-import {IoMdArrowRoundBack} from "react-icons/io";
 import NoteMarkdownTabs from "./NoteMarkdownTabs";
 import PinButton from "../buttons/PinButton";
 import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
 import Button, {ButtonsContainerStyled} from "../buttons/Button";
+import BackHomeButton from "../buttons/BackHomeButton";
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import noteValidationSchema from "../../validations/noteValidtion";
 import cacheService from "../../services/cacheService"
@@ -37,31 +36,6 @@ const HeaderContainerStyled = styled.div`
     margin-bottom: 2em;
 `
 
-const BackHomeStyled = styled.div`
-    font-size: 1.2em;
-    color: var(--color-accent);
-    transition: transform 0.3s, color 0.3s;
-    cursor: pointer;
-
-    &:hover {
-        color: var(--color-accent);
-        transform: scale(1.2);
-    }
-
-    &:active {
-        transform: scale(0.9);
-    }
-`
-
-const BackHome = () => {
-    const navigate = useNavigate();
-
-    return (
-        <BackHomeStyled>
-            <IoMdArrowRoundBack onClick={() => navigate('/home')}> </IoMdArrowRoundBack>
-        </BackHomeStyled>
-    )
-}
 
 const Note = React.memo(function Note({
                                           id = "",
@@ -75,6 +49,7 @@ const Note = React.memo(function Note({
                                           onDelete = () => ({}),
                                           unSavedChanges = {}
                                       }) {
+    const {notify} = useToastNotification();
     const [content, setContent] = useState(origContent || '');
     const [tags, setTags] = useState(origTags || []);
     const [title, setTitle] = useState(origTitle || '');
@@ -121,7 +96,7 @@ const Note = React.memo(function Note({
         try {
             await cacheService.save(id, {title, content, tags, isPinned});
         } catch (error) {
-            toast.error(`Failed to save unsaved changes: ${error.message}.`);
+            notify.error(`Failed to save unsaved changes: ${error.message}.`);
         }
     };
 
@@ -131,7 +106,7 @@ const Note = React.memo(function Note({
             noteValidationSchema.tags.validateSync(tags);
             noteValidationSchema.content.validateSync(content);
         } catch (error) {
-            toast.error(error.message);
+            notify.warn(error.message);
             return;
         }
 
@@ -155,7 +130,7 @@ const Note = React.memo(function Note({
     return (
         <NoteContainerStyled>
             <HeaderContainerStyled>
-                <BackHome/>
+                <BackHomeButton/>
                 <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
             </HeaderContainerStyled>
 

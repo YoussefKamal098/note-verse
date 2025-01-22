@@ -1,5 +1,5 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, {keyframes} from 'styled-components';
 
 const spin = keyframes`
     0% {
@@ -21,8 +21,8 @@ const SpinnerStyled = styled.div`
     border: var(--border-width) solid transparent;
     border-radius: 50%;
     animation: ${spin} 1s linear infinite;
-    display: ${({ loading }) => (loading ? 'block' : 'none')};
-    cursor: ${({ loading }) => (loading ? 'not-allowed' : 'pointer')};
+    display: ${({loading}) => (loading ? 'block' : 'none')};
+    cursor: ${({loading}) => (loading ? 'not-allowed' : 'pointer')};
     z-index: 1;
 `;
 
@@ -33,12 +33,12 @@ const SpinnerWrapperStyled = styled.div`
     align-items: center;
 `;
 
-const Spinner = ({ children, loading=false, color = 'var(--color-danger)' }) => {
+const Spinner = ({children, loading = false, color = 'var(--color-danger)'}) => {
     return (
         <SpinnerWrapperStyled>
             <SpinnerStyled
-                loading={ loading ? "true" : undefined }
-                style={{borderTopColor: color }}>
+                loading={loading ? "true" : undefined}
+                style={{borderTopColor: color}}>
             </SpinnerStyled>
             {children}
         </SpinnerWrapperStyled>

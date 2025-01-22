@@ -1,7 +1,8 @@
 import React from "react";
-import {toast} from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import RoutesPaths from "../../constants/RoutesPaths";
 import {useAuth} from "../../contexts/AuthContext";
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import SearchBar from "../searchBar/SearchBar";
 import AddButton from "../buttons/AddButton";
 import ColorModeButton from "../buttons/ColorModeButton";
@@ -21,6 +22,7 @@ import {
     UserNameStyled
 } from "./NavbarStyles";
 
+
 const Navbar = ({
                     showSearch = false,
                     showAddNoteButton = false,
@@ -29,16 +31,17 @@ const Navbar = ({
                     onSearch = (searchText) => searchText
                 }) => {
     const {user} = useAuth();
+    const {notify} = useToastNotification();
     const navigate = useNavigate();
 
     const logoutUser = async () => {
         try {
             await authService.logout();
         } catch (error) {
-            toast.error(`Error logout: ${error.message}`);
+            notify.error(`Logout error: ${error.message}`);
         }
 
-        navigate("/login");
+        navigate(RoutesPaths.LOGIN);
     };
 
     return (

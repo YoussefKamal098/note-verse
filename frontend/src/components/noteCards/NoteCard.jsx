@@ -1,6 +1,5 @@
 import React, {useState} from "react";
 import {Link} from "react-router-dom";
-import {toast} from "react-toastify";
 import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
@@ -8,6 +7,7 @@ import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NoteCardStyles";
 import noteService from "../../api/noteService";
 import {formatDate} from "shared-utils/date.utils";
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 
 const NoteCard = React.memo(({
                                  index = 0,
@@ -16,6 +16,7 @@ const NoteCard = React.memo(({
                                  onDelete = () => ({}),
                                  fetchReplacedNote = async () => ({})
                              }) => {
+    const {notify} = useToastNotification();
     const [isPinned, setIsPinned] = useState(note.isPinned);
     const [loading, setLoading] = useState(false);
     const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
@@ -40,7 +41,7 @@ const NoteCard = React.memo(({
             setIsPinned(!isPinned);
             togglePin(noteId);
         } catch (error) {
-            toast.error(`Error toggling pin:  ${error.message}`);
+            notify.error(`Failed to ${isPinned ? "unpin" : "pin"} the note:  ${error.message}`);
         } finally {
             setLoading(false);
             setPinButtonLoading(false);
@@ -55,7 +56,7 @@ const NoteCard = React.memo(({
             await noteService.deleteAuthenticatedUserNoteById(noteId);
             onDelete(noteId, replacedNote);
         } catch (error) {
-            toast.error(`Error deleting note:  ${error.message}`);
+            notify.error(`Deleting note Error:  ${error.message}`);
         } finally {
             setLoading(false);
             setDeleteButtonLoading(false);

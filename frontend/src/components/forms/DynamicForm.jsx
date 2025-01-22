@@ -13,8 +13,9 @@ const DynamicForm = ({
                          onSubmit,
                          fields,
                          submitButtonText,
-                         linkText,
-                         linkHref,
+                         replaceWithText,
+                         replaceWithHref,
+                         replaceWithHrefText,
                          errorMessage,
                          autoFocusFieldIndex
                      }) => {
@@ -63,10 +64,10 @@ const DynamicForm = ({
                     )}
                 </Formik>
 
-                {linkHref && (
+                {replaceWithHref && (
                     <LinkStyled>
-                        <p>{linkText}</p>
-                        <a href={linkHref}>{linkHref.includes("register") ? "Register here" : "Login here"}</a>
+                        <p>{replaceWithText}</p>
+                        <a href={replaceWithHref}>{replaceWithHrefText}</a>
                     </LinkStyled>
                 )}
             </FormContainerStyled>

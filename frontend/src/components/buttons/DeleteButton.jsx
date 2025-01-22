@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { MdDeleteForever } from 'react-icons/md';
+import {MdDeleteForever} from 'react-icons/md';
 import Spinner from './LoadingSpinnerButton';
 
 const DeleteButtonStyled = styled.button`
@@ -21,11 +21,11 @@ const DeleteButtonStyled = styled.button`
     }
 `;
 
-const DeleteButton = ({ onClick, loading = false }) => {
+const DeleteButton = ({onClick, loading = false}) => {
     return (
-        <Spinner loading={loading} color="var(--color-danger)" >
+        <Spinner loading={loading} color="var(--color-danger)">
             <DeleteButtonStyled onClick={onClick}>
-                <MdDeleteForever />
+                <MdDeleteForever/>
             </DeleteButtonStyled>
         </Spinner>
 

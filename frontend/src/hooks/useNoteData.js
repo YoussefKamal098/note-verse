@@ -1,9 +1,19 @@
 import {useCallback, useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import RoutesPaths from "../constants/RoutesPaths";
 import noteService from "../api/noteService";
 import CacheService from "../services/cacheService";
-import {toast} from "react-toastify";
+
+
+const ERROR_FETCH_NOTE = "An error occurred while retrieving your note. " +
+    "The note might not exist, may not be associated with your account, " +
+    "might not be public, " +
+    "or its visibility settings could have been changed by the owner. " +
+    "or there was an issue processing your request. " +
+    "Please try again later."
 
 const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
+    const navigate = useNavigate();
     const [note, setNote] = useState(null);
     const [unSavedChanges, setUnSavedChanges] = useState(null);
 
@@ -37,7 +47,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);
             } catch (error) {
-                toast.error(`Failed to fetch note: ${error.message}`);
+                navigate(RoutesPaths.ERROR, {state: {message: ERROR_FETCH_NOTE}});
             } finally {
                 setLoading(false);
             }

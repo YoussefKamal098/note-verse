@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import { LuNotebookPen } from "react-icons/lu";
-import { FadeInAnimation } from "../animations/ContainerAnimation";
+import {LuNotebookPen} from "react-icons/lu";
+import {FadeInAnimation} from "../animations/ContainerAnimation";
 
 const NoNotesStyled = styled.div`
     display: flex;
@@ -15,11 +15,11 @@ const NoNotesStyled = styled.div`
     align-items: center;
 `;
 
-const NoNotes = ({ children }) => {
+const NoNotes = ({children}) => {
     return (
         <FadeInAnimation keyProp="no-notes">
             <NoNotesStyled>
-                <LuNotebookPen size={100} />
+                <LuNotebookPen size={100}/>
                 {children}
             </NoNotesStyled>
         </FadeInAnimation>

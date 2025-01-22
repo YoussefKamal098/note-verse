@@ -1,8 +1,8 @@
 import axios from 'axios';
 import {HttpStatusCode, HttpStatusMessages} from "../constants/httpStatus";
 import {time, timeUnit} from "shared-utils/date.utils"
-import AppConfig from '../config';
-
+import RoutesPaths from "../constants/RoutesPaths";
+import AppConfig from '../config/config';
 
 /**
  * A class that handles API requests using Axios.
@@ -80,6 +80,12 @@ class ApiClient {
         const statusCode = error.response?.status || (error.code === 'ECONNABORTED' ? HttpStatusCode.CONNECTION_ABORTED : HttpStatusCode.INTERNAL_SERVER_ERROR);
         const backendMessage = error.response?.data?.message || HttpStatusMessages[statusCode] || "An unexpected error occurred. Please try again later.";
         this.#logError({statusCode, backendMessage, stack: error.stack});
+
+        // In the future, this will be a dedicated error page to handle all kinds of errors
+        if (statusCode === HttpStatusCode.INTERNAL_SERVER_ERROR ||
+            statusCode === HttpStatusCode.CONNECTION_ABORTED) {
+            window.location = RoutesPaths.ERROR;
+        }
 
         return Promise.reject({
             ...error,

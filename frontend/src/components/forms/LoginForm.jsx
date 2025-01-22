@@ -1,12 +1,14 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import * as Yup from "yup";
+import RoutesPaths from "../../constants/RoutesPaths";
 import {FieldTypes, requiredField} from "../../validations/fieldTypeValidators";
 import {emailValidation} from "../../validations/userValidation";
-import AuthService from '../../api/authService';
 import DynamicForm from "./DynamicForm";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
+import AuthService from '../../api/authService';
+
 
 const loginValidationSchema = Yup.object({
     email: emailValidation,
@@ -22,9 +24,9 @@ const LoginForm = () => {
 
         try {
             await AuthService.login({email, password});
-            navigate("/home");
+            navigate(RoutesPaths.HOME);
         } catch (error) {
-            setErrorMessage(error.message || "An error occurred. Please try again.");
+            setErrorMessage(error.message);
         } finally {
             actions.setSubmitting(false);
         }
@@ -41,8 +43,9 @@ const LoginForm = () => {
                 {name: "password", component: PasswordInput, props: {}},
             ]}
             submitButtonText="Login"
-            linkText="Don't have an account?"
-            linkHref="/register"
+            replaceWithText="Don't have an account?"
+            replaceWithHrefText="Register Here"
+            replaceWithHref={RoutesPaths.REGISTER}
             errorMessage={errorMessage}
             autoFocusFieldIndex={0}
         />

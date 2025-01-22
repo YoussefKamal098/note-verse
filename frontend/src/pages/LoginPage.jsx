@@ -1,3 +1,4 @@
+import React from 'react';
 import Navbar from "../components/navbar/Navbar";
 import LoginForm from "../components/forms/LoginForm";
 

@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import styled from "styled-components";
-import {toast} from "react-toastify";
 import {debounce} from 'lodash';
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import noteValidationSchema from "../../validations/noteValidtion";
 
 const InputWrapperStyled = styled.div`
@@ -49,6 +49,7 @@ const TitleInputStyled = styled.textarea`
 `;
 
 const NoteTitleInputField = ({title, setTitle}) => {
+    const {notify} = useToastNotification();
     const [value, setValue] = useState(title);
     const textAreaRef = useRef(null);
     const isValueFromInSite = useRef(false);
@@ -85,7 +86,7 @@ const NoteTitleInputField = ({title, setTitle}) => {
         try {
             if (value.trim()) noteValidationSchema.title.validateSync(value);
         } catch (error) {
-            toast.error(error.message);
+            notify.warn(error.message);
             return;
         }
 

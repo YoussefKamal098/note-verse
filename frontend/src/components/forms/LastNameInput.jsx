@@ -1,9 +1,9 @@
 import React from "react";
 import InputField from "./InputField";
-import { FaRegUser } from "react-icons/fa";
+import {FaRegUser} from "react-icons/fa";
 
 const LastNameInput = (props) => {
-    const { label, placeholder } = props;
+    const {label, placeholder} = props;
 
     return (
         <InputField
