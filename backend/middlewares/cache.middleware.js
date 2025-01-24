@@ -1,4 +1,5 @@
 const httpCodes = require("../constants/httpCodes");
+const {isSuccessfulStatus} = require("../utils/httpUtils");
 const httpHeaders = require("../constants/httpHeaders");
 const {timeUnit, time} = require("shared-utils/date.utils");
 const hasherService = require('../services/hasher.service');
@@ -137,10 +138,9 @@ class CacheMiddleware {
         const originalSend = res.send;
 
         res.send = async (body) => {
-            // Check if the status code is in the 2xx range
-            if (res.statusCode >= 200 && res.statusCode < 300) {
+            if (isSuccessfulStatus(res.statusCode)) {
                 try {
-                    await this.#cacheResponse(cacheKey, body); // Cache the response
+                    await this.#cacheResponse(cacheKey, body);
                 } catch (error) {
                     console.error("Failed to cache response:", error);
                 }
