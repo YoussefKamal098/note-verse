@@ -1,5 +1,5 @@
 const httpCodes = require("../constants/httpCodes");
-const {isSuccessfulStatus} = require("../utils/httpUtils");
+const {isSuccessfulStatus} = require("../utils/http.utils");
 const httpHeaders = require("../constants/httpHeaders");
 const {timeUnit, time} = require("shared-utils/date.utils");
 const hasherService = require('../services/hasher.service');
@@ -63,6 +63,10 @@ class CacheMiddleware {
     async #handleCacheHit(req, res, cachedData) {
         const {etag, body} = JSON.parse(cachedData);
 
+        // Refresh the TTL for the cache key using Redis's EXPIRE command
+        const cacheKey = this.#generateCacheKey(req);
+        await this.#refreshCacheTTL(cacheKey);
+
         res.setHeader(httpHeaders.CACHE_CONTROL, this.#getCacheControlHeader());
         if (req.headers[httpHeaders.IF_NONE_MATCH] === etag) {
             return res.status(httpCodes.NOT_MODIFIED.code).end();
@@ -71,6 +75,18 @@ class CacheMiddleware {
         res.setHeader(httpHeaders.ETAG, etag);
         res.setHeader(httpHeaders.X_CACHE, "HIT");
         res.status(httpCodes.OK.code).send(body);
+    }
+
+    /**
+     * Refresh the TTL for a cache key using Redis's EXPIRE command.
+     */
+    async #refreshCacheTTL(cacheKey) {
+        try {
+            // Refresh the TTL without re-setting the value
+            await this.#cacheService.expire(cacheKey, this.#ttl);
+        } catch (error) {
+            console.error(`Failed to refresh TTL for cache key "${cacheKey}":`, error);
+        }
     }
 
     /**
