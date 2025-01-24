@@ -4,13 +4,13 @@ import ConfirmationPopUpProvider from './ConfirmationContext';
 import ToastNotificationProvider from './ToastNotificationsContext';
 
 const GlobalContextProvider = ({children}) => (
-    <AuthProvider>
-        <ConfirmationPopUpProvider>
-            <ToastNotificationProvider>
+    <ConfirmationPopUpProvider>
+        <ToastNotificationProvider>
+            <AuthProvider>
                 {children}
-            </ToastNotificationProvider>
-        </ConfirmationPopUpProvider>
-    </AuthProvider>
+            </AuthProvider>
+        </ToastNotificationProvider>
+    </ConfirmationPopUpProvider>
 );
 
 export default GlobalContextProvider;

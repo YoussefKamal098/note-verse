@@ -7,6 +7,10 @@ const statusMessages = Object.freeze({
     USER_LOGIN_FAILED: "Login attempt unsuccessful. Verify your email and password, then try again.",
     USER_REGISTRATION_FAILED: "User registration failed. Please ensure all required fields are correctly filled.",
     USER_NOT_FOUND: "User not found, Ensure the provided id is correct and try again later.",
+    USER_ID_MISSING: "User ID is missing. Please provide a valid user ID to proceed.",
+    USER_ID_REQUIRED: "User ID is required. Please provide a valid user ID to access this resource.",
+    USER_ID_INVALID: "User ID is invalid. Please provide a valid user ID and try again.",
+    USER_NOT_AUTH: "Authentication required. Please provide a valid user ID to access this resource.",
 
     // =======================
     // User-specific update errors
@@ -26,6 +30,9 @@ const statusMessages = Object.freeze({
     USER_NOTE_NOT_FOUND: "The note you requested either does not exist or is not linked to your account.",
     NOTES_FETCH_FAILED: "Failed to retrieve notes. Please try again later.",
     NOTE_FETCH_FAILED: "Failed to retrieve note. Please try again later.",
+    NOTE_ID_MISSING: "Note ID is missing. Please provide a valid note ID to proceed.",
+    NOTE_ID_REQUIRED: "Note ID is required. Please provide a valid note ID to access this resource.",
+    NOTE_ID_INVALID: "Note ID is invalid. Please provide a valid note ID and try again.",
 
     // =======================
     // Authentication errors

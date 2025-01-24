@@ -21,12 +21,12 @@ const AuthProvider = ({children}) => {
 
         authService.on(AUTH_EVENTS.LOGIN, handleLogin);
         authService.on(AUTH_EVENTS.LOGOUT, handleLogout);
-        authService.on(AUTH_EVENTS.REFRESH_TOKEN_FAILURE, handleRefreshTokenFailure);
+        authService.on(AUTH_EVENTS.SESSION_EXPIRED, handleSessionExpired);
 
         return () => {
             authService.off(AUTH_EVENTS.LOGIN, handleLogin);
             authService.off(AUTH_EVENTS.LOGOUT, handleLogout);
-            authService.off(AUTH_EVENTS.REFRESH_TOKEN_FAILURE, handleRefreshTokenFailure);
+            authService.off(AUTH_EVENTS.SESSION_EXPIRED, handleSessionExpired);
         };
     }, []);
 
@@ -49,7 +49,7 @@ const AuthProvider = ({children}) => {
         await cacheService.flushDB();
     };
 
-    const handleRefreshTokenFailure = () => {
+    const handleSessionExpired = () => {
         showConfirmation({
             type: POPUP_TYPE.OK,
             confirmationMessage: "Your session has expired. You will be logged out. Please sign in again.",

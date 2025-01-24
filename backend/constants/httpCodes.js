@@ -63,6 +63,10 @@ const httpCodes = Object.freeze({
         code: 429,
         name: "Too Many Requests",
         message: "Too many requests, please try again later",
+    }, NOT_MODIFIED: {
+        code: 304,
+        name: "Not Modified",
+        message: "The resource has not been modified since the last request",
     },
 });
 

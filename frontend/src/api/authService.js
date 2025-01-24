@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
 import {HttpStatusCode} from "../constants/httpStatus";
+import httpHeaders from "../constants/httpHeaders";
 import apiClient from './apiClient';
 import tokenStorageService from '../services/tokenStorageService';
 import userService from './userService';
@@ -7,12 +8,8 @@ import userService from './userService';
 const AUTH_EVENTS = Object.freeze({
     LOGIN: 'login',
     LOGOUT: 'logout',
-    REFRESH_TOKEN_FAILURE: 'refreshTokenFailure',
+    SESSION_EXPIRED: 'session_expired',
 });
-
-const HEADERS = {
-    AUTHORIZATION: 'Authorization',
-};
 
 const ENDPOINTS = {
     REFRESH: 'auth/refresh',
@@ -66,7 +63,7 @@ class AuthService {
     #addAuthTokenToRequest(config) {
         const token = this.#tokenStorageService.getAccessToken();
         if (token) {
-            config.headers[HEADERS.AUTHORIZATION] = `Bearer ${token}`;
+            config.headers[httpHeaders.AUTHORIZATION] = `Bearer ${token}`;
         }
         return config;
     }
@@ -90,10 +87,10 @@ class AuthService {
             originalRequest._retry = true;
             try {
                 const {accessToken} = await this.#refreshAccessToken();
-                originalRequest.headers[HEADERS.AUTHORIZATION] = `Bearer ${accessToken}`;
+                originalRequest.headers[httpHeaders.AUTHORIZATION] = `Bearer ${accessToken}`;
                 return this.#apiClient.instance(originalRequest);
             } catch (refreshError) {
-                return Promise.reject(error);
+                return new Promise(() => ({}));
             }
         }
 
@@ -111,7 +108,7 @@ class AuthService {
             this.#tokenStorageService.setAccessToken(data.accessToken);
             return {accessToken: data.accessToken};
         } catch (error) {
-            this.#handleTokenFailure();
+            this.#handleRefreshTokenFailure();
             throw new Error(`Token refresh failed: ${error}`);
         }
     }
@@ -119,9 +116,9 @@ class AuthService {
     /**
      * Handles token failure by clearing the stored access token and emitting a failure event.
      */
-    #handleTokenFailure() {
+    #handleRefreshTokenFailure() {
         this.#tokenStorageService.clearAccessToken();
-        this.#eventEmitter.emit(AUTH_EVENTS.REFRESH_TOKEN_FAILURE);
+        this.#eventEmitter.emit(AUTH_EVENTS.SESSION_EXPIRED);
     }
 
     /**
@@ -147,7 +144,7 @@ class AuthService {
 
             this.#tokenStorageService.setAccessToken(accessToken);
 
-            const user = await this.#userService.getUserInfo();
+            const user = await this.#userService.getAuthenticatedUser();
             const {id, firstname, lastname} = user.data;
 
             this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});

@@ -11,10 +11,11 @@ const PopUpOverlay = styled.div`
     height: 100vh;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(0.1em);
-    z-index: 1000;
+    z-index: 2000;
 `;
 
 const PopupContainer = styled.div`
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -26,7 +27,6 @@ const PopupContainer = styled.div`
     width: 75vw;
     max-width: 30em;
     box-shadow: var(--box-shadow);
-    position: relative;
 
     .confirm-text {
         align-self: flex-start;
@@ -38,7 +38,7 @@ const PopupContainer = styled.div`
         text-align: left;
         color: var(--color-placeholder);
     }
-    
+
     .icon {
         align-self: flex-start;
         font-size: 1.1em;
@@ -52,4 +52,4 @@ const PopupContainer = styled.div`
     }
 `;
 
-export { PopUpOverlay, PopupContainer };
+export {PopUpOverlay, PopupContainer};

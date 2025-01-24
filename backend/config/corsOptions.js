@@ -1,5 +1,6 @@
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
+const httpHeaders = require('../constants/httpHeaders');
 const config = require('./config');
 const AppError = require('../errors/app.error');
 
@@ -18,7 +19,7 @@ const corsOptions = {
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
-    allowedHeaders: ['Content-Type', 'Authorization'],  // Allowed headers
+    allowedHeaders: [httpHeaders.CONTENT_TYPE, httpHeaders.AUTHORIZATION],  // Allowed headers
     credentials: true,  // Allow credentials (cookies, headers, etc.)
     preflightContinue: false,  // Handle preflight requests automatically
     optionsSuccessStatus: httpCodes.NO_CONTENT.code // Return a successful status code for OPTIONS requests

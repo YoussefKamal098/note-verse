@@ -1,4 +1,4 @@
-const { RateLimiterService, BlockerService } = require("../services/rateLimiter.service");
+const {RateLimiterService, BlockerService} = require("../services/rateLimiter.service");
 const cacheService = require("../services/cache.service");
 
 const rateLimiterMiddleware = (rateLimiterService) => {
@@ -12,5 +12,15 @@ const rateLimiterMiddleware = (rateLimiterService) => {
     };
 };
 
-const generalRateLimiterMiddleware = rateLimiterMiddleware(new RateLimiterService(cacheService, new BlockerService(cacheService)));
-module.exports = {rateLimiterMiddleware, generalRateLimiterMiddleware};
+const createRateLimiterMiddleware = (options = {}) => {
+    return rateLimiterMiddleware(
+        new RateLimiterService(
+            cacheService,
+            new BlockerService(cacheService),
+            options
+        )
+    );
+}
+
+const defaultRateLimiterMiddleware = createRateLimiterMiddleware();
+module.exports = {createRateLimiterMiddleware, defaultRateLimiterMiddleware};

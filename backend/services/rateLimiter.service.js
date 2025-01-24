@@ -1,5 +1,6 @@
 const {timeUnit, time, timeFromNow, compareDates} = require('shared-utils/date.utils');
 const httpCodes = require('../constants/httpCodes');
+const httpHeaders = require('../constants/httpHeaders');
 const AppError = require('../errors/app.error');
 
 class BlockerService {
@@ -50,13 +51,13 @@ class RateLimiterService {
     }
 
     #generateLimitKey(req) {
-        const {ip, headers: {'user-agent': userAgent}, user, originalUrl: url} = req;
+        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, user, originalUrl: url} = req;
         const userId = user ? user.id : 'anonymous';
         return `${ip}:${userAgent}:${userId}:${url}:rate-limited`;
     }
 
     #generateBlockKey(req) {
-        const {ip, headers: {'user-agent': userAgent}, user} = req;
+        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, user} = req;
         const userId = user ? user.id : 'anonymous';
         return `${ip}:${userAgent}:${userId}:blocked`;
     }

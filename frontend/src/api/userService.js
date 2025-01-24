@@ -23,7 +23,7 @@ class UserService {
      * @returns {Promise<Object>} The response object containing status code and user data.
      * @throws {Error} If the request fails or there is an error.
      */
-    async getUserInfo() {
+    async getAuthenticatedUser() {
         try {
             return await this.#apiClient.get(ENDPOINTS.GET_USER_INFO);
         } catch (error) {

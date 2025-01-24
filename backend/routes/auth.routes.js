@@ -1,28 +1,25 @@
 const express = require('express');
 const {timeUnit, time} = require('shared-utils/date.utils');
-const cacheService = require("../services/cache.service");
 const authController = require('../controllers/auth.controller');
-const {rateLimiterMiddleware, generalRateLimiterMiddleware} = require("../middlewares/rateLimiter.middleware");
-const {RateLimiterService, BlockerService} = require("../services/rateLimiter.service");
+const {createRateLimiterMiddleware, defaultRateLimiterMiddleware} = require("../middlewares/rateLimiter.middleware");
+const asyncRequestHandler = require('../utils/asyncHandler');
 
 const router = express.Router();
 
-const blockerService = new BlockerService(cacheService);
-
 // Configure RateLimiterServices with specific maxRequests for each route
-const loginLimiter = rateLimiterMiddleware(new RateLimiterService(cacheService, blockerService, {
+const loginLimiterMiddleware = createRateLimiterMiddleware({
     maxRequests: 5,
-    windowMs: time({[timeUnit.MINUTE]: 1}, timeUnit.SECOND)
-}));
-const registerLimiter = rateLimiterMiddleware(new RateLimiterService(cacheService, blockerService, {
+    windowMs: time({[timeUnit.MINUTE]: 1})
+});
+const registerLimiterMiddleware = createRateLimiterMiddleware({
     maxRequests: 10,
-    windowMs: time({[timeUnit.MINUTE]: 1}, timeUnit.SECOND)
-}));
+    windowMs: time({[timeUnit.MINUTE]: 1})
+});
 
 // Routes with appropriate rate-limiting applied
-router.post('/register', registerLimiter, authController.register.bind(authController));
-router.post('/login', loginLimiter, authController.login.bind(authController));
-router.post('/logout', generalRateLimiterMiddleware, authController.logout.bind(authController));
-router.post('/refresh', generalRateLimiterMiddleware, authController.refreshToken.bind(authController));
+router.post('/register', registerLimiterMiddleware, asyncRequestHandler(authController.register.bind(authController)));
+router.post('/login', loginLimiterMiddleware, asyncRequestHandler(authController.login.bind(authController)));
+router.post('/logout', defaultRateLimiterMiddleware, asyncRequestHandler(authController.logout.bind(authController)));
+router.post('/refresh', defaultRateLimiterMiddleware, asyncRequestHandler(authController.refreshToken.bind(authController)));
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const {parseString, parseNumber} = require('shared-utils/env.utils');
 const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
+const config = require('./config');
 require('dotenv').config();
 
 const authConfig = Object.freeze({
@@ -9,23 +10,23 @@ const authConfig = Object.freeze({
     refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '1d'),
     cookiesName: parseString(process.env.REFRESH_TOKEN_COOKIES_NAME, 'jwt'),
     cookiesMaxAge: parseNumber(process.env.COOKIES_MAX_AGE, time({[timeUnit.DAY]: 1}, timeUnit.SECOND)),
-    getCookieOptions(env = process.env.NODE_ENV || 'development') {
+    getCookieOptions() {
         const maxAge = time({[timeUnit.SECOND]: this.cookiesMaxAge}, timeUnit.MILLISECOND);
         const expires = timeFromNow({[timeUnit.SECOND]: this.cookiesMaxAge});
 
         return {
             httpOnly: true,
             sameSite: 'strict',
-            secure: env === 'production',
+            secure: config.env === 'production',
             maxAge,
             expires,
         };
     },
-    getClearCookieOptions(env = process.env.NODE_ENV || 'development') {
+    getClearCookieOptions() {
         return {
             httpOnly: true,
             sameSite: 'strict',
-            secure: env === 'production',
+            secure: config.env === 'production',
         };
     },
 });

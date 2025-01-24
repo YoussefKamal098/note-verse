@@ -1,7 +1,6 @@
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
-const config = require('../config/config');
 const jwtAuthService = require('../services/jwtAuth.service');
 
 // I will implement csrf token generation for secure forms (login/register) later
@@ -14,25 +13,22 @@ class AuthController {
     }
 
     #sendTokens(res, accessToken, refreshToken) {
-        const cookieOptions = this.#jwtAuthService.config.getCookieOptions(config.env);
+        const cookieOptions = this.#jwtAuthService.config.getCookieOptions();
         res.cookie(this.#jwtAuthService.config.cookiesName, refreshToken, cookieOptions);
         res.json({accessToken});
     }
 
     async register(req, res, next) {
-        try {
-            const {firstname, lastname, email, password} = req.body;
-            const {accessToken, refreshToken} = await this.#jwtAuthService.register({
-                firstname,
-                lastname,
-                email,
-                password
-            });
+        const {firstname, lastname, email, password} = req.body;
+        const {accessToken, refreshToken} = await this.#jwtAuthService.register({
+            firstname,
+            lastname,
+            email,
+            password
+        });
 
-            this.#sendTokens(res, accessToken, refreshToken);
-        } catch (error) {
-            next(error);
-        }
+        this.#sendTokens(res, accessToken, refreshToken);
+
     }
 
     async login(req, res, next) {
@@ -45,12 +41,8 @@ class AuthController {
             ));
         }
 
-        try {
-            const {accessToken, refreshToken} = await this.#jwtAuthService.login({email, password});
-            this.#sendTokens(res, accessToken, refreshToken);
-        } catch (error) {
-            next(error);
-        }
+        const {accessToken, refreshToken} = await this.#jwtAuthService.login({email, password});
+        this.#sendTokens(res, accessToken, refreshToken);
     }
 
     async logout(req, res, next) {
@@ -63,15 +55,11 @@ class AuthController {
             ));
         }
 
-        try {
-            await this.#jwtAuthService.logout(refreshToken);
-            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions(config.env);
+        await this.#jwtAuthService.logout(refreshToken);
+        const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
 
-            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-            res.sendStatus(httpCodes.NO_CONTENT.code);
-        } catch (error) {
-            next(error);
-        }
+        res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+        res.sendStatus(httpCodes.NO_CONTENT.code);
     }
 
     async refreshToken(req, res, next) {
@@ -84,12 +72,8 @@ class AuthController {
             ));
         }
 
-        try {
-            const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
-            res.json({accessToken});
-        } catch (error) {
-            next(error);
-        }
+        const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
+        res.json({accessToken});
     }
 }
 

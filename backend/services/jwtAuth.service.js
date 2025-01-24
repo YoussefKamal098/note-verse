@@ -3,7 +3,7 @@ const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const userService = require('../services/user.service');
 const JwtProviderService = require('../services/jwtProvider.service');
-const config = require('../config/config');
+const authConfig = require('../config/authConfig');
 
 // Later on, I'll use Gmail to allow users to change their password and email address and
 // integrate Cross-Browser and Cross-Device Authentication (login).
@@ -131,4 +131,4 @@ class JwtAuthService {
     }
 }
 
-module.exports = new JwtAuthService(userService, new JwtProviderService(), config.authConfig);
+module.exports = new JwtAuthService(userService, new JwtProviderService(), authConfig);

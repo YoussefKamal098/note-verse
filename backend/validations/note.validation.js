@@ -82,7 +82,6 @@ class NoteValidationService {
         return true;
     }
 
-
     validateIsPinned(value) {
         const {error} = this.isPinnedSchema.validate(value);
         if (error) {

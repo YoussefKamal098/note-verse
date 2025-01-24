@@ -51,6 +51,22 @@ class CacheService {
         await this.#client.del(key);
     }
 
+    async clearKeysByPattern(pattern) {
+        const SCAN_COUNT = 100;
+        let cursor = 0;
+        do {
+            const {cursor: newCursor, keys} = await this.#client.scan(cursor, {
+                MATCH: pattern,
+                COUNT: SCAN_COUNT,
+            });
+            cursor = newCursor;
+
+            if (keys.length) {
+                await Promise.all(keys.map(key => this.#client.del(key)));
+            }
+        } while (cursor !== 0);
+    }
+
     async close() {
         try {
             await this.#client.quit(); // Gracefully close the Redis connection

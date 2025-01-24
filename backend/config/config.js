@@ -1,5 +1,4 @@
 const {parseString, parseNumber, parseArray} = require('shared-utils/env.utils');
-const authConfig = require('./authConfig');
 require('dotenv').config();
 
 const config = Object.freeze({
@@ -11,8 +10,7 @@ const config = Object.freeze({
         max: parseNumber(process.env.DB_MAX_POOL_SIZE, 10),
         min: parseNumber(process.env.DB_MIN_POOL_SIZE, 1),
     }),
-    allowedOrigins: parseArray(process.env.ALLOWED_ORIGINS, ['http://localhost:3000']),
-    authConfig: authConfig,
+    allowedOrigins: parseArray(process.env.ALLOWED_ORIGINS, ['http://localhost:3000'])
 });
 
 module.exports = config;
