@@ -181,7 +181,7 @@ notes_app/
 │   │   ├── index.css              # Main CSS for styling the frontend app
 │   │   ├── index.js               # React app entry point (rendering the app)
 │   │   ├── reportWebVitals.js     # For measuring performance in the app
-│   ├── .nvmrc                     # Node.js version specification .nvmrc                  # Node.js version specification (LTS v18.20.1)
+│   ├── .nvmrc                     # Node.js version specification .nvmrc
 │   ├── package.json               # Node.js package manager file for frontend dependencies
 ├── shared-utils/                  # Contains shared utility functions and modules used across both frontend and backend applications. This folder includes reusable logic, helper functions, and other tools designed to be used consistently throughout the project for code modularity and maintainability.
 ├── .gitignore                     # Git ignore file (e.g., node_modules, .env, build files)
