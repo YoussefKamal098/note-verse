@@ -136,65 +136,24 @@ notes_app/
 ├── .idea/                         # IDE configuration files (e.g., for JetBrains tools)
 ├── backend/                       # Backend application code (Node.js, Express)
 │   ├── config/                    # Configuration files for the backend
-│   │   ├── config.js              # General backend configuration (e.g., API URL, server port)
-│   │   ├── corsOptions.js         # CORS (Cross-Origin Resource Sharing) settings
-│   │   ├── authConfig.js          # Authentication-related configurations
-│   ├── constants/                 # HTTP codes and status messages
-│   │   ├── httpCodes.js           # HTTP status codes (e.g., 200, 404, 500)
-│   │   ├── statusMessages.js      # Status messages for different responses (e.g., success, error)
+│   ├── constants/                 # Centralized application constants and configurations
 │   ├── controllers/               # Controller files for handling HTTP requests
-│   │   ├── auth.controller.js     # Logic for handling authentication requests (login, logout)
-│   │   ├── note.controller.js     # Logic for managing notes (CRUD operations)
-│   │   ├── user.controller.js     # Logic for managing users (e.g., registration, profile)
 │   ├── errors/                    # Error handling classes and functions
-│   │   ├── app.error.js           # General error handling logic (custom error class)
 │   ├── middlewares/               # Middleware for various backend operations
-│   │   ├── auth.middleware.js     # Middleware to protect routes and check JWT token
-│   │   ├── csp.middleware.js      # Middleware for Content Security Policy headers
-│   │   ├── errorHandler.middleware.js  # Global error handler middleware
-│   │   ├── notFound.middleware.js # Middleware for handling 404 errors
-│   │   ├── rateLimiter.middleware.js  # Rate-limiting middleware to prevent abuse
-│   │   ├── timeout.middleware.js  # Timeout middleware to avoid long-running requests
 │   ├── models/                    # Database models using ORM/ODM (e.g., Mongoose schemas)
-│   │   ├── note.model.js          # Mongoose schema and model for the Note entity
-│   │   ├── user.model.js          # Mongoose schema and model for the User entity
 │   ├── repositories/              # Data access layer for database queries and operations
-│   │   ├── note.repository.js     # Repository for interacting with the notes data in DB
-│   │   ├── user.repository.js     # Repository for interacting with the users data in DB
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
-│   │   ├── auth.RoutesPaths.js    # Routes for authentication (login, register, logout)
-│   │   ├── index.js               # Main entry point for all backend routes
-│   │   ├── note.RoutesPaths.js    # Routes for managing notes (CRUD operations)
-│   │   ├── user.RoutesPaths.js    # Routes for managing user actions (profile, registration)
 │   ├── services/                  # Service layer for business logic and external integrations
-│   │   ├── cache.service.js       # Service for caching (e.g., using Redis)
-│   │   ├── db.service.js          # Database connection configuration (e.g., MongoDB or SQL)
-│   │   ├── jwtAuth.service.js     # JWT authentication service (creating, verifying tokens)
-│   │   ├── jwtProvider.service.js # Service for generating JWT tokens
-│   │   ├── note.service.js        # Service for business logic around notes
-│   │   ├── paginator.service.js   # Service for pagination (to split large result sets)
-│   │   ├── passwordHasher.service.js # Service for hashing and verifying passwords
-│   │   ├── rateLimiter.service.js # Service for rate-limiting requests
-│   │   ├── user.service.js        # Service for user-related logic (e.g., user management)
 │   ├── utils/                     # Utility functions for various tasks
-│   │   ├── obj.utils.js           # Helper functions for working with objects
-│   │   ├── system.utils.js        # Contains utility functions for system-level operations, such as graceful shutdown and other core utilities.
 │   ├── validations/               # Validation logic for incoming requests (data validation)
-│   │   ├── note.validation.js     # Validation logic for note-related fields (e.g., title, content)
-│   │   ├── noteQuery.validation.js # Validation for note search/query parameters
-│   │   ├── user.validation.js     # Validation for user-related fields (e.g., email, password)
+│   ├── .nvmrc                     # Node.js version specification .nvmrc  
 │   ├── serverInitializer.js       # Responsible for initializing the server by setting up middleware, routing, and other core configurations for the application.
 │   ├── app.js                     # Main application setup (e.g., middleware, routing)
 │   ├── package.json               # Node.js package manager file for backend dependencies
-│
 ├── frontend/                      # Frontend React app code
 │   ├── public/                    # Static files for the frontend (e.g., images, icons)
 │   ├── src/                       # Source code for the React application
 │   │   ├── api/                   # API communication layer (making HTTP requests to backend)
-│   │   │   ├── apiClient.js       # Axios client for setting up API calls
-│   │   │   ├── authService.js     # Frontend service for authentication-related API calls
-│   │   │   ├── noteService.js     # Frontend service for interacting with note-related API
-│   │   │   ├── userService.js     # Frontend service for interacting with user-related API
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
 │   │   │   ├── avatar/            # Components for displaying user avatars
@@ -210,26 +169,19 @@ notes_app/
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
-│   │   ├── config                 # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
+│   │   ├── config/                 # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
-│   │   │   ├── httpCodes.js       # Defines HTTP status codes and their descriptions (e.g., 200 OK, 404 Not Found, 500 Internal Server Error).
-│   │   │   ├── RoutesPaths.js     # Defines the paths and URLs used for routing within the application, ensuring that navigation is consistent and easy to manage across different components.
 │   │   ├── contexts/              # React contexts for managing global state
 │   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
-│   │   │   ├── usePaginatedNotes.js   # Hook for managing pagination logic, fetching notes, and handling page transitions
-│   │   │   ├── useNoteData.js         # Hook for fetching and managing the state of a specific note, including unsaved changes
-│   │   │   ├── useNoteActions.js      # Hook for handling actions related to notes, such as creating, updating, and deleting
-│   │   │   ├── useFormNavigation.js   # Hook for managing keyboard navigation within forms (e.g., using arrow keys and Enter)
 │   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, Errors, etc.)
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
-│   │   │   ├── tokenStorageService.js # Service for managing JWT tokens in localStorage/sessionStorage
-│   │   │   ├── cacheService.js    # Service for frontend caching (e.g., using indexedDB)
 │   │   ├── styles/                # Styles (CSS) for the app's UI
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── App.jsx                # Main React component for the app (entry point)
 │   │   ├── index.css              # Main CSS for styling the frontend app
 │   │   ├── index.js               # React app entry point (rendering the app)
 │   │   ├── reportWebVitals.js     # For measuring performance in the app
+│   ├── .nvmrc                     # Node.js version specification .nvmrc                  # Node.js version specification (LTS v18.20.1)
 │   ├── package.json               # Node.js package manager file for frontend dependencies
 ├── shared-utils/                  # Contains shared utility functions and modules used across both frontend and backend applications. This folder includes reusable logic, helper functions, and other tools designed to be used consistently throughout the project for code modularity and maintainability.
 ├── .gitignore                     # Git ignore file (e.g., node_modules, .env, build files)

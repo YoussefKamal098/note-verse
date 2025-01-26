@@ -1,14 +1,14 @@
 import styled from "styled-components";
 
 const StyledTooltipWrapper = styled.div`
-    position: absolute;
+    position: fixed;
     background-color: var(--color-background);
     color: var(--color-placeholder);
     max-width: 25em;
     text-wrap: wrap;
     word-wrap: break-word;
     white-space: wrap;
-    font-size: 0.9em;
+    font-size: 0.75em;
     padding: 0.3em 0.4em;
     border: calc(var(--border-width) / 2) solid var(--color-border);
     border-radius: var(--border-radius);
@@ -16,7 +16,7 @@ const StyledTooltipWrapper = styled.div`
     opacity: ${(props) => (props.show ? 1 : 0)};
     visibility: ${(props) => (props.show ? "visible" : "hidden")};
     transition: opacity 0.3s ease;
-    z-index: 999;
+    z-index: 1500;
     pointer-events: none;
 `;
 

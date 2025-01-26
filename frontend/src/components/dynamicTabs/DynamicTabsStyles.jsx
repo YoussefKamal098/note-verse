@@ -108,12 +108,11 @@ const TabBodyStyled = styled.div`
         border-radius: calc(var(--border-radius) / 2);
         border-top-right-radius: 0;
         border-top-left-radius: 0;
-        box-shadow: var(--box-shadow);
     }
 `
 
 const TabStyled = styled.div`
-    .tap:has(.full-screen) {
+    &.full-screen {
         position: fixed;
         top: 0;
         left: 0;
@@ -126,15 +125,18 @@ const TabStyled = styled.div`
         z-index: 1000;
     }
 
-    .tap:has(.full-screen) .tab-body > * {
+    &.full-screen .tab-body > * {
         min-height: 100vh;
     }
 
+    &.full-screen .tab-body {
+        margin-top: 2rem;
+    }
 
     // This is especially for markdown editor tab
 
-    .tap:has(.full-screen) .tab-body .cm-editor,
-    .tap:has(.full-screen) .tab-body .cm-content {
+    &.full-screen .tab-body .cm-editor,
+    &.full-screen .tab-body .cm-content {
         min-height: 100vh;
     }
 `
@@ -153,6 +155,19 @@ const ToolbarStyled = styled.div`
     padding: 0.2em 0.3em;
     margin-bottom: 0.5em;
     gap: 0.5em;
+
+    &.full-screen {
+        position: fixed;
+        width: 100vw;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+    }
+
+    &.fixed {
+        border-radius: 0;
+    }
 `
 
 const ToolStyled = styled.div`

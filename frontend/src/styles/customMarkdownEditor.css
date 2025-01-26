@@ -1,5 +1,4 @@
 .md-editor {
-    border: var(--border-width) solid var(--color-border-secondary);
     overflow: hidden;
 }
 
@@ -17,4 +16,8 @@
 .md-editor .cm-gutter,
 .md-editor .md-editor-toolbar-warp {
     background-color: var(--color-background-primary);
+}
+
+.md-editor .cm-editor {
+    padding-right: 0.75em;
 }

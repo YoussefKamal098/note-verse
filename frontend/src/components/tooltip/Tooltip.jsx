@@ -1,10 +1,13 @@
 import React, {useEffect, useRef, useState} from "react";
 import {StyledArrow, StyledTooltipWrapper} from "./TooltipStyled";
 import PropTypes from "prop-types";
+import ReactDOM from "react-dom";
+import {useGlobalSettings} from "../../contexts/GlobalSettingsContext";
 
 const Tooltip = ({title, children, position = "bottom"}) => {
     const [show, setShow] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({left: 0, top: 0});
+    const {appRef} = useGlobalSettings();
     const tooltipRef = useRef(null);
     const targetRef = useRef(null);
     const marginTop = 10;
@@ -33,14 +36,15 @@ const Tooltip = ({title, children, position = "bottom"}) => {
             onMouseLeave={() => setShow(false)}
         >
             {children}
-            <StyledTooltipWrapper
-                ref={tooltipRef}
-                show={show ? "true" : undefined}
-                style={{left: `${tooltipPosition.left}px`, top: `${tooltipPosition.top}px`}}
-            >
-                {title}
-                <StyledArrow position={position}/>
-            </StyledTooltipWrapper>
+            {ReactDOM.createPortal(
+                <StyledTooltipWrapper
+                    ref={tooltipRef}
+                    show={show ? "true" : undefined}
+                    style={{left: `${tooltipPosition.left}px`, top: `${tooltipPosition.top}px`}}>
+                    {title}
+                    <StyledArrow position={position}/>
+                </StyledTooltipWrapper>, appRef.current
+            )}
         </div>
     );
 };

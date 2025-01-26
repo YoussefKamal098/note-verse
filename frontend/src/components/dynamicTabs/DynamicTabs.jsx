@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {animated, useSpring} from 'react-spring';
 import {Tab, TabList, TabPanel, Tabs} from 'react-tabs';
 import {useTheme} from "../../contexts/ThemeContext";
@@ -14,6 +14,7 @@ function DynamicTabs({
     const {theme} = useTheme();
     const [tabIndex, setTabIndex] = useState(initialTabIndex !== 0 ? initialTabIndex - 1 : initialTabIndex + 1);
     const [tabsCount, setTabsCount] = useState(tabs.length);
+    const tabRef = useRef(null);
 
     useEffect(() => {
         setTabsCount(tabs.length);
@@ -49,9 +50,9 @@ function DynamicTabs({
     const renderTabsBody = () => {
         return tabs.map((tab, index) => (
             <TabPanel key={`tab-${index}`}>
-                <TabStyled>
+                <TabStyled ref={tabRef}>
                     <animated.div className="tap" style={tabAnimation(index)}>
-                        <TabToolbar className="tab-toolbar"/>
+                        <TabToolbar tabRef={tabRef} className="tab-toolbar"/>
                         <TabBodyStyled className="tab-body">
                             {tab.content}
                         </TabBodyStyled>

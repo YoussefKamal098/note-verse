@@ -1,6 +1,7 @@
 import React from "react";
 import {useNavigate} from "react-router-dom";
 import RoutesPaths from "../../constants/RoutesPaths";
+import {useGlobalSettings} from '../../contexts/GlobalSettingsContext';
 import {useAuth} from "../../contexts/AuthContext";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import SearchBar from "../searchBar/SearchBar";
@@ -30,6 +31,7 @@ const Navbar = ({
                     onAddNoteButtonClick = () => ({}),
                     onSearch = (searchText) => searchText
                 }) => {
+    const {navbarPosition} = useGlobalSettings();
     const {user} = useAuth();
     const {notify} = useToastNotification();
     const navigate = useNavigate();
@@ -45,7 +47,7 @@ const Navbar = ({
     };
 
     return (
-        <NavbarContainerStyled>
+        <NavbarContainerStyled style={{position: navbarPosition}}>
             <NavbarWrapperContainerStyled className="container">
                 <LeftNavbarSideStyled>
                     <NavbarLogoStyled>Notes</NavbarLogoStyled>
