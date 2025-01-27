@@ -42,7 +42,7 @@ const LoginForm = () => {
                 {name: "email", component: EmailInput, props: {autoFocus: true}},
                 {name: "password", component: PasswordInput, props: {}},
             ]}
-            submitButtonText="Login"
+            submitButtonText="Log in"
             replaceWithText="Don't have an account?"
             replaceWithHrefText="Register Here"
             replaceWithHref={RoutesPaths.REGISTER}

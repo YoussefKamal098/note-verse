@@ -4,6 +4,7 @@ import {MdDeleteForever} from 'react-icons/md';
 import Spinner from './LoadingSpinnerButton';
 
 const DeleteButtonStyled = styled.button`
+    display: inline-flex;
     background-color: transparent;
     font-size: 1.3em;
     color: var(--color-danger);

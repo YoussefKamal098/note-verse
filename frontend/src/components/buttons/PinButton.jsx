@@ -4,6 +4,7 @@ import {RiPushpin2Fill, RiUnpinLine} from 'react-icons/ri';
 import Spinner from './LoadingSpinnerButton';
 
 const PinButtonStyled = styled.button`
+    display: inline-flex;
     font-size: 1.3em;
     color: ${({is_pinned}) => (is_pinned ? "var(--color-accent)" : "var(--color-placeholder)")};
     transition: 0.3s, color 0.3s;

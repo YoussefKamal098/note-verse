@@ -28,7 +28,7 @@ const ErrorMessageStyled = styled.div`
 const SubmitButtonStyled = styled.button`
     width: 100%;
     padding: 0.5em;
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: 600;
     color: var(--color-background);
     background-color: var(--color-primary);
@@ -126,6 +126,7 @@ const SensitiveInputStyled = styled.div`
     justify-content: center;
 
     .eye {
+        display: inline-flex;
         color: var(--color-placeholder);
         transition: color 0.3s ease;
         font-size: 1.2em;

@@ -58,7 +58,7 @@ const RegisterForm = () => {
                     props: {placeholder: "Confirm Password", label: "Confirm Password"}
                 },
             ]}
-            submitButtonText="Create Account"
+            submitButtonText="Sign up"
             replaceWithText="Already have an account?"
             replaceWithHrefText="Login Here"
             replaceWithHref={RoutesPaths.LOGIN}
