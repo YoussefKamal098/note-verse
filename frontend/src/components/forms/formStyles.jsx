@@ -28,7 +28,7 @@ const ErrorMessageStyled = styled.div`
 const SubmitButtonStyled = styled.button`
     width: 100%;
     padding: 0.5em;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 600;
     color: var(--color-background);
     background-color: var(--color-primary);

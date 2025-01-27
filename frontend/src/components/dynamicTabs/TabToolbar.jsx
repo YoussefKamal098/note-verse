@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import ReactDOM from "react-dom";
-import {MdFullscreen} from "react-icons/md";
+import {MdFullscreen, MdFullscreenExit} from "react-icons/md";
 import Tooltip from "../tooltip/Tooltip";
 import {ToolbarStyled, ToolStyled} from "./DynamicTabsStyles";
 import {NAVBAR_POSITIONS, useGlobalSettings} from "../../contexts/GlobalSettingsContext";
@@ -41,7 +41,7 @@ const TabToolbar = ({className, tabRef}) => {
         >
             <Tooltip title={fullScreen ? "Normal Screen" : "Full Screen"}>
                 <ToolStyled onClick={() => setFullScreen(!fullScreen)}>
-                    <MdFullscreen/>
+                    {fullScreen ? <MdFullscreenExit/> : <MdFullscreen/>}
                 </ToolStyled>
             </Tooltip>
         </ToolbarStyled>
