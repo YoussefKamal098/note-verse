@@ -5,7 +5,7 @@ const httpHeaders = Object.freeze({
     CONTENT_TYPE: 'Content-Type',
     CONTENT_LENGTH: 'Content-Length',
     COOKIE: 'Cookie',
-    HOST: 'Host',
+    HOST: 'host',
     USER_AGENT: 'user-agent',
     X_REQUESTED_WITH: 'X-Requested-With',
     X_FORWARDED_FOR: 'X-Forwarded-For',

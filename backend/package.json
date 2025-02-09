@@ -23,7 +23,8 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
     "redis": "^4.7.0",
-    "shared-utils": "file:../shared-utils"
+    "shared-utils": "file:../shared-utils",
+    "ua-parser-js": "^2.0.1"
   },
   "devDependencies": {
     "axios": "^1.7.9",

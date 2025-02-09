@@ -1,4 +1,5 @@
-const {RateLimiterService, BlockerService} = require("../services/rateLimiter.service");
+const BlockerService = require("../services/blocker.service");
+const RateLimiterService = require("../services/rateLimiter.service");
 const cacheService = require("../services/cache.service");
 
 const rateLimiterMiddleware = (rateLimiterService) => {

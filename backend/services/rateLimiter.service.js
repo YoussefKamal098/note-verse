@@ -1,38 +1,10 @@
-const {timeUnit, time, timeFromNow, compareDates} = require('shared-utils/date.utils');
+const {timeUnit, time} = require('shared-utils/date.utils');
+const {normalizeUrl} = require('../utils/url.utils');
+const {parseUserAgent} = require('../utils/userAgent.utils');
+const {parseIp} = require('../utils/ip.utils');
 const httpCodes = require('../constants/httpCodes');
 const httpHeaders = require('../constants/httpHeaders');
 const AppError = require('../errors/app.error');
-
-class BlockerService {
-    #cacheService;
-    #blockTime;
-
-    constructor(cacheService, blockTime = time({[timeUnit.MINUTE]: 15}, timeUnit.SECOND)) {
-        this.#cacheService = cacheService;
-        this.#blockTime = blockTime;
-    }
-
-    #generateBlockKey(key) {
-        return `${key}:blockTime:${(time({[timeUnit.SECOND]: this.#blockTime}, timeUnit.MINUTE)).toFixed()}m`;
-    }
-
-    async isBlocked(key) {
-        key = this.#generateBlockKey(key);
-        const blockUntil = await this.#cacheService.get(key);
-        if (blockUntil && compareDates(blockUntil, new Date()) > 0) {
-            return true;
-        } else if (blockUntil) {
-            await this.#cacheService.delete(key);
-        }
-        return false;
-    }
-
-    async blockUser(key) {
-        key = this.#generateBlockKey(key);
-        const blockUntil = timeFromNow({[timeUnit.SECOND]: this.#blockTime}).toISOString();
-        await this.#cacheService.set(key, blockUntil, this.#blockTime);
-    }
-}
 
 class RateLimiterService {
     #cacheService;
@@ -51,15 +23,22 @@ class RateLimiterService {
     }
 
     #generateLimitKey(req) {
-        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, user, originalUrl: url} = req;
+        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, user, originalUrl} = req;
         const userId = user ? user.id : 'anonymous';
-        return `${ip}:${userAgent}:${userId}:${url}:rate-limited`;
+
+        // Build a base URL from the request to ensure proper URL normalization.
+        const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
+
+        // Normalize the original URL so that equivalent URLs generate the same cache key.
+        const normalizedUrl = normalizeUrl(originalUrl, baseUrl);
+
+        return `rate-limited:${parseIp(ip).ip}:${parseUserAgent(userAgent).readable}:${userId}:${normalizedUrl}`;
     }
 
     #generateBlockKey(req) {
         const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, user} = req;
         const userId = user ? user.id : 'anonymous';
-        return `${ip}:${userAgent}:${userId}:blocked`;
+        return `blocked:${parseIp(ip).ip}:${parseUserAgent(userAgent).readable}:${userId}`;
     }
 
     async isRateLimited(req) {
@@ -94,4 +73,4 @@ class RateLimiterService {
     }
 }
 
-module.exports = {RateLimiterService, BlockerService};
+module.exports = RateLimiterService;

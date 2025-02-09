@@ -292,12 +292,10 @@ notes_app/
 - Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
   use this data to improve the user experience and prioritize new features.
 
-### 20. **Caching in Server and Frontend (React & Express)**
+### 20. **Caching in Frontend (React)**
 
 - Frontend Caching: Use Service Workers for offline access, IndexedDB for storing notes and metadata, and localStorage
   for caching lightweight user preferences.
-- Backend Caching: Implement Redis or Memcached to cache API responses and database queries, and use CDN for static
-  assets to improve performance and reduce server load.
 
 ### 21. **Push Notification**
 

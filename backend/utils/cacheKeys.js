@@ -1,3 +1,6 @@
+const {normalizeUrl} = require('../utils/url.utils');
+const httpHeaders = require("../constants/httpHeaders");
+
 const cacheKeys = Object.freeze({
     getMeCacheKey: (req) => {
         const userId = req?.user?.id;
@@ -6,7 +9,11 @@ const cacheKeys = Object.freeze({
 
     getMyNotesCacheKey: (req) => {
         const userId = req?.user?.id;
-        return `cache:user:${userId}:my_notes:${req.originalUrl}`;
+        // Construct a base URL from the request.
+        const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
+        // Normalize the original URL using the dynamic base.
+        const normalizedUrl = normalizeUrl(req.originalUrl, baseUrl);
+        return `cache:user:${userId}:my_notes:${normalizedUrl}`;
     },
 
     getNoteCacheKey: (req) => {

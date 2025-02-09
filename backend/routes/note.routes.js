@@ -5,6 +5,22 @@ const cacheKeys = require('../utils/cacheKeys');
 const {createCacheMiddleware, clearCache, clearCachePattern} = require('../middlewares/cache.middleware');
 const router = express.Router();
 
+// Middleware to clear caches for the note.
+async function clearNoteCaches(req, res, next) {
+    await clearCache(cacheKeys.getNoteCacheKey(req));
+    await clearCachePattern(cacheKeys.getMyNotesCachePattern(req));
+    next();
+}
+
+// Create caching middleware instances.
+const myNotesCacheMiddleware = createCacheMiddleware({
+    generateCacheKey: cacheKeys.getMyNotesCacheKey
+});
+
+const noteCacheMiddleware = createCacheMiddleware({
+    generateCacheKey: cacheKeys.getNoteCacheKey
+});
+
 // Routes
 router.post("/", asyncRequestHandler(async (req, res, next) => {
     await clearCachePattern(cacheKeys.getMyNotesCachePattern(req));
@@ -12,25 +28,24 @@ router.post("/", asyncRequestHandler(async (req, res, next) => {
 }));
 
 router.get("/my_notes",
-    asyncRequestHandler(createCacheMiddleware({generateCacheKey: cacheKeys.getMyNotesCacheKey})),
+    asyncRequestHandler(myNotesCacheMiddleware),
     asyncRequestHandler(notesController.findMyNotes.bind(notesController))
 );
 
 router.get("/my_note/:noteId",
-    asyncRequestHandler(createCacheMiddleware({generateCacheKey: cacheKeys.getNoteCacheKey})),
+    asyncRequestHandler(noteCacheMiddleware),
     asyncRequestHandler(notesController.findMyNoteById.bind(notesController))
 );
 
-router.put("/my_note/:noteId", asyncRequestHandler(async (req, res, next) => {
-    await clearCache(cacheKeys.getNoteCacheKey(req));
-    await clearCachePattern(cacheKeys.getMyNotesCachePattern(req));
-    await notesController.updateMyNote(req, res, next);
-}));
+router.put("/my_note/:noteId",
+    asyncRequestHandler(clearNoteCaches),
+    asyncRequestHandler(noteCacheMiddleware),
+    asyncRequestHandler(notesController.updateMyNote.bind(notesController))
+);
 
-router.delete("/my_note/:noteId", asyncRequestHandler(async (req, res, next) => {
-    await clearCache(cacheKeys.getNoteCacheKey(req));
-    await clearCachePattern(cacheKeys.getMyNotesCachePattern(req));
-    await notesController.deleteMyNoteById(req, res, next);
-}));
+router.delete("/my_note/:noteId",
+    asyncRequestHandler(clearNoteCaches),
+    asyncRequestHandler(notesController.deleteMyNoteById.bind(notesController))
+);
 
 module.exports = router;
