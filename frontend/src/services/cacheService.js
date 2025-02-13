@@ -165,7 +165,6 @@ class CacheService {
      * Initializes cache service with storage backend and cleanup configuration
      * @param {IndexedDBManager} indexedDBManager - Configured database manager instance
      * @param {Object} [options={}] - Cache configuration overrides
-     * @param {number} [options.maxEntries=1000] - Maximum entries before eviction
      * @param {number} [options.cleanupThreshold=0.8] - Utilization threshold (% of maxEntries) triggering cleanup
      * @param {number} [options.cleanupInterval=60000] - Background cleanup interval in milliseconds
      * @param {number} [options.batchSize=200] - Batch size for bulk cleanup operations
