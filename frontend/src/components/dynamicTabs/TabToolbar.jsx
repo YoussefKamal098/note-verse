@@ -39,7 +39,7 @@ const TabToolbar = ({className, tabRef}) => {
             ref={toolbarRef}
             style={isFixed ? getFixedStyle() : {}}
         >
-            <Tooltip title={fullScreen ? "Normal Screen" : "Full Screen"}>
+            <Tooltip title={fullScreen ? "Minimize" : "Maximize"}>
                 <ToolStyled onClick={() => setFullScreen(!fullScreen)}>
                     {fullScreen ? <MdFullscreenExit/> : <MdFullscreen/>}
                 </ToolStyled>

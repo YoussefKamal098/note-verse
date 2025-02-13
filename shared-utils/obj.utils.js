@@ -6,7 +6,7 @@
  *
  * @param {Object|Array} object - The object or array to freeze.
  * Must be non-null and of type object.
- * @param {Set<Object>} [visited=new Set()] - A set of objects already visited to avoid circular references.
+ * @param {WeakSet<Object>} [visited=new WeakSet()] - A set of objects already visited to avoid circular references.
  * @returns {Object|Array} - The original object, now deeply frozen.
  *
  * @example
@@ -19,7 +19,7 @@
  * circular.Self = circular;
  * deepFreeze(circular); // Handles circular references without throwing an error.
  */
-function deepFreeze(object, visited = new Set()) {
+function deepFreeze(object, visited = new WeakSet()) {
     // Check if the input is an object or array (non-null)
     if (object && typeof object === 'object') {
         // Handle specific types: skip ArrayBuffer, TypedArrays, Dates, and ObjectId
