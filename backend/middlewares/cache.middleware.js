@@ -1,5 +1,5 @@
 const httpCodes = require("../constants/httpCodes");
-const {isSuccessfulStatus} = require("../utils/http.utils");
+const {isSuccessfulStatus} = require("shared-utils/http.utils");
 const httpHeaders = require("../constants/httpHeaders");
 const {timeUnit, time} = require("shared-utils/date.utils");
 const hasherService = require('../services/hasher.service');
@@ -24,7 +24,7 @@ class CacheMiddleware {
             sMaxAge = null
         } = {},
         generateCacheKey = (req) => req.originalUrl,
-        ttl = time({[timeUnit.HOUR]: 1})
+        ttl = time({[timeUnit.DAY]: 1})
     } = {}) {
         this.#cacheService = cacheService;
         this.#hasherService = hasherService;

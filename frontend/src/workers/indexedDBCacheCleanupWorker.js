@@ -189,13 +189,14 @@ async function performCleanup(dbConfig, options) {
  */
 self.addEventListener("message", async (e) => {
     const {action, dbConfig: customDbConfig, options: customOptions} = e.data;
-    if (customOptions.debug) {
+    const options = {...DEFAULT_OPTIONS, ...customOptions};
+    
+    if (options.debug) {
         console.log("Worker received message:", e.data);
     }
 
     if (action === "INIT") {
         const dbConfig = {...DEFAULT_DB_CONFIG, ...customDbConfig};
-        const options = {...DEFAULT_OPTIONS, ...customOptions};
 
         if (timerId !== null) clearInterval(timerId);
 

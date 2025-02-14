@@ -1,4 +1,4 @@
-const {normalizeUrl} = require('../utils/url.utils');
+const {normalizeUrl} = require('shared-utils/url.utils');
 const httpHeaders = require("../constants/httpHeaders");
 
 const cacheKeys = Object.freeze({

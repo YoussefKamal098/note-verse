@@ -27,6 +27,7 @@ const HttpStatusCode = Object.freeze({
     TOO_MANY_REQUESTS: 429,
     REQUEST_HEADER_FIELDS_TOO_LARGE: 431,
     UNAVAILABLE_FOR_LEGAL_REASONS: 451,
+    NOT_MODIFIED: 304,
     INTERNAL_SERVER_ERROR: 500,
     NOT_IMPLEMENTED: 501,
     BAD_GATEWAY: 502,
@@ -37,8 +38,7 @@ const HttpStatusCode = Object.freeze({
     INSUFFICIENT_STORAGE: 507,
     LOOP_DETECTED: 508,
     NOT_EXTENDED: 510,
-    NETWORK_AUTHENTICATION_REQUIRED: 511,
-    CONNECTION_ABORTED: 'ECONNABORTED',
+    NETWORK_AUTHENTICATION_REQUIRED: 511
 });
 
 // Object for messages corresponding to status codes
@@ -80,8 +80,7 @@ const HttpStatusMessages = Object.freeze({
     507: "Insufficient Storage - The server cannot store the representation required to complete the request.",
     508: "Loop Detected - The server detected an infinite loop while processing the request.",
     510: "Not Extended - Further extensions to the request are needed for the server to fulfill it.",
-    511: "Network Authentication Required - The client needs to authenticate to gain network access.",
-    ECONNABORTED: "Connection Aborted - The connection was aborted due to timeout or server issues."
+    511: "Network Authentication Required - The client needs to authenticate to gain network access."
 });
 
 

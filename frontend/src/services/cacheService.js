@@ -18,7 +18,7 @@ const DEFAULT_OPTION = Object.freeze({
     cleanupThreshold: 0.75,  // Cleanup when storage exceeds 75% of quota
     cleanupInterval: 60000,  // Cleanup interval in milliseconds (1 min)
     batchSize: 200,          // Maximum number of entries to a process per batch
-    defaultTTL: time({[timeUnit.DAY]: 7}), // The default time-to-live (TTL) for cache entries is set to 7 days.
+    defaultTTL: time({[timeUnit.DAY]: 1}), // The default time-to-live (TTL) for cache entries is set to one day.
     debug: false,            // Enable verbose logging for debugging; set to true to see detailed logs.
 });
 
@@ -291,7 +291,7 @@ class CacheService {
     close() {
         // Worker termination sequence
         if (this.#cleanupWorker) {
-            this.#cleanupWorker.postMessage({action: 'TERMINATE'});
+            this.#cleanupWorker.postMessage({action: 'TERMINATE', options: {debug: this.#options.debug}});
             this.#cleanupWorker = null;
         }
 
@@ -306,6 +306,11 @@ class CacheService {
                 );
             }
         }
+
+        // Log closure status if debugging is enabled.
+        if (this.#options.debug) {
+            console.log("Cache service successfully closed.");
+        }
     }
 
     /**
@@ -314,7 +319,7 @@ class CacheService {
      * @param {string} key - The cache key.
      * @param {*} data - The data to cache.
      * @param {number} [ttl=options.defaultTTL] - The time-to-live for the cache entry, in seconds.
-     * Defaults to 604,800 seconds (1 week) if not specified.
+     * Defaults to 86,400 seconds (one day) if not specified.
      * A value of 0 or less indicates that the entry should not expire automatically.
      * @returns {Promise<void>}
      */
@@ -482,5 +487,5 @@ class CacheService {
     }
 }
 
-const cacheServiceInstance = new CacheService(new IndexedDBManager({version: 3}), {debug: true});
+const cacheServiceInstance = new CacheService(new IndexedDBManager({version: 4}), {debug: true});
 export default cacheServiceInstance;

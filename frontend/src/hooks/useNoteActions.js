@@ -63,8 +63,13 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         setLoading(true);
 
         try {
+            // Delete the note from the backend.
             await noteService.deleteAuthenticatedUserNoteById(note.id);
-            await CacheService.delete(note.id);
+
+            // Attempt to delete the note from the cache.
+            // If this fails, the error is silently caught and ignored.
+            await CacheService.delete(note.id).catch(() => ({}));
+
             notify.success("Note deleted successfully!");
             navigate(RoutesPaths.HOME);
         } catch (error) {

@@ -177,6 +177,7 @@ notes_app/
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
 │   │   ├── styles/                # Styles (CSS) for the app's UI
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
+│   │   ├── workers/               # Web Workers for running background tasks without blocking the main thread
 │   │   ├── App.jsx                # Main React component for the app (entry point)
 │   │   ├── index.css              # Main CSS for styling the frontend app
 │   │   ├── index.js               # React app entry point (rendering the app)
@@ -291,11 +292,6 @@ notes_app/
 
 - Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
   use this data to improve the user experience and prioritize new features.
-
-### 20. **Caching in Frontend (React)**
-
-- Frontend Caching: Use Service Workers for offline access, IndexedDB for storing notes and metadata, and localStorage
-  for caching lightweight user preferences.
 
 ### 21. **Push Notification**
 

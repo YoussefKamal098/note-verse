@@ -1,5 +1,5 @@
 const {timeUnit, time} = require('shared-utils/date.utils');
-const {normalizeUrl} = require('../utils/url.utils');
+const {normalizeUrl} = require('shared-utils/url.utils');
 const {parseUserAgent} = require('../utils/userAgent.utils');
 const {parseIp} = require('../utils/ip.utils');
 const httpCodes = require('../constants/httpCodes');

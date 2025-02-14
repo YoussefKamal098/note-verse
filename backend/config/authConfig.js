@@ -7,9 +7,9 @@ const authConfig = Object.freeze({
     accessTokenSecret: parseString(process.env.ACCESS_TOKEN_SECRET, 'your-access-token-secret'),
     accessTokenExpiry: parseString(process.env.ACCESS_TOKEN_EXPIRY, '1h'),
     refreshTokenSecret: parseString(process.env.REFRESH_TOKEN_SECRET, 'your-refresh-token-secret'),
-    refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '1d'),
+    refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '7d'),
     cookiesName: parseString(process.env.REFRESH_TOKEN_COOKIES_NAME, 'jwt'),
-    cookiesMaxAge: parseNumber(process.env.COOKIES_MAX_AGE, time({[timeUnit.DAY]: 1}, timeUnit.SECOND)),
+    cookiesMaxAge: parseNumber(process.env.COOKIES_MAX_AGE, time({[timeUnit.DAY]: 7}, timeUnit.SECOND)),
     getCookieOptions() {
         const maxAge = time({[timeUnit.SECOND]: this.cookiesMaxAge}, timeUnit.MILLISECOND);
         const expires = timeFromNow({[timeUnit.SECOND]: this.cookiesMaxAge});

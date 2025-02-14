@@ -19,7 +19,8 @@ const corsOptions = {
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
-    allowedHeaders: [httpHeaders.CONTENT_TYPE, httpHeaders.AUTHORIZATION],  // Allowed headers
+    allowedHeaders: [httpHeaders.CONTENT_TYPE, httpHeaders.AUTHORIZATION, httpHeaders.IF_NONE_MATCH],  // Allowed headers
+    exposedHeaders: [httpHeaders.ETAG], // Expose the ETag header to the client
     credentials: true,  // Allow credentials (cookies, headers, etc.)
     preflightContinue: false,  // Handle preflight requests automatically
     optionsSuccessStatus: httpCodes.NO_CONTENT.code // Return a successful status code for OPTIONS requests
