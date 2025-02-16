@@ -128,6 +128,83 @@ function formatDate(date) {
 }
 
 /**
+ * Converts a duration string or a date string into a Date object.
+ *
+ * Supported duration formats:
+ *  - "7s"   : 7 seconds
+ *  - "10m"  : 10 minutes
+ *  - "5h"   : 5 hours
+ *  - "2d"   : 2 days
+ *  - "2w"   : 2 weeks
+ *  - "3M"   : 3 months (approx. 30 days per month)
+ *  - "1y"   : 1 year (approx. 365 days)
+ *
+ * If the input is not a duration string, it attempts to create a Date from it.
+ *
+ * @param {string|number|Date} timeInput - A duration string (e.g., "7d") or a date string/number.
+ * @returns {Date} The calculated or parsed Date object.
+ * @throws {Error} If the input format is invalid.
+ */
+function parseTime(timeInput) {
+    // If the input is already a Date, return it.
+    if (timeInput instanceof Date) {
+        return timeInput;
+    }
+
+    // If the input is a number, treat it as a timestamp.
+    if (typeof timeInput === 'number') {
+        return new Date(timeInput);
+    }
+
+    // If the input is a string, try to parse it as a duration.
+    if (typeof timeInput === 'string') {
+        const durationRegex = /^(\d+)([smhdwMy])$/;
+        const match = durationRegex.exec(timeInput.trim());
+        if (match) {
+            const value = parseInt(match[1], 10);
+            const unit = match[2]; // preserve a case for month ('M') and year ('y')
+            let milliseconds = 0;
+
+            switch (unit) {
+                case 's': // seconds
+                    milliseconds = value * 1000;
+                    break;
+                case 'm': // minutes (lowercase 'm')
+                    milliseconds = value * 60 * 1000;
+                    break;
+                case 'h': // hours
+                    milliseconds = value * 60 * 60 * 1000;
+                    break;
+                case 'd': // days
+                    milliseconds = value * 24 * 60 * 60 * 1000;
+                    break;
+                case 'w': // weeks
+                    milliseconds = value * 7 * 24 * 60 * 60 * 1000;
+                    break;
+                case 'M': // months (uppercase 'M') - approximated as 30 days per month
+                    milliseconds = value * 30 * 24 * 60 * 60 * 1000;
+                    break;
+                case 'y': // years - approximated as 365 days per year
+                    milliseconds = value * 365 * 24 * 60 * 60 * 1000;
+                    break;
+                default:
+                    throw new Error("Unsupported time unit");
+            }
+            return new Date(Date.now() + milliseconds);
+        }
+
+        // If not a duration, try to parse it as a date string.
+        const date = new Date(timeInput);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
+    }
+
+    throw new Error("Invalid time format");
+}
+
+
+/**
  * Compares two dates and returns a comparison result.
  *
  * @param {Date|string|number} date1 - The first date to compare. Accepts a Date object, a string in a valid date format, or a timestamp.
@@ -150,4 +227,4 @@ function compareDates(date1, date2) {
     return d1.getTime() > d2.getTime() ? 1 : -1;
 }
 
-module.exports = {timeUnit, time, timeFromNow, formatDate, compareDates};
+module.exports = {timeUnit, time, timeFromNow, parseTime, formatDate, compareDates};

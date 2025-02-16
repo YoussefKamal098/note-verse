@@ -51,6 +51,12 @@ const statusMessages = Object.freeze({
     USER_NOT_AUTHORIZED: "User not authorized. Please log in to continue.",
     USER_ALREADY_EXISTS: "User already exists. Please log in or use a different email.",
 
+    // Custom messages for session management
+    INVALID_IP_ADDRESS: "The IP address provided is invalid or unrecognized. Please provide a valid IPv4 or IPv6 address and try again.",
+    INVALID_USER_AGENT: "The User-Agent provided is either missing or invalid. Please include a valid User-Agent string in your request.",
+    SESSION_NOT_FOUND_OR_ALREADY_LOGGED_OUT: "The session was not found or has already been terminated. Please log in again to continue.",
+    USER_ALREADY_LOGGED_IN_SAME_DEVICE: "User is already logged in from this device and location.",
+
     // =======================
     // General errors
     // =======================

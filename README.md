@@ -105,13 +105,13 @@ npm run build
 
 The following routes are used for managing notes:
 
-| HTTP Method | Endpoint                   | Description                                       |
-|-------------|----------------------------|---------------------------------------------------|
-| `POST`      | `api/v1/notes`             | Create a new note                                 |
-| `GET`       | `api/v1/notes/my_notes`    | Get authenticated user paginated notes with query |
-| `GET`       | `api/v1/notes/my_note/:id` | Get a note by its ID                              |
-| `PUT`       | `api/v1/notes/my_note/:id` | Update a note by its ID                           |
-| `DELETE`    | `api/v1/notes/my_note/:id` | Delete a note by its ID                           |
+| HTTP Method | Endpoint                   | Description                                            |
+|-------------|----------------------------|--------------------------------------------------------|
+| `POST`      | `api/v1/notes`             | Create a new note                                      |
+| `GET`       | `api/v1/notes/my_notes`    | Retrieve authenticated user paginated notes with query |
+| `GET`       | `api/v1/notes/my_note/:id` | Retrieve the authenticated user's note by its ID       |
+| `PUT`       | `api/v1/notes/my_note/:id` | Update the authenticated user's note by its ID         |
+| `DELETE`    | `api/v1/notes/my_note/:id` | Delete the authenticated user's note by its ID         |
 
 ### User and Authentication API
 
@@ -123,7 +123,7 @@ The following routes are used for user management and authentication:
 | `POST`      | `api/v1/auth/login`    | Log in an existing user                                                |
 | `POST`      | `api/v1/auth/logout`   | Log out the currently logged-in user                                   |
 | `POST`      | `api/v1/auth/refresh`  | Refresh the access token using the stored JWT in the cookie in browser |
-| `GET`       | `api/v1/users/me`      | Get the logged-in user's profile                                       |
+| `GET`       | `api/v1/users/me`      | Retrieve the logged-in user's profile                                  |
 
 ---
 
@@ -144,6 +144,7 @@ notes_app/
 │   ├── repositories/              # Data access layer for database queries and operations
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── services/                  # Service layer for business logic and external integrations
+│   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
 │   ├── utils/                     # Utility functions for various tasks
 │   ├── validations/               # Validation logic for incoming requests (data validation)
 │   ├── .nvmrc                     # Node.js version specification .nvmrc  
@@ -222,45 +223,40 @@ notes_app/
 
 ### 6. **N-gram Search Optimization**
 
-- Implement an **n-gram based search** to optimize full-text searches for faster and more accurate results, especially
+- Implement an **n-gram-based search** to optimize full-text searches for faster and more accurate results, especially
   for large datasets.
 
-### 7. **Multi-session Login**
-
-- Track and manage **multi-session logins** across different devices and browsers. This feature would help users stay
-  logged in on multiple platforms at once.
-
-### 8. **Pagination**
+### 7. **Pagination**
 
 - Implement **cursor-based pagination** for better performance when displaying large sets of data (such as long note
   lists or user activity logs).
 
-### 9. **Email Service**
+### 8. **Email Service**
 
 - Add an **email service** to send notifications for actions like **user registration**, **password resets**, and **user
   activity**. You could also use this service to send weekly summaries or reminders.
 
-### 10. **Email and Password Change**
+### 9. **Email and Password Change**
 
 - Allow users to **update their email** and **password** securely. Adding multi-factor authentication (MFA) can also
   improve security during these changes.
 
-### 11. **Delete Account**
+### 10. **Delete Account**
 
 - Provide users with the option to **delete their account**. Ensure that the data is wiped securely from both the
   backend and frontend storage.
 
-### 12. **Compression for Large Markdown Content (Frontend & Backend)**
+### 11. **Compression for Large Markdown Content (Frontend & Backend)**
 
 - Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
   backend) to reduce the amount of data transmitted over the network.
 
-### 13. **Archive and Collection Notes**
+### 12. **Archive and Collection Notes**
 
 - Enable users to **archive or group their notes** into different **collections**. This will help with better
   organization and easier access to notes.
 
-### 14. **User Settings Section (Frontend)**
+### 13. **User Settings Section (Frontend)**
 
 - Create a **user settings page** where users can:
     - Upload or change their profile image.
@@ -268,32 +264,32 @@ notes_app/
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
 
-### 15. **Real-time Collaboration**
+### 14. **Real-time Collaboration**
 
 - Implement **real-time collaboration** for note editing, similar to Google Docs. This would allow multiple users to
   edit a note simultaneously with changes synced in real-time.
 
-### 16. **Version History / Note History**
+### 15. **Version History / Note History**
 
 - Implement a **note history/version control** feature to track changes over time. Users can view past versions of a
   note and restore them if needed. This feature can be especially useful for collaborative environments.
 
-### 17. **Data Encryption (Security)**
+### 16. **Data Encryption (Security)**
 
 - Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
   This will help improve the app's security and protect user privacy.
 
-### 18. **Notification System**
+### 17. **Notification System**
 
 - Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
   their notes or account.
 
-### 19. **Analytics & Reporting**
+### 18. **Analytics & Reporting**
 
 - Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
   use this data to improve the user experience and prioritize new features.
 
-### 21. **Push Notification**
+### 19. **Push Notification**
 
 - Integrated push notification service to notify users of key actions:
     - Login activity.

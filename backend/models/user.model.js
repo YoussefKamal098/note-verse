@@ -1,11 +1,5 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
-
-/*
-I'll modify this schema to better support multi-session logging and enhanced user activity tracking.
-I will add a separate Session schema, relate it with the userId, and enable users to log in from different browsers and
-locations seamlessly.
- */
+const {Schema} = mongoose;
 
 const userSchema = new Schema({
     firstname: {
@@ -25,13 +19,9 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
-    },
-    refreshToken: {
-        type: String,
-        index: true,
-        default: null
     }
-}, { timestamps: true,
+}, {
+    timestamps: true,
     toJSON: {
         virtuals: true,
         transform(doc, ret) {
@@ -44,5 +34,11 @@ const userSchema = new Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-(async () => (await User.ensureIndexes()))();
+(async () => {
+    try {
+        await User.ensureIndexes();
+    } catch (err) {
+        console.error('Error ensuring User Schema indexes:', err);
+    }
+})();
 module.exports = User;
