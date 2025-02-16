@@ -7,6 +7,18 @@ const sessionService = require('../services/session.service');
 const JwtProviderService = require('../services/jwtProvider.service');
 const authConfig = require('../config/authConfig');
 
+/**
+ * @class JwtAuthService
+ * @classdesc Provides JWT authentication services including user registration, login, token issuance, token verification, token refresh, and logout.
+ *
+ * This service coordinates between the UserService, SessionService, and JwtProviderService to:
+ * - Verify user credentials.
+ * - Manage sessions by creating, reactivating, and inactivating sessions.
+ * - Generate JWT access and refresh tokens with payloads that include both the user ID and session ID.
+ * - Validate and refresh tokens, handling expiration by marking sessions as inactive when needed.
+ *
+ * The service supports multiple concurrent sessions from different devices and locations, ensuring enhanced security and control over active sessions.
+ */
 class JwtAuthService {
     /**
      * @private
