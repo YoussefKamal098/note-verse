@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
-const authConfig = require('../config/authConfig');
 const {parseTime} = require('shared-utils/date.utils');
 
 /**
@@ -57,7 +56,7 @@ const sessionSchema = new Schema(
             type: Date,
             required: true,
             index: true,
-            default: () => parseTime(authConfig.refreshTokenExpiry) // e.g., "30d" => 30 days from now
+            default: () => parseTime("30d") // 30 days from now
         },
         // Timestamp of the last access to this session.
         lastAccessedAt: {

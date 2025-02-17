@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const morgan = require('morgan');
 const corsOptions = require('./config/corsOptions');
 const config = require('./config/config');
 const handleError = require('./middlewares/errorHandler.middleware');
@@ -9,16 +10,15 @@ const cspMiddleware = require('./middlewares/csp.middleware');
 const timeoutMiddleware = require('./middlewares/timeout.middleware');
 const notFoundMiddleware = require('./middlewares/notFound.middleware');
 const startServer = require('./serverInitializer');
+const loggerService = require('./services/logger.service');
 const routes = require('./routes/index');
 
 const app = express();
 
 // I will enable HTTPS (SSL/TLS) later
-/**
- * For logging error, warning, and informational messages,
- * as well as API requests and responses, I will implement Winston logger in the future.
- */
 
+// Use Morgan with the loggerService's stream method
+app.use(morgan('combined', {stream: loggerService.stream}));
 // Timeout for all requests (e.g., 15 seconds)
 app.use(timeoutMiddleware);
 // Apply general helmet middleware for other security headers

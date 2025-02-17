@@ -72,7 +72,6 @@ class AuthController {
         }
     }
 
-
     /**
      * Logs in a user by verifying credentials and creating/reactivating a session.
      *

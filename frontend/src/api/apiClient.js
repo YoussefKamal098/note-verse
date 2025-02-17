@@ -232,10 +232,11 @@ class ApiClient {
 
         // If 304 Not Modified, return cached data.
         if (error.response && error.response.status === HttpStatusCode.NOT_MODIFIED) {
-            const fullUrl = normalizeUrl(axios.getUri(error.config));
+            const normalizedUrl = normalizeUrl(axios.getUri(error.config));
             try {
-                const cachedEntry = await cacheService.get(fullUrl);
+                const cachedEntry = await cacheService.get(normalizedUrl);
                 if (cachedEntry) {
+                    await cacheService.refreshEntry(normalizedUrl);
                     return Promise.resolve({
                         data: cachedEntry.data,
                         statusCode: HttpStatusCode.OK,
