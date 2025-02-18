@@ -248,10 +248,9 @@ class JwtAuthService {
             statusMessages.ACCESS_TOKEN_EXPIRED
         );
 
-        const session = await this.#sessionService.findSessionById(payload.sessionId);
-        if (!session) {
+        if (await this.#sessionService.isSessionExpired(payload.sessionId)) {
             throw new AppError(
-                statusMessages.INVALID_OR_EXPIRED_TOKEN,
+                statusMessages.ACCESS_TOKEN_EXPIRED,
                 httpCodes.UNAUTHORIZED.code,
                 httpCodes.UNAUTHORIZED.name
             );
@@ -301,8 +300,7 @@ class JwtAuthService {
             statusMessages.INVALID_REFRESH_TOKEN
         );
 
-        const session = await this.#sessionService.findSessionById(payload.sessionId);
-        if (!session) {
+        if (await this.#sessionService.isSessionExpired(payload.sessionId)) {
             throw new AppError(
                 statusMessages.INVALID_OR_EXPIRED_TOKEN,
                 httpCodes.UNAUTHORIZED.code,

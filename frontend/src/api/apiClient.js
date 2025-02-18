@@ -140,9 +140,7 @@ class ApiClient {
 
             if (method === 'get') {
                 await this.#handleGetCache(normalizedUrl, response);
-            } else if (method === 'put') {
-                await this.#handlePutCache(normalizedUrl, response);
-            } else if (method === 'delete') {
+            } else if (method === 'delete' || method === 'put') {
                 await this.#handleDeleteCache(normalizedUrl);
             }
         }
@@ -172,25 +170,6 @@ class ApiClient {
             }
         } catch (err) {
             console.error('Error handling cache during GET response:', err);
-        }
-    }
-
-    /**
-     * Handles cache update for PUT responses.
-     * If a cache entry exists, update it with the new response data.
-     */
-    async #handlePutCache(normalizedUrl, response) {
-        try {
-            const existingEntry = await cacheService.get(normalizedUrl);
-            if (existingEntry) {
-                const cachePayload = {data: response.data};
-                if (response.headers.etag) {
-                    cachePayload.etag = response.headers.etag;
-                }
-                await cacheService.save(normalizedUrl, cachePayload);
-            }
-        } catch (err) {
-            console.error('Error updating cache after PUT:', err);
         }
     }
 

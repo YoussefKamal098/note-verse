@@ -180,6 +180,18 @@ class SessionService {
     }
 
     /**
+     * Checks if a session with the given session ID is expired or does not exist.
+     *
+     * @param {string} sessionId - The session ID.
+     * @returns {Promise<boolean>} Returns true if the session is expired or does not exist, otherwise false.
+     */
+    async isSessionExpired(sessionId) {
+        const session = await this.findSessionById(sessionId);
+        return !session || compareDates(Date.now(), session.expiredAt) >= 0;
+
+    }
+
+    /**
      * Updates the lastAccessedAt field of the session to the current time.
      *
      * @param {string} sessionId - The session's ID.

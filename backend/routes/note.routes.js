@@ -39,7 +39,6 @@ router.get("/my_note/:noteId",
 
 router.put("/my_note/:noteId",
     asyncRequestHandler(clearNoteCaches),
-    asyncRequestHandler(noteCacheMiddleware),
     asyncRequestHandler(notesController.updateMyNote.bind(notesController))
 );
 
