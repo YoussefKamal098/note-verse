@@ -68,6 +68,7 @@ REFRESH_TOKEN_COOKIES_NAME=jwt
 COOKIES_MAX_AGE=86400  # 24 hours in seconds
 API_BASE_URL=http://localhost:5000/api/v1
 NOTES_PER_PAGE=10
+LOGS_DIR=./logs
 ```
 
 4. Start the application:
