@@ -1,6 +1,6 @@
 import React from "react";
 import InputField from "./InputField";
-import {FaRegUser} from "react-icons/fa";
+import {GiMustache} from "react-icons/gi";
 
 const LastNameInput = (props) => {
     const {label, placeholder} = props;
@@ -10,7 +10,7 @@ const LastNameInput = (props) => {
             {...props}
             label={label || "Last Name"}
             placeholder={placeholder || "Enter your last name"}
-            Icon={FaRegUser}
+            Icon={GiMustache}
         />
     );
 };
