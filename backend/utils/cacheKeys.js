@@ -3,12 +3,12 @@ const httpHeaders = require("../constants/httpHeaders");
 
 const cacheKeys = Object.freeze({
     getMeCacheKey: (req) => {
-        const userId = req?.user?.id;
+        const userId = req?.userId || 'Unknown';
         return `cache:user:${userId}`;
     },
 
     getMyNotesCacheKey: (req) => {
-        const userId = req?.user?.id;
+        const userId = req?.userId || 'Unknown';
         // Construct a base URL from the request.
         const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
         // Normalize the original URL using the dynamic base.
@@ -22,7 +22,7 @@ const cacheKeys = Object.freeze({
     },
 
     getMyNotesCachePattern: (req) => {
-        const userId = req?.user?.id;
+        const userId = req?.userId || 'Unknown';
         return `cache:user:${userId}:my_notes:*`;
     },
 });

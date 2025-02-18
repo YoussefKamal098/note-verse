@@ -11,7 +11,7 @@ class UserController {
     }
 
     async getMe(req, res, next) {
-        const {id} = req.user;
+        const id = req.userId;
         const user = await this.#userService.findById(id);
         if (!user) {
             next(new AppError(

@@ -76,16 +76,18 @@ function parseUserAgent(userAgent) {
     const browserMajorVersion = info.browser.version ? info.browser.version.split('.')[0] : 'Unknown';
     const osName = info.os.name;
     const osVersion = info.os.version;
-    const deviceType = info.device;
+    const deviceModel = info.device.model;
+    const deviceType = info.device.type;
 
-    // If the OS is Ubuntu and a version is available, include the version.
     let osDisplay = osName;
-    if (osName.toLowerCase() === 'ubuntu' && osVersion) {
+    if (osVersion !== "Unknown") {
         osDisplay += ` ${osVersion}`;
+    }
+    if (deviceModel !== "Unknown") {
+        osDisplay += ` ${deviceModel}`;
     }
 
     const readable = `${browserName} ${browserMajorVersion} on ${osDisplay} (${deviceType})`;
-
     return {info, readable};
 }
 

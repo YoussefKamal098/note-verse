@@ -64,7 +64,7 @@ class JwtAuthService {
      * @returns {JwtPayload} The JWT payload object.
      */
     #getPayload(userId, sessionId) {
-        return {id: userId, sessionId};
+        return {userId, sessionId};
     }
 
     /**
@@ -302,13 +302,13 @@ class JwtAuthService {
 
         if (await this.#sessionService.isSessionExpired(payload.sessionId)) {
             throw new AppError(
-                statusMessages.INVALID_OR_EXPIRED_TOKEN,
+                statusMessages.REFRESH_TOKEN_EXPIRED,
                 httpCodes.UNAUTHORIZED.code,
                 httpCodes.UNAUTHORIZED.name
             );
         }
 
-        const newPayload = this.#getPayload(payload.id, payload.sessionId);
+        const newPayload = this.#getPayload(payload.userId, payload.sessionId);
         const newAccessToken = await this.#jwtProviderService.generateToken(
             newPayload,
             this.config.accessTokenSecret,

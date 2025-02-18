@@ -1,4 +1,4 @@
-const {compareDates, parseTime} = require('shared-utils/date.utils');
+const {compareDates, parseTime, timeFromNow} = require('shared-utils/date.utils');
 const {parseUserAgent} = require('../utils/userAgent.utils');
 const {parseIp} = require('../utils/ip.utils');
 const AppError = require('../errors/app.error');
@@ -91,7 +91,8 @@ class SessionService {
             return this.#sessionRepository.findByIdAndUpdate(existingSession.id, {
                 userAgent,
                 expiredAt: parseTime(expiredAt),
-                lastAccessedAt: Date.now()
+                lastAccessedAt: Date.now(),
+                createdAt: Date.now()
             });
         } else if (existingSession) {
             // Session is active.
@@ -182,7 +183,7 @@ class SessionService {
     /**
      * Checks if a session with the given session ID is expired or does not exist.
      *
-     * @param {string} sessionId - The session ID.
+     * @param {string} sessionId - The session ID.refreshToken
      * @returns {Promise<boolean>} Returns true if the session is expired or does not exist, otherwise false.
      */
     async isSessionExpired(sessionId) {
