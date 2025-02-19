@@ -52,6 +52,8 @@ npm install
     - Create a new `.env` file in the root directory.
     - Add the following variables:
 
+**Backend**
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -66,24 +68,81 @@ REFRESH_TOKEN_SECRET=your-refresh-token-secret
 REFRESH_TOKEN_EXPIRY=1d
 REFRESH_TOKEN_COOKIES_NAME=jwt
 COOKIES_MAX_AGE=86400  # 24 hours in seconds
-API_BASE_URL=http://localhost:5000/api/v1
-NOTES_PER_PAGE=10
 LOGS_DIR=./logs
+EMAIL_HOST=smtp.gmail.com         # SMTP host (default: smtp.gmail.com)
+EMAIL_PORT=465                    # SMTP port (default: 465 for secure connection)
+EMAIL_SECURE=true                 # Whether to use a secure connection (true/false)
+EMAIL_USER=your-email@example.com # Email username
+EMAIL_PASS=your-email-password    # Email password
+EMAIL_FROM=your-email@example.com # Default sender email address (optional)
+EMAIL_TEMPLATES_DIR=./templates/emails  # Directory containing email templates
 ```
 
-4. Start the application:
-    - For development:
+**Frontend**
 
-```shell script
+```env
+API_BASE_URL=http://localhost:5000/api/v1
+NOTES_PER_PAGE=10
+```
+
+Below is an updated version of the instructions that clearly distinguishes between the frontend and backend, with
+separate steps for development and production environments.
+
+---
+
+### 4. Start the Application
+
+#### Frontend
+
+**Development Environment:**  
+Navigate to the `frontend/` directory and run:
+
+```bash
 npm run dev
 ```
 
-- For production:
+**Production Environment:**
 
-```shell script
-npm run build
-     npm start
+1. **Build the Frontend:**  
+   In the `frontend/` directory, compile and optimize the code:
+
+   ```bash
+   npm run build
+   ```
+
+2. **Start the Production Server:**  
+   Then, run:
+
+   ```bash
+   npm start
+   ```
+
+---
+
+#### Backend
+
+**Development Environment:**  
+Navigate to the `backend/` directory and run:
+
+```bash
+npm run dev
 ```
+
+**Production Environment:**
+
+1. **Build the Backend:**  
+   In the `backend/` directory, compile the code for production:
+
+   ```bash
+   npm run build
+   ```
+
+2. **Start the Production Server:**  
+   Then, run:
+
+   ```bash
+   npm start
+   ```
 
 ---
 
@@ -142,6 +201,7 @@ notes_app/
 │   ├── errors/                    # Error handling classes and functions
 │   ├── middlewares/               # Middleware for various backend operations
 │   ├── models/                    # Database models using ORM/ODM (e.g., Mongoose schemas)
+│   ├── queues/                    # Background job queues and workers and task scheduling (e.g., using Bull)
 │   ├── repositories/              # Data access layer for database queries and operations
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── services/                  # Service layer for business logic and external integrations
