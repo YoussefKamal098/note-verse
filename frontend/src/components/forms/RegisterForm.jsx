@@ -45,6 +45,7 @@ const registerValidationSchema = Yup.object({
 });
 
 const RegisterForm = () => {
+    const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const firstnameRef = useRef(null);
@@ -57,11 +58,13 @@ const RegisterForm = () => {
 
     const handleSubmit = async (values, {setSubmitting}) => {
         try {
+            setSubmitting(true);
             await authService.register(values);
             navigate(RoutesPaths.HOME);
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
+            setSubmitting(false);
             setSubmitting(false);
         }
     };
@@ -117,7 +120,7 @@ const RegisterForm = () => {
                                 placeholder="Confirm Password"
                                 label="Confirm Password"
                             />
-                            <SubmitButton isSubmitting={isSubmitting}>Sign Up</SubmitButton>
+                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>Sign Up</SubmitButton>
                         </Form>
                     )}
                 </Formik>

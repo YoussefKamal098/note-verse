@@ -34,11 +34,9 @@ const userSchema = new Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-(async () => {
-    try {
-        await User.ensureIndexes();
-    } catch (err) {
-        console.error('Error ensuring User Schema indexes:', err);
-    }
-})();
+// Ensure indexes are created after the connection is open.
+mongoose.connection.once('open', () => {
+    User.createIndexes().catch((err) => console.error('Error creating User indexes:', err));
+});
+
 module.exports = User;

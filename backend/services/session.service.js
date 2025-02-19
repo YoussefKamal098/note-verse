@@ -1,4 +1,4 @@
-const {compareDates, parseTime, timeFromNow} = require('shared-utils/date.utils');
+const {compareDates, parseTime} = require('shared-utils/date.utils');
 const {parseUserAgent} = require('../utils/userAgent.utils');
 const {parseIp} = require('../utils/ip.utils');
 const AppError = require('../errors/app.error');
@@ -9,55 +9,42 @@ const sessionRepository = require('../repositories/session.repository');
 
 /**
  * Service for managing user sessions.
- * This service validates and normalizes session data (IP and User-Agent),
- * ensures that the associated user exists, and delegates database operations
- * to the injected SessionRepository.
+ * The service validates and normalizes session data,
+ * ensures the associated user exists, and delegate's database
+ * operations via the repository using plain parameters.
  */
 class SessionService {
-    /**
-     * @private
-     * @type {import('../services/user.service')}
-     * @description The UserService instance used to validate user existence and perform user-related operations.
-     */
     #userService;
-
-    /**
-     * @private
-     * @type {import('../repositories/session.repository')}
-     * @description The SessionRepository instance used to handle CRUD operations on session data in the database.
-     */
     #sessionRepository;
 
-    /**
-     * Constructs a new SessionService.
-     *
-     * @param {import('../services/user.service')} userService - An instance of the UserService.
-     * @param {import('../repositories/session.repository')} sessionRepository - An instance of the SessionRepository.
-     */
     constructor(userService, sessionRepository) {
         this.#userService = userService;
         this.#sessionRepository = sessionRepository;
     }
 
     /**
-     * Creates a new session for the given user.
+     * Creates a new session or updates an expired one.
      *
-     * Ensures the user exists, parses the User-Agent and IP, and then checks for an existing session.
-     * If a session exists and is expired (i.e., expiredAt ≤ now), it updates the expiration and last accessed time.
-     * If an active session exists (expiredAt > now), it is returned.
-     * Otherwise, a new session is created.
+     * Logic:
+     * 1. Ensure the user exists.
+     * 2. Validate and normalize the User-Agent and IP.
+     * 3. Look for an existing session (by plain domain keys).
+     *    - If found and expired, update it.
+     *    - If found and active, return it.
+     * 4. Otherwise, create a new session.
      *
-     * @param {object} params - The parameters object.
-     * @param {string} params.userId - The ID of the user.
-     * @param {string} params.ip - The raw IP address.
-     * @param {string} params.userAgent - The raw User-Agent string.
-     * @param {string|Date|number} params.expiredAt - The expiration date/time for the session (e.g., "30d").
-     * @returns {Promise<Object>} The session document (updated or newly created).
-     * @throws {AppError} If the user does not exist, or if the IP/User-Agent is invalid.
+     * @param {Object} params
+     * @param {string} params.userId
+     * @param {string} params.ip
+     * @param {string} params.userAgent
+     * @param {string|Date|number} params.expiredAt
+     * @returns {Promise<Object>} The session document.
+     * @throws {AppError} If validations fail.
      */
     async createSession({userId, ip, userAgent, expiredAt}) {
         await this.#userService.ensureUserExists(userId);
 
+        // Validate and normalize the User-Agent.
         const parsedUA = parseUserAgent(userAgent);
         if (!parsedUA) {
             throw new AppError(
@@ -68,8 +55,9 @@ class SessionService {
         }
         const {info} = parsedUA;
 
-        const {ip: normalizedIp, version} = parseIp(ip);
-        if (normalizedIp === 'unknown' || version === 'unknown') {
+        // Validate and normalize the IP.
+        const {ip: normalizedIp, version: ipVersion} = parseIp(ip);
+        if (normalizedIp === 'unknown' || ipVersion === 'unknown') {
             throw new AppError(
                 statusMessages.INVALID_IP_ADDRESS,
                 httpCodes.BAD_REQUEST.code,
@@ -77,58 +65,60 @@ class SessionService {
             );
         }
 
-        // Look for an existing session using the normalized fields
-        const existingSession = await this.#sessionRepository.findOne({
+        const now = Date.now();
+
+        // Look for an existing session using plain domain keys.
+        const existingSession = await this.#sessionRepository.findSessionByKeys({
             userId,
             ip: normalizedIp,
-            normalizedBrowser: info.browser.name,
-            normalizedOS: info.os.name,
+            browser: info.browser.name,
+            os: info.os.name,
             deviceType: info.device.type,
         });
 
-        if (existingSession && compareDates(Date.now(), existingSession.expiredAt) >= 0) {
-            // Session expired: update expiration and last access, userAgent.
-            return this.#sessionRepository.findByIdAndUpdate(existingSession.id, {
+        if (existingSession && compareDates(now, existingSession.expiredAt) >= 0) {
+            // Session expired – update it.
+            return this.#sessionRepository.updateSessionById(existingSession.id, {
                 userAgent,
                 expiredAt: parseTime(expiredAt),
-                lastAccessedAt: Date.now(),
-                createdAt: Date.now()
+                lastAccessedAt: now,
+                reusedAt: now,
             });
-        } else if (existingSession) {
+        }
+
+        if (existingSession) {
             // Session is active.
             return existingSession;
         }
 
-        // Construct session data based on the updated schema
+        // Construct new session data.
         const sessionData = {
             userId,
             userAgent,
             ip: normalizedIp,
-            ipVersion: version,
+            ipVersion: ipVersion,
             normalizedBrowser: info.browser.name,
             normalizedOS: info.os.name,
             deviceModel: info.device.model,
             deviceType: info.device.type,
             expiredAt: parseTime(expiredAt),
-            lastAccessedAt: Date.now()
+            lastAccessedAt: now,
         };
 
         return this.#sessionRepository.create(sessionData);
     }
 
     /**
-     * Finds an active session for the given user based on IP and User-Agent.
-     * A session is considered active if its expiredAt is in the future.
+     * Finds an active session based on plain parameters.
      *
-     * @param {object} params - The parameters object.
-     * @param {string} params.userId - The user's ID.
-     * @param {string} params.ip - The raw IP address.
-     * @param {string} params.userAgent - The raw User-Agent string.
-     * @returns {Promise<Object|null>} The active session document if found; otherwise, null.
+     * @param {Object} params
+     * @param {string} params.userId
+     * @param {string} params.ip
+     * @param {string} params.userAgent
+     * @returns {Promise<Object|null>} The active session if found.
      */
     async findActiveSessionByUserIpAgent({userId, ip, userAgent}) {
         const {ip: normalizedIp} = parseIp(ip);
-
         const parsedUA = parseUserAgent(userAgent);
         if (!parsedUA) {
             throw new AppError(
@@ -138,33 +128,32 @@ class SessionService {
             );
         }
         const {info} = parsedUA;
-        return this.#sessionRepository.findOne({
+
+        return this.#sessionRepository.findActiveSessionByKeys({
             userId,
             ip: normalizedIp,
-            normalizedBrowser: info.browser.name,
-            normalizedOS: info.os.name,
+            browser: info.browser.name,
+            os: info.os.name,
             deviceType: info.device.type,
-            expiredAt: {$gt: new Date()}
+            currentTime: new Date(),
         });
     }
 
     /**
      * Finds a session by its ID.
      *
-     * @param {string} sessionId - The session's ID.
-     * @returns {Promise<Object|null>} The session document if found; otherwise, null.
+     * @param {string} sessionId
+     * @returns {Promise<Object|null>} The session if found.
      */
     async findSessionById(sessionId) {
         return this.#sessionRepository.findById(sessionId);
     }
 
     /**
-     * Marks a session as inactive by setting its expiredAt to the current time.
+     * Marks a session as inactive by setting its expiredAt to now.
      *
-     * This method treats a session as inactive if its expiredAt is less than or equal to the current time.
-     *
-     * @param {string} sessionId - The session's ID.
-     * @returns {Promise<Object>} The updated session document.
+     * @param {string} sessionId
+     * @returns {Promise<Object>} The updated session.
      * @throws {AppError} If the session is not found or is already expired.
      */
     async inactivateSession(sessionId) {
@@ -176,27 +165,27 @@ class SessionService {
                 httpCodes.UNAUTHORIZED.name
             );
         }
-        // Mark the session as inactive by setting expiredAt to now.
-        return this.#sessionRepository.findByIdAndUpdate(sessionId, {expiredAt: new Date()});
+        return this.#sessionRepository.updateSessionById(sessionId, {
+            expiredAt: new Date(),
+        });
     }
 
     /**
-     * Checks if a session with the given session ID is expired or does not exist.
+     * Checks if a session is expired or missing.
      *
-     * @param {string} sessionId - The session ID.refreshToken
-     * @returns {Promise<boolean>} Returns true if the session is expired or does not exist, otherwise false.
+     * @param {string} sessionId
+     * @returns {Promise<boolean>} True if expired or not found.
      */
     async isSessionExpired(sessionId) {
         const session = await this.findSessionById(sessionId);
         return !session || compareDates(Date.now(), session.expiredAt) >= 0;
-
     }
 
     /**
-     * Updates the lastAccessedAt field of the session to the current time.
+     * Updates the lastAccessedAt field.
      *
-     * @param {string} sessionId - The session's ID.
-     * @returns {Promise<Object>} The updated session document.
+     * @param {string} sessionId
+     * @returns {Promise<Object>} The updated session.
      * @throws {AppError} If the session is not found.
      */
     async updateLastAccess(sessionId) {
@@ -208,7 +197,9 @@ class SessionService {
                 httpCodes.NOT_FOUND.name
             );
         }
-        return this.#sessionRepository.findByIdAndUpdate(sessionId, {lastAccessedAt: Date.now()});
+        return this.#sessionRepository.updateSessionById(sessionId, {
+            lastAccessedAt: Date.now(),
+        });
     }
 }
 

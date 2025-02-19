@@ -62,6 +62,11 @@ const sessionSchema = new Schema(
         lastAccessedAt: {
             type: Date,
             default: Date.now,
+        },
+        // Timestamp when the session was last reused (e.g., re-login from the same session)
+        reusedAt: {
+            type: Date,
+            default: Date.now,
         }
     },
     {
@@ -82,18 +87,14 @@ const sessionSchema = new Schema(
 // normalized browser, normalized OS, and device type. This helps maintain session continuity
 // even if the browser or OS version changes.
 sessionSchema.index({userId: 1, ip: 1, normalizedBrowser: 1, normalizedOS: 1, deviceType: 1}, {unique: true});
-
 // Additional compound index to optimize queries that filter by userId, ip, normalized browser,
 // normalized OS, device type, and expiredAt.
 sessionSchema.index({userId: 1, ip: 1, normalizedBrowser: 1, normalizedOS: 1, deviceType: 1, expiredAt: 1});
 
 const Session = mongoose.model('Session', sessionSchema);
-(async () => {
-    try {
-        await Session.ensureIndexes();
-    } catch (err) {
-        console.error('Error ensuring Session Schema indexes:', err);
-    }
-})();
+// Ensure indexes are created after the connection is open.
+mongoose.connection.once('open', () => {
+    Session.createIndexes().catch((err) => console.error('Error creating Session indexes:', err));
+});
 
 module.exports = Session;

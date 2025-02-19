@@ -20,6 +20,7 @@ const loginValidationSchema = Yup.object({
 });
 
 const LoginForm = () => {
+    const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const emailRef = useRef(null);
@@ -29,12 +30,14 @@ const LoginForm = () => {
 
     const handleSubmit = async (values, {setSubmitting}) => {
         try {
+            setLoading(true);
             await AuthService.login(values);
             navigate(RoutesPaths.HOME);
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
             setSubmitting(false);
+            setLoading(false);
         }
     };
 
@@ -69,7 +72,7 @@ const LoginForm = () => {
                                 component={PasswordInput}
                                 innerRef={passwordRef}
                             />
-                            <SubmitButton isSubmitting={isSubmitting}>Login</SubmitButton>
+                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>Login</SubmitButton>
                         </Form>
                     )}
                 </Formik>

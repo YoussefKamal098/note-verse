@@ -50,5 +50,9 @@ noteSchema.index({userId: 1, isPinned: -1, title: 1, createdAt: -1, updatedAt: -
 noteSchema.index({title: "text", tags: "text"});
 
 const Note = mongoose.model('Note', noteSchema);
-(async () => (await Note.ensureIndexes()))();
+// Ensure indexes are created after the connection is open.
+mongoose.connection.once('open', () => {
+    Note.createIndexes().catch((err) => console.error('Error creating Note indexes:', err));
+});
+
 module.exports = Note;
