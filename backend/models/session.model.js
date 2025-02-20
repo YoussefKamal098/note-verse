@@ -84,8 +84,7 @@ const sessionSchema = new Schema(
 );
 
 // Compound index to ensure that each user can have only one session per combination of IP,
-// browser name, OS name, and device type.
-// This helps maintain session continuity
+// browser name, OS name, and device type. This helps maintain session continuity
 // even if the browser or OS version changes.
 sessionSchema.index({userId: 1, ip: 1, browserName: 1, osName: 1, deviceType: 1}, {unique: true});
 // Additional compound index to optimize queries that filter by userId, ip, browser name,
