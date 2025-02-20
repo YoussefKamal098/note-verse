@@ -70,7 +70,33 @@ class JwtAuthService {
     /**
      * Helper method to verify a token while detecting errors.
      *
-     * It uses detectTokenError to determine if the token is expired or invalid.
+     * It uses detectTokenError to determine if the access token is expired or invalid.
+     * If the token is expired, it decodes the token, throws an error with the provided expired error message.
+     * If the token is invalid for another reason, it throws an error with the provided invalid message.
+     * Otherwise, it verifies the token normally and returns the decoded payload.
+     *
+     * @private
+     * @param {string} token - The JWT token to verify.
+     * @param {string} secret - The secret key used for verification.
+     * @param {string} expiredErrorMsg - The error message for an expired token.
+     * @param {string} invalidErrorMsg - The error message for an invalid token.
+     * @returns {Promise<object>} The decoded token payload.
+     * @throws {AppError} If the token is expired or invalid.
+     */
+    async #verifyOrHandleAccessTokenError(token, secret, expiredErrorMsg, invalidErrorMsg) {
+        const {expired, error} = await this.#jwtProviderService.detectTokenError(token, secret);
+        if (expired) {
+            throw new AppError(expiredErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
+        } else if (error) {
+            throw new AppError(invalidErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
+        }
+        return await this.#jwtProviderService.verifyToken(token, secret);
+    }
+
+    /**
+     * Helper method to verify a token while detecting errors.
+     *
+     * It uses detectTokenError to determine if the refresh token is expired or invalid.
      * If the token is expired, it decodes the token, marks the associated session as inactive,
      * and throws an error with the provided expired error message.
      * If the token is invalid for another reason, it throws an error with the provided invalid message.
@@ -84,7 +110,7 @@ class JwtAuthService {
      * @returns {Promise<object>} The decoded token payload.
      * @throws {AppError} If the token is expired or invalid.
      */
-    async #verifyOrHandleTokenError(token, secret, expiredErrorMsg, invalidErrorMsg) {
+    async #verifyOrHandleRefreshTokenError(token, secret, expiredErrorMsg, invalidErrorMsg) {
         const {expired, error} = await this.#jwtProviderService.detectTokenError(token, secret);
         if (expired) {
             const payload = await this.#jwtProviderService.decodeExpiredToken(token, secret);
@@ -92,8 +118,7 @@ class JwtAuthService {
                 await this.#sessionService.inactivateSession(payload.sessionId);
             }
             throw new AppError(expiredErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
-        }
-        if (error) {
+        } else if (error) {
             throw new AppError(invalidErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
         }
         return await this.#jwtProviderService.verifyToken(token, secret);
@@ -241,7 +266,7 @@ class JwtAuthService {
      * @throws {AppError} If the token is invalid/expired or if the session is inactive.
      */
     async verify(accessToken) {
-        const payload = await this.#verifyOrHandleTokenError(
+        const payload = await this.#verifyOrHandleAccessTokenError(
             accessToken,
             this.config.accessTokenSecret,
             statusMessages.ACCESS_TOKEN_EXPIRED,
@@ -271,7 +296,7 @@ class JwtAuthService {
      * @throws {AppError} If the refresh token is invalid, or if the session is not found or already logged out.
      */
     async logout(refreshToken) {
-        const payload = await this.#verifyOrHandleTokenError(
+        const payload = await this.#verifyOrHandleRefreshTokenError(
             refreshToken,
             this.config.refreshTokenSecret,
             statusMessages.REFRESH_TOKEN_EXPIRED,
@@ -293,7 +318,7 @@ class JwtAuthService {
      * @throws {AppError} If the refresh token is invalid or if the session is inactive.
      */
     async refreshToken(refreshToken) {
-        const payload = await this.#verifyOrHandleTokenError(
+        const payload = await this.#verifyOrHandleRefreshTokenError(
             refreshToken,
             this.config.refreshTokenSecret,
             statusMessages.REFRESH_TOKEN_EXPIRED,

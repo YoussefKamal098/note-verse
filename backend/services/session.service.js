@@ -56,8 +56,8 @@ class SessionService {
         const {info} = parsedUA;
 
         // Validate and normalize the IP.
-        const {ip: normalizedIp, version: ipVersion} = parseIp(ip);
-        if (normalizedIp === 'unknown' || ipVersion === 'unknown') {
+        const {ip: parsedIp, version: ipVersion} = parseIp(ip);
+        if (parsedIp === 'unknown' || ipVersion === 'unknown') {
             throw new AppError(
                 statusMessages.INVALID_IP_ADDRESS,
                 httpCodes.BAD_REQUEST.code,
@@ -70,9 +70,9 @@ class SessionService {
         // Look for an existing session using plain domain keys.
         const existingSession = await this.#sessionRepository.findSessionByKeys({
             userId,
-            ip: normalizedIp,
-            browser: info.browser.name,
-            os: info.os.name,
+            ip: parsedIp,
+            browserName: info.browser.name,
+            osName: info.os.name,
             deviceType: info.device.type,
         });
 
@@ -95,10 +95,10 @@ class SessionService {
         const sessionData = {
             userId,
             userAgent,
-            ip: normalizedIp,
-            ipVersion: ipVersion,
-            normalizedBrowser: info.browser.name,
-            normalizedOS: info.os.name,
+            ipVersion,
+            ip: parsedIp,
+            browserName: info.browser.name,
+            osName: info.os.name,
             deviceModel: info.device.model,
             deviceType: info.device.type,
             expiredAt: parseTime(expiredAt),
@@ -132,8 +132,8 @@ class SessionService {
         return this.#sessionRepository.findActiveSessionByKeys({
             userId,
             ip: normalizedIp,
-            browser: info.browser.name,
-            os: info.os.name,
+            browserName: info.browser.name,
+            osName: info.os.name,
             deviceType: info.device.type,
             currentTime: new Date(),
         });

@@ -6,7 +6,7 @@ class CacheService {
     #client;
     #ttl;
 
-    constructor({redisUrl = 'redis://127.0.0.1:6379', ttl = time({[timeUnit.MINUTE]: 1})} = {}) {
+    constructor({redisUrl = 'redis://127.0.0.1:6379', ttl = time({[timeUnit.HOUR]: 1})} = {}) {
         this.#client = redis.createClient({url: redisUrl});
         this.#ttl = ttl;
     }

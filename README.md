@@ -90,59 +90,97 @@ separate steps for development and production environments.
 
 ---
 
-### 4. Start the Application
-
-#### Frontend
-
-**Development Environment:**  
-Navigate to the `frontend/` directory and run:
-
-```bash
-npm run dev
-```
-
-**Production Environment:**
-
-1. **Build the Frontend:**  
-   In the `frontend/` directory, compile and optimize the code:
-
-   ```bash
-   npm run build
-   ```
-
-2. **Start the Production Server:**  
-   Then, run:
-
-   ```bash
-   npm start
-   ```
+Below is an example "Start the Application" section for your README that covers both development and production modes
+for an Express backend and a React frontend:
 
 ---
 
-#### Backend
+## Start the Application
 
-**Development Environment:**  
-Navigate to the `backend/` directory and run:
+### Development Mode
 
-```bash
-npm run dev
-```
+#### Express Backend
 
-**Production Environment:**
-
-1. **Build the Backend:**  
-   In the `backend/` directory, compile the code for production:
-
+1. **Navigate to the backend directory:**
    ```bash
-   npm run build
+   cd backend
    ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   > This command typically uses a tool like [nodemon](https://www.npmjs.com/package/nodemon) for hot-reloading, so any
+   changes in your backend code will automatically restart the server.  
+   > Ensure your environment variables (e.g., port number) are set as needed.
 
-2. **Start the Production Server:**  
-   Then, run:
+#### React Frontend
 
+1. **Navigate to the frontend directory:**
+   ```bash
+   cd frontend
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Start the development server:**
    ```bash
    npm start
    ```
+   > This command launches the React development server (typically on port 3000), which supports hot module replacement
+   for instant feedback during development.
+
+---
+
+### Production Mode
+
+#### Express Backend
+
+1. **Build the project (if applicable):**  
+   If you’re using Babel, TypeScript, or another transpiler, run the build script:
+   ```bash
+   npm run build
+   ```
+2. **Start the server in production mode:**
+   ```bash
+   npm start
+   ```
+   > Ensure you set the environment variable `NODE_ENV=production` before starting the server.  
+   > For improved process management and automatic restarts, consider using [PM2](https://pm2.keymetrics.io/):
+   ```bash
+   pm2 start dist/app.js --name "my-express-app"
+   ```
+
+#### React Frontend
+
+1. **Build the production bundle:**
+   ```bash
+   npm run build
+   ```
+   > This command creates an optimized bundle in the `build` directory.
+2. **Serve the static files:**
+    - **Option A:** Use a static file server like [serve](https://www.npmjs.com/package/serve):
+      ```bash
+      npm install -g serve
+      serve -s build
+      ```
+    - **Option B:** Integrate the frontend with your Express backend by adding middleware to serve static files. For
+      example, add the following to your Express app:
+      ```js
+      const path = require('path');
+      // Serve static files from the React app
+      app.use(express.static(path.join(__dirname, 'frontend/build')));
+ 
+      // The "catchall" handler: for any request that doesn't match one above, send back React's index.html.
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
+      });
+      ```
+   > This approach allows both your backend API and the React frontend to run together on the same server.
 
 ---
 
@@ -157,11 +195,11 @@ npm run dev
 
 - While the backend is running, you can interact with the app through the web at `http://localhost:3000`.
 
-### 3. API Endpoints
+## API Endpoints
 
-## Routes
+### Routes
 
-### Notes API
+#### Notes API
 
 The following routes are used for managing notes:
 
@@ -173,7 +211,7 @@ The following routes are used for managing notes:
 | `PUT`       | `api/v1/notes/my_note/:id` | Update the authenticated user's note by its ID         |
 | `DELETE`    | `api/v1/notes/my_note/:id` | Delete the authenticated user's note by its ID         |
 
-### User and Authentication API
+#### User and Authentication API
 
 The following routes are used for user management and authentication:
 

@@ -122,20 +122,28 @@ class AuthController {
      * @throws {AppError} If the refresh token is not provided or is invalid.
      */
     async logout(req, res, next) {
-        const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
-        if (!refreshToken) {
-            return next(new AppError(
-                statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
-                httpCodes.UNAUTHORIZED.code,
-                httpCodes.UNAUTHORIZED.name
-            ));
+        try {
+            const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
+            if (!refreshToken) {
+                return next(new AppError(
+                    statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
+                    httpCodes.UNAUTHORIZED.code,
+                    httpCodes.UNAUTHORIZED.name
+                ));
+            }
+
+            await this.#jwtAuthService.logout(refreshToken);
+
+            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
+            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+
+            res.sendStatus(httpCodes.NO_CONTENT.code);
+        } catch (error) {
+            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
+            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+
+            throw error;
         }
-
-        await this.#jwtAuthService.logout(refreshToken);
-        const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
-
-        res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-        res.sendStatus(httpCodes.NO_CONTENT.code);
     }
 
     /**
@@ -148,17 +156,24 @@ class AuthController {
      * @throws {AppError} If the refresh token is not provided or is invalid.
      */
     async refreshToken(req, res, next) {
-        const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
-        if (!refreshToken) {
-            return next(new AppError(
-                statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
-                httpCodes.UNAUTHORIZED.code,
-                httpCodes.UNAUTHORIZED.name
-            ));
-        }
+        try {
+            const refreshToken = req.cookies[this.#jwtAuthService.config.cookiesName];
+            if (!refreshToken) {
+                return next(new AppError(
+                    statusMessages.REFRESH_TOKEN_NOT_PROVIDED,
+                    httpCodes.UNAUTHORIZED.code,
+                    httpCodes.UNAUTHORIZED.name
+                ));
+            }
 
-        const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
-        res.json({accessToken});
+            const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
+            res.json({accessToken});
+        } catch (error) {
+            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
+            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+            
+            throw error;
+        }
     }
 }
 

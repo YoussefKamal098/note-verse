@@ -8,8 +8,11 @@ const {
 
 /**
  * Repository for CRUD operations on the Session collection.
- * Domain-specific methods accept plain parameters and handle
- * conversion to MongoDB queries internally.
+ * This class encapsulates all database operations for sessions,
+ * including creating, reading, updating, and finding sessions
+ * by various domain-specific keys.
+ * It also provides a helper method
+ * for running operations inside a MongoDB transaction.
  */
 class SessionRepository {
     /**
@@ -29,35 +32,56 @@ class SessionRepository {
     }
 
     /**
-     * Creates a new session.
+     * Creates a new session document in the database.
      *
-     * @param {Object} sessionData - Plain session data.
-     * @returns {Promise<Object>} The created session (deep-frozen).
+     * @param {Object} sessionData - The data for the session to be created.
+     * @param {string} sessionData.userId - The identifier of the user associated with the session.
+     * @param {string} sessionData.ip - The IP address from which the session originates.
+     * @param {string} sessionData.userAgent - The raw User-Agent string from the client.
+     * @param {string} [sessionData.browserName] - The browser name (optional).
+     * @param {string} [sessionData.osName] - The operating system name (optional).
+     * @param {string} [sessionData.deviceModel] - The device model information (optional).
+     * @param {string} [sessionData.deviceType] - The type of device (e.g., "Desktop" or "Mobile") (optional).
+     * @param {string} [sessionData.ipVersion] - The IP version (e.g., "IPv4" or "IPv6") (optional).
+     * @param {Date} [sessionData.expiredAt] - The expiration timestamp for the session.
+     * @param {Date} [sessionData.lastAccessedAt] - The last access time for the session (optional).
+     * @returns {Promise<Object>} The created session document, deep-frozen to prevent further modifications.
+     * @throws {Error} If an error occurs during session creation.
      */
     async create(sessionData) {
         try {
-            const newSession = new this.#model(sessionData);
-            await newSession.save();
-            return deepFreeze(sanitizeMongoObject(newSession.toObject()));
+            const session = await this.#model.findOneAndUpdate(
+                // Use unique keys that identify the session
+                {
+                    userId: sessionData.userId,
+                    ip: sessionData.ip,
+                    browserName: sessionData.browserName,
+                    osName: sessionData.osName,
+                    deviceType: sessionData.deviceType
+                },
+                // Only set the data if the document does not exist
+                {$setOnInsert: sessionData},
+                {new: true, upsert: true}
+            ).lean();
+            return deepFreeze(sanitizeMongoObject(session));
         } catch (error) {
-            console.error('Error creating session:', error);
-            throw new Error('Unable to create session');
+            console.error('Error creating or retrieving session:', error);
+            throw new Error('Unable to create or retrieve session');
         }
     }
 
     /**
-     * Finds a session by its ID.
+     * Finds a session document by its unique identifier.
      *
-     * @param {string} sessionId
-     * @returns {Promise<Object|null>} The session if found.
+     * @param {string} sessionId - The unique identifier of the session to retrieve.
+     * @returns {Promise<Object|null>} The session document if found; otherwise, null.
+     * @throws {Error} If an error occurs during the query.
      */
     async findById(sessionId) {
         if (!isValidObjectId(sessionId)) return null;
         try {
-            const session = await this.#model
-                .findById(convertToObjectId(sessionId))
-                .lean();
-            return session ? deepFreeze(sanitizeMongoObject(session)) : null;
+            const sessionDoc = await this.#model.findById(convertToObjectId(sessionId)).lean();
+            return sessionDoc ? deepFreeze(sanitizeMongoObject(sessionDoc)) : null;
         } catch (error) {
             console.error('Error finding session by ID:', error);
             throw new Error('Error finding session by ID');
@@ -65,27 +89,24 @@ class SessionRepository {
     }
 
     /**
-     * Finds a session by its domain keys.
+     * Finds a session document by its domain-specific keys.
+     * The domain keys include user identifier, IP address, normalized browser,
+     * normalized operating system, and device type.
      *
-     * @param {Object} params - Plain parameters.
-     * @param {string} params.userId
-     * @param {string} params.ip
-     * @param {string} params.browser
-     * @param {string} params.os
-     * @param {string} params.deviceType
-     * @returns {Promise<Object|null>} The session if found.
+     * @param {Object} keys - An object containing the session key parameters:
+     * @param {string} keys.userId - The identifier of the user associated with the session.
+     * @param {string} keys.ip - The IP address from which the session originates.
+     * @param {string} keys.browserName - The browser name associated with the session.
+     * @param {string} keys.osName - The operating system name associated with the session.
+     * @param {string} keys.deviceType - The type of device (e.g., "Desktop" or "Mobile") used in the session.
+     * @returns {Promise<Object|null>} The session document if found; otherwise, null.
+     * @throws {Error} If an error occurs during the query.
      */
-    async findSessionByKeys({userId, ip, browser, os, deviceType}) {
-        const query = {
-            userId,
-            ip,
-            normalizedBrowser: browser,
-            normalizedOS: os,
-            deviceType,
-        };
+    async findSessionByKeys({userId, ip, browserName, osName, deviceType}) {
+        const query = {userId, ip, browserName, osName, deviceType};
         try {
-            const session = await this.#model.findOne(query).lean();
-            return session ? deepFreeze(sanitizeMongoObject(session)) : null;
+            const sessionDoc = await this.#model.findOne(query).lean();
+            return sessionDoc ? deepFreeze(sanitizeMongoObject(sessionDoc)) : null;
         } catch (error) {
             console.error('Error finding session:', error);
             throw new Error('Error finding session');
@@ -93,30 +114,31 @@ class SessionRepository {
     }
 
     /**
-     * Finds an active session based on domain keys.
-     * A session is active if its expiredAt is greater than the provided current time.
+     * Finds an active session document using domain-specific keys and a current timestamp.
+     * A session is considered active if its expiration time (expiredAt) is later than the current time.
      *
-     * @param {Object} params - Plain parameters.
-     * @param {string} params.userId
-     * @param {string} params.ip
-     * @param {string} params.browser
-     * @param {string} params.os
-     * @param {string} params.deviceType
-     * @param {Date} params.currentTime
-     * @returns {Promise<Object|null>} The active session if found.
+     * @param {Object} keys - An object containing:
+     * @param {string} keys.userId - The identifier of the user associated with the session.
+     * @param {string} keys.ip - The normalized IP address for the session.
+     * @param {string} keys.browserName - The browser name for the session.
+     * @param {string} keys.osName - The operating system for the session.
+     * @param {string} keys.deviceType - The type of device (e.g., "Desktop", "Mobile") used in the session.
+     * @param {Date} keys.currentTime - The current timestamp to check session validity.
+     * @returns {Promise<Object|null>} The active session document if found; otherwise, null.
+     * @throws {Error} If an error occurs during the query.
      */
-    async findActiveSessionByKeys({userId, ip, browser, os, deviceType, currentTime}) {
+    async findActiveSessionByKeys({userId, ip, browserName, osName, deviceType, currentTime}) {
         const query = {
             userId,
             ip,
-            normalizedBrowser: browser,
-            normalizedOS: os,
+            browserName,
+            osName,
             deviceType,
             expiredAt: {$gt: currentTime},
         };
         try {
-            const session = await this.#model.findOne(query).lean();
-            return session ? deepFreeze(sanitizeMongoObject(session)) : null;
+            const sessionDoc = await this.#model.findOne(query).lean();
+            return sessionDoc ? deepFreeze(sanitizeMongoObject(sessionDoc)) : null;
         } catch (error) {
             console.error('Error finding active session:', error);
             throw new Error('Error finding active session');
@@ -124,17 +146,22 @@ class SessionRepository {
     }
 
     /**
-     * Updates a session by its ID.
+     * Updates a session document by its unique identifier.
      *
-     * @param {string} sessionId
-     * @param {Object} updates - Plain update data.
-     * @returns {Promise<Object|null>} The updated session.
+     * @param {string} sessionId - The unique identifier of the session to update.
+     * @param {Object} updates - An object containing the fields to update.
+     * @returns {Promise<Object|null>} The updated session document if the update was successful; otherwise, null.
+     * @throws {Error} If an error occurs during the update.
      */
     async updateSessionById(sessionId, updates) {
         if (!isValidObjectId(sessionId)) return null;
         try {
             const updatedSession = await this.#model
-                .findByIdAndUpdate(convertToObjectId(sessionId), {$set: updates}, {new: true, runValidators: true})
+                .findByIdAndUpdate(
+                    convertToObjectId(sessionId),
+                    {$set: updates},
+                    {new: true, runValidators: true}
+                )
                 .lean();
             return updatedSession ? deepFreeze(sanitizeMongoObject(updatedSession)) : null;
         } catch (error) {
