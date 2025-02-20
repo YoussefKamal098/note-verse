@@ -5,29 +5,29 @@ const UAParser = require('ua-parser-js');
  * and returns an object containing both detailed parsed information and a human-readable summary.
  *
  * @param {string} userAgent - The raw User-Agent string.
- * @returns {{
- *   info: {
- *     browser: {
- *       name: string,
- *       version: string,
- *       major: string,
- *       type: string
+ *  @returns {{
+ *     info: {
+ *       browser: {
+ *         name: string | null,
+ *         version: string | null,
+ *         major: string | null,
+ *         type: string | null
+ *       },
+ *       os: {
+ *         name: string | null,
+ *         version: string | null
+ *       },
+ *       device: {
+ *         type: string,
+ *         model: string | null,
+ *         vendor: string | null
+ *       },
+ *       engine: {
+ *         name: string | null,
+ *         version: string | null
+ *       }
  *     },
- *     os: {
- *       name: string,
- *       version: string
- *     },
- *     device: {
- *       type: string,
- *       model: string,
- *       vendor: string
- *     },
- *     engine: {
- *       name: string,
- *       version: string
- *     }
- *   },
- *   readable: string
+ *     readable: string
  * } | null} An object with:
  *   - **info:** Detailed parsed information including:
  *       - **browser:** An object with the browser's `name`, full `version`, `major` version (the first number of the version), and `type`.
@@ -48,42 +48,47 @@ function parseUserAgent(userAgent) {
     const parser = new UAParser(userAgent);
     const result = parser.getResult();
 
-    // Build the detailed info object.
+    // Build the detailed info object, using null for missing data.
     const info = {
         browser: {
-            name: result.browser.name || 'Unknown Browser',
-            version: result.browser.version || 'Unknown',
-            major: result.browser.major || 'Unknown',
-            type: result.browser.type || 'unknown'
+            name: result.browser.name || null,
+            version: result.browser.version || null,
+            major: result.browser.major || null,
+            type: result.browser.type || null
         },
         os: {
-            name: result.os.name || 'Unknown OS',
-            version: result.os.version || 'Unknown'
+            name: result.os.name || null,
+            version: result.os.version || null
         },
         device: {
-            type: result.device.type || 'Desktop',
-            model: result.device.model || 'Unknown',
-            vendor: result.device.vendor || 'Unknown'
+            type: result.device.type || 'Desktop', // Default remains 'Desktop'
+            model: result.device.model || null,
+            vendor: result.device.vendor || null
         },
         engine: {
-            name: result.engine.name || 'Unknown',
-            version: result.engine.version || 'Unknown'
+            name: result.engine.name || null,
+            version: result.engine.version || null
         }
     };
 
+    // Helper to convert null or missing values to "Unknown" for display.
+    const displayValue = (value, defaultValue = 'Unknown') => (value == null ? defaultValue : value);
+
     // Build a readable summary.
-    const browserName = info.browser.name;
-    const browserMajorVersion = info.browser.version ? info.browser.version.split('.')[0] : 'Unknown';
-    const osName = info.os.name;
-    const osVersion = info.os.version;
-    const deviceModel = info.device.model;
-    const deviceType = info.device.type;
+    const browserName = displayValue(info.browser.name);
+    const browserMajorVersion = displayValue(info.browser.version) !== 'Unknown'
+        ? displayValue(info.browser.version).split('.')[0]
+        : 'Unknown';
+    const osName = displayValue(info.os.name);
+    const osVersion = displayValue(info.os.version);
+    const deviceModel = displayValue(info.device.model);
+    const deviceType = displayValue(info.device.type, 'Desktop');
 
     let osDisplay = osName;
-    if (osVersion !== "Unknown") {
+    if (osVersion !== 'Unknown') {
         osDisplay += ` ${osVersion}`;
     }
-    if (deviceModel !== "Unknown") {
+    if (deviceModel !== 'Unknown') {
         osDisplay += ` ${deviceModel}`;
     }
 

@@ -52,7 +52,8 @@ class RateLimiterService {
         const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, originalUrl, userId = 'anonymous'} = req;
         const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
         const normalizedUrl = normalizeUrl(originalUrl, baseUrl);
-        return `rate-limited:${parseIp(ip).ip}:${parseUserAgent(userAgent).readable}:${userId}:${normalizedUrl}`;
+        const parsedIp = parseIp(ip);
+        return `rate-limited:${parsedIp.ip ? parsedIp.ip : "Unknown IP"}:${parseUserAgent(userAgent).readable}:${userId}:${normalizedUrl}`;
     }
 
     /**
@@ -65,7 +66,8 @@ class RateLimiterService {
      */
     #defaultGenerateBlockKey(req) {
         const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, userId = 'anonymous'} = req;
-        return `blocked:${parseIp(ip).ip}:${parseUserAgent(userAgent).readable}:${userId}`;
+        const parsedIp = parseIp(ip);
+        return `blocked:${parsedIp.ip ? parsedIp.ip : "Unknown IP"}:${parseUserAgent(userAgent).readable}:${userId}`;
     }
 
     /**

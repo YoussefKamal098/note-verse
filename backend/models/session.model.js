@@ -30,17 +30,17 @@ const sessionSchema = new Schema(
         // Normalized browser information (e.g., "Firefox" without version details)
         browserName: {
             type: String,
-            default: 'Unknown'
+            default: null
         },
         // Normalized operating system information (e.g., "Ubuntu" or "Windows")
         osName: {
             type: String,
-            default: 'Unknown'
+            default: null
         },
         // Device model information (if available)
         deviceModel: {
             type: String,
-            default: 'Unknown'
+            default: null
         },
         // Device type (e.g., "Desktop", "Mobile"); often more stable than model details
         deviceType: {
@@ -49,7 +49,7 @@ const sessionSchema = new Schema(
         },
         ipVersion: {
             type: String,
-            default: 'unknown',
+            default: null,
         },
         // The expiration time. A session is active if expiredAt > current time.
         expiredAt: {

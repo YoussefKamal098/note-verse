@@ -57,7 +57,7 @@ class SessionService {
 
         // Validate and normalize the IP.
         const {ip: parsedIp, version: ipVersion} = parseIp(ip);
-        if (parsedIp === 'unknown' || ipVersion === 'unknown') {
+        if (!parsedIp || !ipVersion) {
             throw new AppError(
                 statusMessages.INVALID_IP_ADDRESS,
                 httpCodes.BAD_REQUEST.code,
@@ -118,7 +118,7 @@ class SessionService {
      * @returns {Promise<Object|null>} The active session if found.
      */
     async findActiveSessionByUserIpAgent({userId, ip, userAgent}) {
-        const {ip: normalizedIp} = parseIp(ip);
+        const {ip: parsedIp} = parseIp(ip);
         const parsedUA = parseUserAgent(userAgent);
         if (!parsedUA) {
             throw new AppError(
@@ -131,7 +131,7 @@ class SessionService {
 
         return this.#sessionRepository.findActiveSessionByKeys({
             userId,
-            ip: normalizedIp,
+            ip: parsedIp,
             browserName: info.browser.name,
             osName: info.os.name,
             deviceType: info.device.type,

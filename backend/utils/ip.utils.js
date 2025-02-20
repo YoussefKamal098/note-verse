@@ -5,18 +5,18 @@ const net = require('net');
  *
  * @param {string} ipString - The IP address string (maybe in IPv6-mapped IPv4 format).
  * @returns {object} An object containing:
- *   - ip: The normalized IP address (e.g., "127.0.0.1" instead of "::ffff:127.0.0.1").Returns 'unknown' if invalid.
- *   - version: A string indicating the IP version ("IPv4" or "IPv6"), or 'unknown' if invalid.
+ *   - ip: The normalized IP address (e.g., "127.0.0.1" instead of "::ffff:127.0.0.1"). Returns null if invalid.
+ *   - version: A string indicating the IP version ("IPv4" or "IPv6"), or null if invalid.
  */
 function parseIp(ipString) {
     if (typeof ipString !== 'string') {
-        return {ip: 'unknown', version: 'unknown'};
+        return {ip: null, version: null};
     }
 
     // Validate the IP string using Node's built-in net.isIP()
     let valid = net.isIP(ipString);
     if (!valid) {
-        return {ip: 'unknown', version: 'unknown'};
+        return {ip: null, version: null};
     }
 
     // Handle IPv6-mapped IPv4 addresses.
@@ -26,7 +26,7 @@ function parseIp(ipString) {
         if (net.isIP(normalizedIp) === 4) {
             return {ip: normalizedIp, version: 'IPv4'};
         } else {
-            return {ip: 'unknown', version: 'unknown'};
+            return {ip: null, version: null};
         }
     }
 
@@ -37,7 +37,7 @@ function parseIp(ipString) {
         return {ip: ipString, version: 'IPv6'};
     }
 
-    return {ip: 'unknown', version: 'unknown'};
+    return {ip: null, version: null};
 }
 
 module.exports = {parseIp};
