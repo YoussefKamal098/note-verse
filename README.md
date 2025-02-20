@@ -85,14 +85,6 @@ API_BASE_URL=http://localhost:5000/api/v1
 NOTES_PER_PAGE=10
 ```
 
-Below is an updated version of the instructions that clearly distinguishes between the frontend and backend, with
-separate steps for development and production environments.
-
----
-
-Below is an example "Start the Application" section for your README that covers both development and production modes
-for an Express backend and a React frontend:
-
 ---
 
 ## Start the Application
