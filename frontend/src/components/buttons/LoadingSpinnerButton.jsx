@@ -12,7 +12,7 @@ const spin = keyframes`
 
 const SpinnerStyled = styled.div`
     position: absolute;
-    height: calc(100% + 0.5em);
+    height: calc(100% + 1em);
     width: auto;
     aspect-ratio: 1 / 1;
     top: 50%;

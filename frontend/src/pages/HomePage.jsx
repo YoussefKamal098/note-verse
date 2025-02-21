@@ -1,6 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import RoutesPaths from "../constants/RoutesPaths";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/common/Pagination";
 import NotesCard from "../components/noteCards/NoteCards";
@@ -13,7 +11,6 @@ const HOME_SEARCH_TEXT_STORED_KEY = "homeSearchText";
 const HOME_CURRENT_PAGE_STORED_KEY = "homeCurrentPage";
 
 const HomePage = () => {
-    const navigate = useNavigate();
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
     const [searchText, setSearchText] = useState(localStorage.getItem(HOME_SEARCH_TEXT_STORED_KEY) || "");
     const replacedNoteIndexFromAdjacentPage = useRef(0);
@@ -73,8 +70,6 @@ const HomePage = () => {
         if (!loading) setCurrentPage(data.selected);
     };
 
-    const handleAddNoteButtonClick = () => navigate(RoutesPaths.NOTE("new"));
-
     useEffect(() => {
         localStorage.setItem(HOME_SEARCH_TEXT_STORED_KEY, searchText);
         localStorage.setItem(HOME_CURRENT_PAGE_STORED_KEY, currentPage.toString());
@@ -89,10 +84,7 @@ const HomePage = () => {
     return (
         <div className="page" ref={pageSectionRef}>
             <Navbar
-                showSearch
-                showAddNoteButton
-                disableAddNoteButton={loading}
-                onAddNoteButtonClick={handleAddNoteButtonClick}
+                showSearch={true}
                 onSearch={handleSearch}
             />
 

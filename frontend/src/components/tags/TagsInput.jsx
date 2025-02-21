@@ -20,10 +20,9 @@ const EnterAnimation = css`
 const TagInputStyled = styled.input`
     width: 100%;
     padding: 0.7em 1em;
-    background: var(--color-background);
+    background: var(--color-background-primary);
     border-radius: var(--border-radius);
-    border: var(--border-width) solid var(--color-border-secondary);
-    box-shadow: var(--box-shadow);
+    border: var(--border-width) solid var(--color-border);
     color: var(--color-text);
     font-size: 1em;
     font-weight: 600;

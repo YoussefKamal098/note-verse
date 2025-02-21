@@ -29,7 +29,6 @@ const DeleteButton = ({onClick, loading = false}) => {
                 <MdDeleteForever/>
             </DeleteButtonStyled>
         </Spinner>
-
     );
 };
 

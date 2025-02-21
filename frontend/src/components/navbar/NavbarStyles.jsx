@@ -42,38 +42,11 @@ const LeftNavbarSideStyled = styled.div`
 `;
 
 const MiddleNavbarSideStyled = styled.div`
-    max-width: calc(100% / 3);
     ${sharedNavbarSideStyles} ;
 `;
 
 const RightNavbarSideStyled = styled.div`
     ${sharedNavbarSideStyles};
-`;
-
-const FlexColumnAlignedStartStyled = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-`;
-
-const UserNameStyled = styled.p`
-    font-size: 1em;
-    font-weight: bold;
-    color: var(--color-placeholder);
-    margin: 0;
-`;
-
-const LogoutButtonStyled = styled.button`
-    font-size: 0.875em;
-    font-weight: 600;
-    color: var(--color-accent);
-    text-decoration: none;
-    cursor: pointer;
-    padding: 0;
-
-    &:hover {
-        text-decoration: underline;
-    }
 `;
 
 export {
@@ -83,7 +56,4 @@ export {
     LeftNavbarSideStyled,
     RightNavbarSideStyled,
     MiddleNavbarSideStyled,
-    FlexColumnAlignedStartStyled,
-    UserNameStyled,
-    LogoutButtonStyled
 };
