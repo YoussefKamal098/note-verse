@@ -248,11 +248,11 @@ notes_app/
 │   │   ├── api/                   # API communication layer (making HTTP requests to backend)
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
-│   │   │   ├── avatar/            # Components for displaying user avatars
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
 │   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)
 │   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
+│   │   │   ├── errors/            # Contains components for handling and displaying errors.
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
 │   │   │   ├── navbar/            # Navigation bar components
 │   │   │   ├── note/              # Components related to note display and creation
@@ -261,10 +261,11 @@ notes_app/
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
-│   │   ├── config/                 # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
+│   │   │   ├── userMenu/          # Contains the UserMenu component and related styles/components for displaying and interacting with the user menu (e.g., toggling the dropdown, showing the user avatar, theme switch, etc.).
+│   │   ├── config/                # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
 │   │   ├── contexts/              # React contexts for managing global state
-│   │   ├── hooks/                     # Custom React hooks for managing reusable logic across components
+│   │   ├── hooks/                 # Custom React hooks for managing reusable logic across components
 │   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, Errors, etc.)
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
 │   │   ├── styles/                # Styles (CSS) for the app's UI
