@@ -1,24 +1,5 @@
-import styled, {keyframes} from "styled-components";
-
-const appearKeyframes = keyframes`
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-`;
-
-const appearKeyframesMobile = keyframes`
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-`;
+import styled from "styled-components";
+import {appearKeyframesMobile, MenuContainerStyled} from "../MenuStyled"
 
 const AvatarStyled = styled.div`
     position: relative;
@@ -46,7 +27,7 @@ const BarsContainerStyled = styled.div`
     cursor: pointer;
 `;
 
-const BarsStyled = styled.div`
+const MenuBarsStyled = styled.div`
     position: relative;
     width: 20px;
     height: 3px;
@@ -89,7 +70,7 @@ const BarsStyled = styled.div`
     }
 `;
 
-const CloseButtonContainerStyled = styled.div`
+const MenuCloseButtonContainerStyled = styled.div`
     position: fixed;
     display: flex;
     justify-content: center;
@@ -134,49 +115,11 @@ const CloseButtonStyled = styled.button`
     }
 `;
 
-const MenuAvatarStyled = styled(AvatarStyled)`
+const UserMenuAvatarStyled = styled(AvatarStyled)`
     font-size: 1.75em;
 `;
 
-const MenuContainerStyled = styled.div`
-    position: absolute;
-    min-width: 300px;
-    translate: 0 100%;
-    bottom: -5px;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    padding: 1.75em 0;
-    background-color: var(--color-background);
-    border-radius: var(--border-radius);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    cursor: default;
-    user-select: text;
-    transition: opacity 300ms ease, transform 300ms ease;
-    animation: ${appearKeyframes} 300ms ease-out;
-    z-index: 999;
-
-    &.menu-enter {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    &.menu-enter-active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    &.menu-exit {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    &.menu-exit-active {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
+const UserMenuContainerStyled = styled(MenuContainerStyled)`
     /* Use mobileSize from props passed in */
     @media (max-width: ${props => props.mobile_size}px) {
         position: fixed;
@@ -215,60 +158,6 @@ const HeaderStyled = styled.div`
 const FullNameStyled = styled.div`
     font-size: 1.5em;
     font-weight: 600;
-`;
-
-const OptionsStyled = styled.ul`
-    display: flex;
-    flex-direction: column;
-    font-size: 14px;
-    gap: 0.5em;
-`;
-
-const OptionWrapperStyled = styled.li`
-    position: relative;
-    width: 100%;
-`;
-
-const OptionStyled = styled.div`
-    position: relative;
-    display: flex;
-    align-items: center;
-    color: var(--color-placeholder);
-    padding: 0.75em;
-    margin: 0 1em;
-    border-radius: var(--border-radius);
-    gap: 0.75em;
-    transition: 0.2s ease-in-out;
-    cursor: pointer;
-
-    &:hover {
-        background-color: var(--color-background-secondary);
-    }
-`;
-
-const OptionIconStyled = styled.div`
-    display: flex;
-    font-size: 1.1em;
-`;
-
-const OptionTextStyled = styled.div`
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    font-weight: 600;
-    gap: 0.5em;
-`;
-
-const ArrowStyled = styled.div`
-    display: flex;
-    font-size: 1.3em;
-    margin-left: auto;
-    transform: rotate(0deg);
-    transition: 500ms ease;
-
-    &.open {
-        transform: rotate(180deg);
-    }
 `;
 
 const AppearanceMenuStyled = styled.div`
@@ -313,24 +202,15 @@ const AppearanceMenuStyled = styled.div`
     }
 `;
 
-
 export {
-    appearKeyframes,
-    appearKeyframesMobile,
     AvatarStyled,
     BarsContainerStyled,
-    BarsStyled,
-    CloseButtonContainerStyled,
+    MenuBarsStyled,
+    MenuCloseButtonContainerStyled,
     CloseButtonStyled,
-    MenuAvatarStyled,
-    MenuContainerStyled,
+    UserMenuAvatarStyled,
     HeaderStyled,
     FullNameStyled,
-    OptionsStyled,
-    OptionWrapperStyled,
-    OptionStyled,
-    OptionIconStyled,
-    OptionTextStyled,
-    ArrowStyled,
-    AppearanceMenuStyled,
+    UserMenuContainerStyled,
+    AppearanceMenuStyled
 };

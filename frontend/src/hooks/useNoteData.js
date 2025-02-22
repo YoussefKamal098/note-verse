@@ -22,7 +22,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
             return {
                 id: "new",
                 title: "",
-                content: "# Untitled",
+                content: "# Content",
                 isPinned: false,
                 tags: ["Tag"],
                 createdAt: null,

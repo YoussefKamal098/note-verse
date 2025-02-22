@@ -6,47 +6,59 @@ import {MdKeyboardArrowRight, MdKeyboardArrowUp, MdNoteAlt} from "react-icons/md
 import {LuLightbulb, LuLightbulbOff} from "react-icons/lu";
 import {FaArrowRightFromBracket} from "react-icons/fa6";
 import {TiTickOutline} from "react-icons/ti";
-import Overlay from "../common/Overlay";
-import Spinner from "../buttons/LoadingSpinnerButton";
-import {useAuth} from "../../contexts/AuthContext";
-import {useTheme} from "../../contexts/ThemeContext";
-import {useToastNotification} from "../../contexts/ToastNotificationsContext";
-import RoutesPaths from "../../constants/RoutesPaths";
-import authService from "../../api/authService";
+import Overlay from "../../common/Overlay";
+import Spinner from "../../buttons/LoadingSpinnerButton";
+import {useAuth} from "../../../contexts/AuthContext";
+import {useTheme} from "../../../contexts/ThemeContext";
+import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
+import RoutesPaths from "../../../constants/RoutesPaths";
+import authService from "../../../api/authService";
+import useIsMobile from "../../../hooks/useIsMobile";
+import useResize from "../../../hooks/useResize";
+import useOutsideClick from "../../../hooks/useOutsideClick";
 
 import {
-    AppearanceMenuStyled,
     ArrowStyled,
-    AvatarStyled,
-    BarsContainerStyled,
-    BarsStyled,
-    CloseButtonContainerStyled,
-    CloseButtonStyled,
-    FullNameStyled,
-    HeaderStyled,
-    MenuAvatarStyled,
-    MenuContainerStyled,
     OptionIconStyled,
     OptionsStyled,
     OptionStyled,
     OptionTextStyled,
     OptionWrapperStyled,
-} from "./UserMenuStyles";
+} from "../MenuStyled";
+
+import {
+    AppearanceMenuStyled,
+    AvatarStyled,
+    BarsContainerStyled,
+    CloseButtonStyled,
+    FullNameStyled,
+    HeaderStyled,
+    MenuBarsStyled,
+    MenuCloseButtonContainerStyled,
+    UserMenuAvatarStyled,
+    UserMenuContainerStyled,
+} from "./UserMenuStyled";
+
 
 const UserMenu = () => {
+    const mobileSize = 768;
     const navigate = useNavigate();
     const {user} = useAuth();
     const {theme, setTheme} = useTheme();
     const {notify} = useToastNotification();
-    const mobileSize = 768;
+
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [appearanceMenuOpen, setAppearanceMenuOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= mobileSize);
     const [closeButtonStyle, setCloseButtonStyle] = useState({});
     const wrapperRef = useRef(null);
     const menuRef = useRef(null);
     const barsContainerRef = useRef(null);
+
+    // Get current window dimensions.
+    const {width} = useResize();
+    // Determine if mobile using our reusable hook.
+    const isMobile = useIsMobile(mobileSize);
 
     const initials = useMemo(
         () => getInitials(user.firstname, user.lastname),
@@ -81,43 +93,19 @@ const UserMenu = () => {
 
     const handleAddNewNoteOptionCLick = () => navigate(RoutesPaths.NOTE("new"));
 
+    // Use our reusable hook to close the menu on outside clicks.
+    useOutsideClick(wrapperRef, () => setMenuOpen(false));
+
+    // When the menu is open on mobile, update the close button's position based on the BarsContainer's position.
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-                setMenuOpen(false);
-            }
-        };
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        window.addEventListener("resize", handleResize);
-        document.addEventListener("mousedown", handleClickOutside);
-
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            window.removeEventListener("resize", handleResize);
-        };
-    }, []);
-
-    // When the menu opens on mobile, update the CloseButton's position based on BarsContainer's position.
-    useEffect(() => {
-        const handleResize = () => {
-            if (isMobile && menuOpen && barsContainerRef.current) {
-                const rect = barsContainerRef.current.getBoundingClientRect();
-                setCloseButtonStyle({
-                    top: `${rect.top}px`,
-                    left: `${rect.left}px`
-                });
-            }
-        };
-
-        handleResize();
-        window.addEventListener("resize", handleResize);
-        return () => {
-            window.removeEventListener("resize", handleResize);
-        };
-    }, [isMobile, menuOpen]);
+        if (isMobile && menuOpen && barsContainerRef.current) {
+            const rect = barsContainerRef.current.getBoundingClientRect();
+            setCloseButtonStyle({
+                top: `${rect.top}px`,
+                left: `${rect.left}px`,
+            });
+        }
+    }, [isMobile, menuOpen, width]);
 
     return (
         <>
@@ -125,7 +113,7 @@ const UserMenu = () => {
             <div style={{position: "relative"}} ref={wrapperRef}>
                 {isMobile ? (
                     <BarsContainerStyled onClick={toggleMenu} ref={barsContainerRef}>
-                        <BarsStyled className={menuOpen ? "open" : ""}/>
+                        <MenuBarsStyled className={menuOpen ? "open" : ""}/>
                     </BarsContainerStyled>
                 ) : (
                     <AvatarStyled onClick={toggleMenu}>
@@ -133,24 +121,18 @@ const UserMenu = () => {
                     </AvatarStyled>
                 )}
 
-                <CSSTransition
-                    in={menuOpen}
-                    timeout={300}
-                    classNames="menu"
-                    unmountOnExit
-                    appear
-                    nodeRef={menuRef}
-                >
-                    <MenuContainerStyled ref={menuRef} mobile_size={mobileSize}>
-                        {isMobile ?
-                            <CloseButtonContainerStyled onClick={() => setMenuOpen(false)} style={closeButtonStyle}>
-                                <CloseButtonStyled className={menuOpen ? "" : "close"}></CloseButtonStyled>
-                            </CloseButtonContainerStyled> : null}
+                <CSSTransition in={menuOpen} timeout={300} classNames="menu" unmountOnExit appear nodeRef={menuRef}>
+                    <UserMenuContainerStyled ref={menuRef} mobile_size={mobileSize}>
+                        {isMobile && (
+                            <MenuCloseButtonContainerStyled onClick={() => setMenuOpen(false)} style={closeButtonStyle}>
+                                <CloseButtonStyled className={menuOpen ? "" : "close"}/>
+                            </MenuCloseButtonContainerStyled>
+                        )}
 
                         <HeaderStyled>
-                            <MenuAvatarStyled>
+                            <UserMenuAvatarStyled>
                                 <span>{initials}</span>
-                            </MenuAvatarStyled>
+                            </UserMenuAvatarStyled>
                             <FullNameStyled>
                                 {user.firstname} {user.lastname}
                             </FullNameStyled>
@@ -160,7 +142,7 @@ const UserMenu = () => {
                             <OptionWrapperStyled className="appearance-wrapper">
                                 <OptionStyled onClick={toggleAppearanceMenu}>
                                     <OptionIconStyled>
-                                        {theme === "light" ? < LuLightbulb/> : < LuLightbulbOff/>}
+                                        {theme === "light" ? <LuLightbulb/> : <LuLightbulbOff/>}
                                     </OptionIconStyled>
                                     <OptionTextStyled>Appearance</OptionTextStyled>
                                     <ArrowStyled className={isMobile && appearanceMenuOpen ? "open" : ""}>
@@ -169,8 +151,7 @@ const UserMenu = () => {
                                 </OptionStyled>
 
                                 <AppearanceMenuStyled is_open={appearanceMenuOpen ? "true" : undefined}
-                                                      mobile_size={mobileSize}
-                                >
+                                                      mobile_size={mobileSize}>
                                     <OptionsStyled>
                                         <OptionWrapperStyled>
                                             <OptionStyled onClick={() => handleThemeChange("light")}>
@@ -210,7 +191,7 @@ const UserMenu = () => {
                                 </OptionStyled>
                             </OptionWrapperStyled>
                         </OptionsStyled>
-                    </MenuContainerStyled>
+                    </UserMenuContainerStyled>
                 </CSSTransition>
             </div>
         </>

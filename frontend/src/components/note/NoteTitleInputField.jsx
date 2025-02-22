@@ -51,6 +51,7 @@ const TitleInputStyled = styled.textarea`
 const NoteTitleInputField = ({title, setTitle}) => {
     const {notify} = useToastNotification();
     const [value, setValue] = useState(title);
+    const [internalUpdateTrigger, setInternalUpdateTrigger] = useState("");
     const textAreaRef = useRef(null);
     const isValueFromInSite = useRef(false);
 
@@ -61,10 +62,13 @@ const NoteTitleInputField = ({title, setTitle}) => {
     }, [title]);
 
     useEffect(() => {
+        isValueFromInSite.current = false;
+    }, [internalUpdateTrigger]);
+
+    useEffect(() => {
         resizeTextArea();
 
         window.addEventListener("resize", resizeTextArea);
-
         return () => {
             window.removeEventListener("resize", resizeTextArea);
         };
@@ -77,7 +81,10 @@ const NoteTitleInputField = ({title, setTitle}) => {
 
     const debouncedTitle = useMemo(() => debounce((newValue = "") => {
         isValueFromInSite.current = true;
-        setTitle(newValue);
+        setTitle(() => {
+            setInternalUpdateTrigger(newValue);
+            return newValue;
+        });
     }, 300), [setTitle]);
 
     const onTitleChange = (e) => {

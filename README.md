@@ -254,6 +254,7 @@ notes_app/
 │   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
 │   │   │   ├── errors/            # Contains components for handling and displaying errors.
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
+│   │   │   ├── menus/             # Menu components (e.g. UserMenu, NoteMenu, etc.)
 │   │   │   ├── navbar/            # Navigation bar components
 │   │   │   ├── note/              # Components related to note display and creation
 │   │   │   ├── noteCards/         # Components for displaying notes

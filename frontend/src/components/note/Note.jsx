@@ -1,13 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {Suspense, useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
 import 'react-toastify/dist/ReactToastify.css';
-import {MdDeleteForever, MdSave} from "react-icons/md";
 import NoteMarkdownTabs from "./NoteMarkdownTabs";
-import PinButton from "../buttons/PinButton";
 import EditableTags from "../tags/EditableTags";
 import NoteTitleInputField from "./NoteTitleInputField";
 import NoteDate from "./NoteDate";
-import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
 import BackHomeButton from "../buttons/BackHomeButton";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
@@ -15,6 +12,9 @@ import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import noteValidationSchema from "../../validations/noteValidtion";
 import cacheService from "../../services/cacheService"
 import {deepEqual} from "shared-utils/obj.utils";
+import Loader from "../common/Loader";
+
+const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
 
 const NoteContainerStyled = styled.div`
     position: relative;
@@ -37,18 +37,18 @@ const HeaderContainerStyled = styled.div`
     margin-bottom: 2em;
 `
 
-const Note = React.memo(function Note({
-                                          id = "",
-                                          origCreateAt = null,
-                                          origUpdatedAt = null,
-                                          origTitle = 'Untitled',
-                                          origContent = '# Untitled',
-                                          origIsPinned = false,
-                                          origTags = ["InspireYourself"],
-                                          onSave = (noteData) => (noteData),
-                                          onDelete = () => ({}),
-                                          unSavedChanges = {}
-                                      }) {
+const Note = ({
+                  id = "",
+                  origCreateAt = null,
+                  origUpdatedAt = null,
+                  origTitle = '',
+                  origContent = '# Content',
+                  origIsPinned = false,
+                  origTags = ["Tag"],
+                  onSave = (noteData) => (noteData),
+                  onDelete = () => ({}),
+                  unSavedChanges = {}
+              } = {}) => {
     const {notify} = useToastNotification();
     const [content, setContent] = useState(origContent || '');
     const [tags, setTags] = useState(origTags || []);
@@ -110,13 +110,26 @@ const Note = React.memo(function Note({
             return;
         }
 
-        onSave({
-            id,
-            content: content,
-            title,
-            isPinned,
-            tags
-        });
+        if (!id || id === "new") {
+            onSave({
+                id,
+                title,
+                content,
+                tags,
+                isPinned
+            });
+            return;
+        }
+
+        const changes = {};
+        if (title !== origTitle) changes.title = title;
+        if (content !== origContent) changes.content = content;
+        if (!deepEqual(origTags, tags)) changes.tags = tags;
+        if (isPinned !== origIsPinned) changes.isPinned = isPinned;
+
+        if (Object.keys(changes).length > 0) {
+            onSave({id, ...changes});
+        }
     }, [content, tags, title, isPinned]);
 
     const onNoteDelete = () => {
@@ -127,11 +140,37 @@ const Note = React.memo(function Note({
         });
     }
 
+    const onNotePin = () => {
+        setIsPinned(!isPinned);
+        if (id && id !== "new") onSave({id, isPinned: !isPinned});
+    }
+
+    const onNoteUnSave = async () => {
+        setTitle("");
+        setContent(origContent);
+        setTags(origTags);
+        setIsPinned(origIsPinned);
+
+        await cacheService.delete(id);
+    }
+
     return (
         <NoteContainerStyled>
             <HeaderContainerStyled>
                 <BackHomeButton/>
-                <PinButton isPinned={isPinned} togglePin={() => setIsPinned(!isPinned)}/>
+                
+                <Suspense fallback={<Loader/>}>
+                    <NoteMenu
+                        onNoteDelete={onNoteDelete}
+                        onNoteSave={onNoteSave}
+                        onNoteUnSave={onNoteUnSave}
+                        onNotePin={onNotePin}
+                        isPinned={isPinned}
+                        disableSave={!hasChanges}
+                        disableUnSave={!hasChanges}
+                        disableDelete={(!id || id === "new")}
+                    />
+                </Suspense>
             </HeaderContainerStyled>
 
             <NoteTitleInputField title={title} setTitle={setTitle}/>
@@ -140,20 +179,9 @@ const Note = React.memo(function Note({
 
             <EditableTags tags={tags} setTags={setTags}/>
 
-            <ButtonsContainerStyled>
-                <Button type={BUTTON_TYPE.DANGER}
-                        disabled={(!id || id === "new")}
-                        icon={MdDeleteForever}
-                        onClick={onNoteDelete}>Delete</Button>
-                <Button type={BUTTON_TYPE.SUCCESS}
-                        disabled={!hasChanges}
-                        icon={MdSave}
-                        onClick={onNoteSave}> Save </Button>
-            </ButtonsContainerStyled>
-
             <NoteMarkdownTabs content={content} onContentChange={setContent}/>
         </NoteContainerStyled>
     );
-});
+}
 
-export default Note;
+export default React.memo(Note);

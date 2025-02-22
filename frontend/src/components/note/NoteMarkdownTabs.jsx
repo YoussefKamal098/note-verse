@@ -28,6 +28,7 @@ const EditorStyled = styled(MarkdownEditor)`
 const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onContentChange}) {
     const initialTabIndex = Number(localStorage.getItem("NoteMarkdownTabsCurrentTab")) || 0;
     const [value, setValue] = useState(content);
+    const [internalUpdateTrigger, setInternalUpdateTrigger] = useState("");
     const isValueFromInSite = useRef(false);
 
     useEffect(() => {
@@ -36,6 +37,10 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
         }
     }, [content]);
 
+    useEffect(() => {
+        isValueFromInSite.current = false;
+    }, [internalUpdateTrigger]);
+
     const onTabChange = (tab) => {
         localStorage.setItem("NoteMarkdownTabsCurrentTab", tab);
     }
@@ -43,7 +48,10 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
             isValueFromInSite.current = true;
-            onContentChange(newContent);
+            onContentChange(() => {
+                setInternalUpdateTrigger(newContent);
+                return newContent;
+            });
         }, 300), [onContentChange]
     );
 

@@ -13,7 +13,7 @@ import {
     RightNavbarSideStyled
 } from "./NavbarStyles";
 
-const UserMenu = React.lazy(() => import("../userMenu/UserMenu"));
+const UserMenu = React.lazy(() => import("../menus/userMenu/UserMenu"));
 
 const Navbar = ({
                     showSearch = false,

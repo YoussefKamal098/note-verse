@@ -3,7 +3,6 @@ import RoutesPaths from "../constants/RoutesPaths";
 import {useToastNotification} from "../contexts/ToastNotificationsContext";
 import noteService from "../api/noteService";
 import CacheService from "../services/cacheService";
-import {formatBytes, stringSizeInBytes} from "shared-utils/string.utils";
 
 const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (prev) => (!prev)) => {
     const {notify} = useToastNotification();
@@ -14,7 +13,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
 
         try {
             const {data: note} = await noteService.create({isPinned, tags, title, content});
-            notify.success(`New note created with ID: ${note.id}`);
+            notify.success(`New note created successfully.`);
             navigate(RoutesPaths.NOTE(note.id), {replace: true});
             return note;
         } catch (error) {
@@ -32,9 +31,10 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
                 title,
                 content
             });
-            notify.success(`Content saved! ${formatBytes(stringSizeInBytes(content))}.`);
+            notify.success(`Note updated successfully.`);
             return note;
         } catch (error) {
+            console.log(error)
             throw new Error(`Failed to update note: ${error.message}`);
         }
     };
@@ -48,7 +48,9 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
                 savedNote = await createNote({id, isPinned, tags, title, content}) :
                 savedNote = await saveNoteUpdates({id, isPinned, tags, title, content});
 
-            await CacheService.delete(id);
+            // Attempt to delete the note from the cache.
+            // If this fails, the error is silently caught and ignored.
+            await CacheService.delete(note.id).catch(() => ({}));
 
             setNote(savedNote);
         } catch (error) {
