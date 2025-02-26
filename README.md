@@ -67,6 +67,7 @@ ACCESS_TOKEN_EXPIRY=1h
 REFRESH_TOKEN_SECRET=your-refresh-token-secret
 REFRESH_TOKEN_EXPIRY=1d
 REFRESH_TOKEN_COOKIES_NAME=jwt
+OTP_TOKEN_EXPIRY=15 # The OTP token expiry time, specified in minutes (i.e., tokens expire after 15 minutes)
 COOKIES_MAX_AGE=86400  # 24 hours in seconds
 LOGS_DIR=./logs
 EMAIL_HOST=smtp.gmail.com         # SMTP host (default: smtp.gmail.com)
@@ -207,13 +208,14 @@ The following routes are used for managing notes:
 
 The following routes are used for user management and authentication:
 
-| HTTP Method | Endpoint               | Description                                                            |
-|-------------|------------------------|------------------------------------------------------------------------|
-| `POST`      | `api/v1/auth/register` | Register a new user                                                    |
-| `POST`      | `api/v1/auth/login`    | Log in an existing user                                                |
-| `POST`      | `api/v1/auth/logout`   | Log out the currently logged-in user                                   |
-| `POST`      | `api/v1/auth/refresh`  | Refresh the access token using the stored JWT in the cookie in browser |
-| `GET`       | `api/v1/users/me`      | Retrieve the logged-in user's profile                                  |
+| HTTP Method | Endpoint                   | Description                                                                     |
+|-------------|----------------------------|---------------------------------------------------------------------------------|
+| `POST`      | `api/v1/auth/register`     | Register a new user and send an OTP code to the provided email for verification |
+| `POST`      | `api/v1/auth/login`        | Log in an existing user                                                         |
+| `POST`      | `api/v1/auth/logout`       | Log out the currently logged-in user                                            |
+| `POST`      | `api/v1/auth/refresh`      | Refresh the access token using the stored JWT in the cookie in browser          |
+| `POST`      | `api/v1/auth/verify_email` | Verify the user's email address using the provided OTP code                     |
+| `GET`       | `api/v1/users/me`          | Retrieve the logged-in user's profile                                           |
 
 ---
 
@@ -235,6 +237,7 @@ notes_app/
 │   ├── repositories/              # Data access layer for database queries and operations
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── services/                  # Service layer for business logic and external integrations
+│   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
 │   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
 │   ├── utils/                     # Utility functions for various tasks
 │   ├── validations/               # Validation logic for incoming requests (data validation)
@@ -259,6 +262,7 @@ notes_app/
 │   │   │   ├── note/              # Components related to note display and creation
 │   │   │   ├── noteCards/         # Components for displaying notes
 │   │   │   ├── notifications/     # Components for displaying notifications
+│   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
@@ -309,47 +313,37 @@ notes_app/
 - Allow users to upload and update their **profile image**. This will make user profiles more personalized and visually
   appealing.
 
-### 5. **Logging**
-
-- Integrate **Winston** or any other logging library for **error logging** and tracking user activity. This will help in
-  debugging and provide insights into user behavior.
-
-### 6. **N-gram Search Optimization**
+### 5. **N-gram Search Optimization**
 
 - Implement an **n-gram-based search** to optimize full-text searches for faster and more accurate results, especially
   for large datasets.
 
-### 7. **Pagination**
+### 6. **Pagination**
 
 - Implement **cursor-based pagination** for better performance when displaying large sets of data (such as long note
   lists or user activity logs).
 
-### 8. **Email Service**
+### 7. **Email and Password Change**
 
-- Add an **email service** to send notifications for actions like **user registration**, **password resets**, and **user
-  activity**. You could also use this service to send weekly summaries or reminders.
-
-### 9. **Email and Password Change**
-
-- Allow users to **update their email** and **password** securely. Adding multi-factor authentication (MFA) can also
+- Allow users to **update their email** and **password** securely. Adding `multi-factor` authentication (MFA) can also
   improve security during these changes.
 
-### 10. **Delete Account**
+### 8. **Delete Account**
 
 - Provide users with the option to **delete their account**. Ensure that the data is wiped securely from both the
   backend and frontend storage.
 
-### 11. **Compression for Large Markdown Content (Frontend & Backend)**
+### 9. **Compression for Large Markdown Content (Frontend & Backend)**
 
 - Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
   backend) to reduce the amount of data transmitted over the network.
 
-### 12. **Archive and Collection Notes**
+### 10. **Archive and Collection Notes**
 
 - Enable users to **archive or group their notes** into different **collections**. This will help with better
   organization and easier access to notes.
 
-### 13. **User Settings Section (Frontend)**
+### 11. **User Settings Section (Frontend)**
 
 - Create a **user settings page** where users can:
     - Upload or change their profile image.
@@ -357,32 +351,32 @@ notes_app/
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
 
-### 14. **Real-time Collaboration**
+### 12. **Real-time Collaboration**
 
 - Implement **real-time collaboration** for note editing, similar to Google Docs. This would allow multiple users to
   edit a note simultaneously with changes synced in real-time.
 
-### 15. **Version History / Note History**
+### 13. **Version History / Note History**
 
 - Implement a **note history/version control** feature to track changes over time. Users can view past versions of a
   note and restore them if needed. This feature can be especially useful for collaborative environments.
 
-### 16. **Data Encryption (Security)**
+### 14. **Data Encryption (Security)**
 
 - Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
   This will help improve the app's security and protect user privacy.
 
-### 17. **Notification System**
+### 15. **Notification System**
 
 - Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
   their notes or account.
 
-### 18. **Analytics & Reporting**
+### 16. **Analytics & Reporting**
 
 - Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
   use this data to improve the user experience and prioritize new features.
 
-### 19. **Push Notification**
+### 17. **Push Notification**
 
 - Integrated push notification service to notify users of key actions:
     - Login activity.
