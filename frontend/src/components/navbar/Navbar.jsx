@@ -30,7 +30,7 @@ const Navbar = ({
                 </LeftNavbarSideStyled>
 
                 <MiddleNavbarSideStyled>
-                    {showSearch && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
+                    {showSearch && user && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
                 </MiddleNavbarSideStyled>
 
                 {user &&

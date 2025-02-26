@@ -1,7 +1,7 @@
 import React from 'react';
+import {Navigate} from 'react-router-dom';
 import AuthRoute from "./AuthRoute";
 import PrivateRoute from "./PrivateRoute";
-import {Navigate} from "react-router-dom";
 import GeneralErrorPage from "../pages/GeneralErrorPage";
 import RoutesPaths from "../constants/RoutesPaths";
 
@@ -11,6 +11,7 @@ const LoginPage = React.lazy(() => import('../pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
 const NotePage = React.lazy(() => import('../pages/NotePage'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
+const OTPVerificationPage = React.lazy(() => import('../pages/OTPVerificationPage'));
 
 const RoutesDefinition = [
     {path: RoutesPaths.LOGIN, element: <AuthRoute><LoginPage/></AuthRoute>},
@@ -20,6 +21,7 @@ const RoutesDefinition = [
     {path: RoutesPaths.NOTE(":id"), element: <PrivateRoute><NotePage/></PrivateRoute>},
     {path: RoutesPaths.ERROR, element: <GeneralErrorPage/>},
     {path: RoutesPaths.NOT_FOUND, element: <NotFoundPage/>},
+    {path: RoutesPaths.VERIFY_ACCOUNT, element: <OTPVerificationPage/>}
 ];
 
 export default RoutesDefinition;

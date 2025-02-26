@@ -5,7 +5,7 @@ import LoginForm from "../components/forms/LoginForm";
 const LoginPage = () => {
     return (
         <div className="page">
-            <Navbar showSearch={false}/>
+            <Navbar/>
 
             <div className="wrapper">
                 <LoginForm/>

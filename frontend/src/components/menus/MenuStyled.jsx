@@ -32,8 +32,7 @@ const MenuContainerStyled = styled.div`
     padding: 1.75em 0;
     background-color: var(--color-background);
     border-radius: var(--border-radius);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    cursor: default;
+    box-shadow: var(--box-shadow-darker);
     user-select: text;
     transition: opacity 300ms ease, transform 300ms ease;
     animation: ${appearKeyframes} 300ms ease-out;

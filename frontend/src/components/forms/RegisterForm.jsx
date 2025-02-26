@@ -58,13 +58,15 @@ const RegisterForm = () => {
 
     const handleSubmit = async (values, {setSubmitting}) => {
         try {
+            setLoading(true);
             setSubmitting(true);
             await authService.register(values);
-            navigate(RoutesPaths.HOME);
+            // Pass the email to the verified account page via location state
+            navigate(RoutesPaths.VERIFY_ACCOUNT, {state: {email: values.email}});
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
-            setSubmitting(false);
+            setLoading(false);
             setSubmitting(false);
         }
     };

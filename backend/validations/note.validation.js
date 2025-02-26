@@ -51,7 +51,7 @@ class NoteValidationService {
         const {error} = this.titleSchema.validate(value);
         if (error) {
             throw new AppError(`Title: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
@@ -63,7 +63,7 @@ class NoteValidationService {
         if (error) {
             throw new AppError(
                 `Tags: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
@@ -75,7 +75,7 @@ class NoteValidationService {
         if (error) {
             throw new AppError(
                 `Content: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
@@ -87,7 +87,7 @@ class NoteValidationService {
         if (error) {
             throw new AppError(
                 `IsPinned: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }

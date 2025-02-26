@@ -21,26 +21,24 @@ const BUTTON_PROPS = Object.freeze({
 });
 
 const ButtonStyled = styled.button`
-    opacity: ${(props) => props.disabled ? 0.5 : 1};
-    color: ${(props) => BUTTON_PROPS[props.type].color};
-    padding: 0.5em;
-    border-radius: calc(var(--border-radius) / 1.5);
+    color: var(--color-background-light);
+    min-width: 5em;
+    min-height: 2.5em;
     font-size: 0.9em;
-    font-weight: 500;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-    border: var(--border-width) solid var(--color-border-secondary);
-    box-shadow: var(--box-shadow);
-    transition: 0.3s ease;
     gap: 0.2em;
+    padding: 0.5em;
+    border-radius: calc(var(--border-radius) / 1.5);
+    opacity: ${(props) => props.disabled ? 0.5 : 1};
+    cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+    background-color: ${(props) => BUTTON_PROPS[props.type].color};
+    transition: 0.3s ease;
 
     &:hover {
-        background-color: ${(props) => BUTTON_PROPS[props.type].color};
-        border-color: ${(props) => BUTTON_PROPS[props.type].color};
-        box-shadow: var(--box-shadow-hover);
-        color: var(--color-background);
+        scale: 1.1;
     }
 
     &:active {

@@ -5,7 +5,7 @@ import RegisterForm from "../components/forms/RegisterForm";
 const RegisterPage = () => {
     return (
         <div className="page">
-            <Navbar showSearch={false}/>
+            <Navbar/>
             <div className="wrapper">
                 <RegisterForm/>
             </div>

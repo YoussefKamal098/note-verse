@@ -121,6 +121,14 @@ function convertToBytes(input) {
     return value * unitToBytes[unit];
 }
 
+/**
+ * Checks if the provided string is alphanumeric.
+ * @param {string} str - The string to check.
+ * @returns {boolean} True if alphanumeric, false otherwise.
+ */
+const isAlphanumeric = (str) => /^[0-9A-Za-z]+$/.test(str);
+
+
 module.exports = {
     capitalizeFirstLetter,
     sanitizeString,
@@ -128,5 +136,6 @@ module.exports = {
     getInitials,
     capitalizeStringFirstLetter,
     stringSizeInBytes,
-    formatBytes
+    formatBytes,
+    isAlphanumeric
 };

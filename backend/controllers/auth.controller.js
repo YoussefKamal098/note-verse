@@ -1,8 +1,11 @@
 const httpCodes = require('../constants/httpCodes');
 const httpHeaders = require('../constants/httpHeaders');
+const {formatDate} = require("shared-utils/date.utils");
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const jwtAuthService = require('../services/jwtAuth.service');
+const emailQueue = require('../queues/email.queue');
+const emailService = require('../services/email.service');
 
 // I will implement csrf token generation for secure forms (login/register) later
 
@@ -59,13 +62,53 @@ class AuthController {
                 ip: req.ip,
                 userAgent: req.get(httpHeaders.USER_AGENT)
             };
-            const {accessToken, refreshToken} = await this.#jwtAuthService.register({
+            const user = await this.#jwtAuthService.register({
                 firstname,
                 lastname,
                 email,
                 password,
                 sessionInfo
             });
+
+            await emailService.sendVerificationEmail({
+                email,
+                name: `${firstname} ${lastname}`,
+                otpCode: user.otpCode,
+                otpCodeExpiresAt: user.otpCodeExpiresAt,
+                formatDate: formatDate,
+                emailQueue
+            });
+
+            res.status(httpCodes.CREATED.code).json({message: statusMessages.USER_CREATED});
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    /**
+     * Verifies user email with OTP code
+     * @param {import('express').Request} req - Request object
+     * @param {import('express').Response} res - Response object
+     * @param {Function} next - Next middleware
+     */
+    async verifyEmail(req, res, next) {
+        try {
+            const {email, otpCode} = req.body;
+
+            if (!email || !otpCode) {
+                next(new AppError(
+                    statusMessages.MISSING_VERIFICATION_DATA,
+                    httpCodes.BAD_REQUEST.code,
+                    httpCodes.BAD_REQUEST.name
+                ));
+            }
+
+            const sessionInfo = {
+                ip: req.ip,
+                userAgent: req.get(httpHeaders.USER_AGENT)
+            };
+
+            const {accessToken, refreshToken} = await this.#jwtAuthService.verifyEmail(email, otpCode, sessionInfo);
             this.#sendTokens(res, accessToken, refreshToken);
         } catch (error) {
             next(error);
@@ -100,9 +143,8 @@ class AuthController {
 
             const {accessToken, refreshToken} = await this.#jwtAuthService.login({
                 email,
-                password,
-                sessionInfo
-            });
+                password
+            }, sessionInfo);
 
             this.#sendTokens(res, accessToken, refreshToken);
         } catch (error) {
@@ -171,7 +213,7 @@ class AuthController {
         } catch (error) {
             const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
             res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-            
+
             throw error;
         }
     }

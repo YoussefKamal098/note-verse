@@ -5,7 +5,7 @@ import {ErrorContainerStyled, IconContainerStyled, MessageStyled} from "./ErrorP
 const ErrorPage = ({icon, title, message}) => {
     return (
         <div className="page">
-            <Navbar showSearch={false}/>
+            <Navbar/>
 
             <div className="wrapper">
                 <ErrorContainerStyled>

@@ -4,22 +4,64 @@ const AppError = require('../errors/app.error');
 const NoteValidationService = require("../validations/note.validation");
 const noteRepository = require("../repositories/note.repository");
 const userService = require('../services/user.service');
-const {deepFreeze} = require('shared-utils/obj.utils');
 const {convertToObjectId} = require('../utils/obj.utils');
 
 const DEFAULT_NOTE_PAGINATION_OPTIONS = {page: 0, perPage: 10, sort: {isPinned: -1, createdAt: -1}};
 
+/**
+ * Service for managing user notes.
+ *
+ * This service handles operations related to creating, retrieving, updating, and deleting user notes.
+ * It ensures that the associated user exists, validates note data using the NoteValidationService,
+ * and delegates data operations to the note repository.
+ *
+ * @class NoteService
+ */
 class NoteService {
+    /**
+     * @private
+     * @type {NoteRepository}
+     */
     #noteRepository;
+    /**
+     * @private
+     * @type {NoteValidationService}
+     */
     #noteValidationService;
+    /**
+     * @private
+     * @type {UserService}
+     */
     #userService;
 
+    /**
+     * Creates an instance of NoteService.
+     *
+     * @param {NoteRepository} noteRepository - Repository handling note database operations.
+     * @param {NoteValidationService} noteValidationService - Service to validate note data.
+     * @param {UserService} userService - Service for managing user-related operations.
+     */
     constructor(noteRepository, noteValidationService, userService) {
         this.#noteRepository = noteRepository;
         this.#noteValidationService = noteValidationService;
         this.#userService = userService;
     }
 
+    /**
+     * Validates note data for creation or update.
+     *
+     * If the note is new or if a field is provided (i.e., not undefined), the corresponding
+     * validation method is invoked on the NoteValidationService.
+     *
+     * @private
+     * @param {Object} noteData - The note data to validate.
+     * @param {string} noteData.title - The title of the note.
+     * @param {Array} noteData.tags - The tags associated with the note.
+     * @param {string} noteData.content - The content of the note.
+     * @param {boolean} noteData.isPinned - Indicates if the note is pinned.
+     * @param {boolean} [isNew=true] - Flag indicating if this is a new note.
+     * @returns {void}
+     */
     #validateNoteData({title, tags, content, isPinned}, isNew = true) {
         if (isNew || title !== undefined) {
             this.#noteValidationService.validateTitle(title);
@@ -35,16 +77,40 @@ class NoteService {
         }
     }
 
+    /**
+     * Ensures that a note exists for the given user by attempting to find it.
+     *
+     * @private
+     * @param {string} userId - The ID of the user.
+     * @param {string} noteId - The ID of the note.
+     * @returns {Promise<void>}
+     * @throws {AppError} If the note does not exist or does not belong to the user.
+     */
     async #ensureUserNoteExists(userId, noteId) {
         await this.findUserNoteById(userId, noteId);
     }
 
-    async create({userId = "", title = "", tags = [], content = "", isPinned = false} = {}) {
+    /**
+     * Creates a new note for a user.
+     *
+     * Validates that the user exists and that the note data is valid; then delegates note creation
+     * to the note repository.
+     *
+     * @param {Object} params - The note creation parameters.
+     * @param {string} params.userId - The ID of the user.
+     * @param {string} params.title - The title of the note.
+     * @param {Array} params.tags - The tags associated with the note.
+     * @param {string} params.content - The content of the note.
+     * @param {boolean} params.isPinned - Indicates if the note is pinned.
+     * @returns {Promise<Object>} The newly created note object.
+     * @throws {AppError} If note creation fails.
+     */
+    async create({userId, title, tags, content, isPinned} = {}) {
         await this.#userService.ensureUserExists(userId);
         this.#validateNoteData({title, tags, content, isPinned});
 
         try {
-            return deepFreeze(await this.#noteRepository.create({userId, title, tags, content, isPinned}));
+            return await this.#noteRepository.create({userId, title, tags, content, isPinned});
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTE_CREATION_FAILED,
@@ -54,7 +120,17 @@ class NoteService {
         }
     }
 
-    async findUserNoteById(userId = "", noteId = "") {
+    /**
+     * Retrieves a note by its ID for a specific user.
+     *
+     * Ensures that the user exists and that the note belongs to the user.
+     *
+     * @param {string} userId - The ID of the user.
+     * @param {string} noteId - The ID of the note.
+     * @returns {Promise<Object | null>} The note object deep-frozen if found.
+     * @throws {AppError} If the note is not found or does not belong to the user.
+     */
+    async findUserNoteById(userId, noteId) {
         await this.#userService.ensureUserExists(userId);
         let note;
 
@@ -62,7 +138,7 @@ class NoteService {
             note = await this.#noteRepository.findById(noteId);
         } catch (error) {
             throw new AppError(
-                statusMessages.USER_NOTE_NOT_FOUND,
+                httpCodes.INTERNAL_SERVER_ERROR.message,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );
@@ -76,10 +152,26 @@ class NoteService {
             );
         }
 
-        return deepFreeze(note);
+        return note;
     }
 
-    async updateUserNote(userId = "", noteId = "", {title, tags, content, isPinned}) {
+    /**
+     * Updates a user's note.
+     *
+     * Validates that the note exists for the user and that the provided update data is valid.
+     * Delegates the update operation to the note repository.
+     *
+     * @param {string} userId - The ID of the user.
+     * @param {string} noteId - The ID of the note.
+     * @param {Object} updates - The fields to update.
+     * @param {string} [updates.title] - The updated title of the note.
+     * @param {Array} [updates.tags] - The updated tags for the note.
+     * @param {string} [updates.content] - The updated content of the note.
+     * @param {boolean} [updates.isPinned] - The updated pinned status.
+     * @returns {Promise<Object | null>} The updated note object deep-frozen if found.
+     * @throws {AppError} If the update operation fails.
+     */
+    async updateUserNote(userId, noteId, {title, tags, content, isPinned}) {
         await this.#ensureUserNoteExists(userId, noteId);
         this.#validateNoteData({title, tags, content, isPinned}, false);
         let note;
@@ -103,10 +195,20 @@ class NoteService {
             );
         }
 
-        return deepFreeze(note);
+        return note;
     }
 
-    async deleteUserNoteById(userId = "", noteId = "") {
+    /**
+     * Deletes a user's note by its ID.
+     *
+     * Ensures that the note exists for the user, then delegates deletion to the note repository.
+     *
+     * @param {string} userId - The ID of the user.
+     * @param {string} noteId - The ID of the note.
+     * @returns {Promise<Object>} The deleted note object.
+     * @throws {AppError} If note deletion fails.
+     */
+    async deleteUserNoteById(userId, noteId) {
         await this.#ensureUserNoteExists(userId, noteId);
         let deletedNote;
 
@@ -128,10 +230,24 @@ class NoteService {
             );
         }
 
-        return deepFreeze(deletedNote);
+        return deletedNote;
     }
 
-    async findUserNotes(userId = "", {
+    /**
+     * Retrieves notes for a specific user with optional search and pagination.
+     *
+     * Ensures that the user exists and applies default pagination options if none are provided.
+     * If searchText is provided, delegates to a search method; otherwise, retrieves notes normally.
+     *
+     * @param {string} userId - The ID of the user.
+     * @param {Object} [params={}] - Parameters for fetching notes.
+     * @param {string} [params.searchText=""] - Text to search for within notes.
+     * @param {Object} [params.query={}] - Additional query filters.
+     * @param {Object} [params.options=DEFAULT_NOTE_PAGINATION_OPTIONS] - Pagination and sorting options.
+     * @returns {Promise<Readonly<Object>>} An array of note objects.
+     * @throws {AppError} If note retrieval fails.
+     */
+    async findUserNotes(userId, {
         searchText = "",
         query = {},
         options = DEFAULT_NOTE_PAGINATION_OPTIONS
@@ -146,16 +262,16 @@ class NoteService {
             } = options;
 
             if (searchText) {
-                return deepFreeze(await this.#noteRepository.findWithSearchText(searchText, {
+                return await this.#noteRepository.findWithSearchText(searchText, {
                     ...query,
                     userId: convertToObjectId(userId)
-                }, {page, perPage, sort}));
+                }, {page, perPage, sort});
 
             } else {
-                return deepFreeze(await this.#noteRepository.find({
+                return await this.#noteRepository.find({
                     ...query,
                     userId: convertToObjectId(userId)
-                }, {page, perPage, sort}));
+                }, {page, perPage, sort});
             }
 
         } catch (error) {

@@ -1,4 +1,5 @@
 const {parseTime} = require("shared-utils/date.utils");
+const {generateSecureOTP} = require('../utils/otp.utils');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
@@ -142,14 +143,15 @@ class JwtAuthService {
                 httpCodes.BAD_REQUEST.name
             );
         }
-        const passwordValid = await this.#userService.passwordHasherService.verify(password, user.password);
-        if (!passwordValid) {
+
+        if (!(await this.#userService.passwordHasherService.verify(password, user.password))) {
             throw new AppError(
                 statusMessages.INVALID_CREDENTIALS,
                 httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
+
         return user;
     }
 
@@ -179,6 +181,7 @@ class JwtAuthService {
         }
         // No existing session: create a new one.
         const expiredAt = parseTime(this.config.refreshTokenExpiry);
+
         session = await this.#sessionService.createSession({
             userId: userId,
             ip: sessionInfo.ip,
@@ -190,6 +193,31 @@ class JwtAuthService {
     }
 
     /**
+     * Generates session tokens after successful authentication
+     * @private
+     * @param {string} userId - user id
+     * @param {SessionInfo} sessionInfo - Session context information
+     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair
+     */
+    async #generateSessionTokens(userId, sessionInfo) {
+        const session = await this.#handleSession(userId, sessionInfo);
+        const payload = this.#getPayload(userId, session.id);
+
+        return {
+            accessToken: await this.#jwtProviderService.generateToken(
+                payload,
+                this.config.accessTokenSecret,
+                this.config.accessTokenExpiry
+            ),
+            refreshToken: await this.#jwtProviderService.generateToken(
+                payload,
+                this.config.refreshTokenSecret,
+                this.config.refreshTokenExpiry
+            )
+        };
+    }
+
+    /**
      * Registers a new user and automatically logs them in.
      *
      * @param {object} data - Registration data.
@@ -197,62 +225,92 @@ class JwtAuthService {
      * @param {string} [data.lastname] - The user's last name (optional).
      * @param {string} data.email - The user's email.
      * @param {string} data.password - The user's password.
-     * @param {SessionInfo} data.sessionInfo - Session info containing ip and userAgent.
-     * @returns {Promise<{ accessToken: string, refreshToken: string }>} An object containing accessToken and refreshToken.
+     * @returns {Promise<Object>} An object containing user data.
      * @throws {AppError} If a user with the given email already exists.
      */
-    async register({firstname, lastname, email, password, sessionInfo}) {
-        const existingUser = await this.#userService.findByEmail(email);
-        if (existingUser) {
+    async register({firstname, lastname, email, password}) {    // Generate OTP and expiration
+        const otpCode = generateSecureOTP({
+            length: 6,
+            charType: 'alphanumeric',
+            caseSensitive: true
+        });
+
+        return await this.#userService.create({
+            email,
+            password,
+            firstname,
+            lastname,
+            otpCode,
+            otpCodeExpiry: this.config.otpTokenExpiry
+        });
+    }
+
+    /**
+     * Verifies a user's email using the OTP and generates session tokens.
+     *
+     * @param {string} email - User's email address.
+     * @param {string} otpCode - The one-time password provided by the user.
+     * @param {SessionInfo} sessionInfo - Session context information.
+     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair upon successful verification.
+     * @throws {AppError} If verification fails.
+     */
+    async verifyEmail(email, otpCode, sessionInfo) {
+        // Retrieve the user along with OTP details.
+        const user = await this.#userService.getUserForEmailVerification(email);
+
+        if (!user) {
             throw new AppError(
-                statusMessages.USER_ALREADY_EXISTS,
+                statusMessages.EMAIL_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        if (user.isVerified) {
+            throw new AppError(
+                statusMessages.EMAIL_ALREADY_VERIFIED,
                 httpCodes.CONFLICT.code,
                 httpCodes.CONFLICT.name
             );
         }
-        await this.#userService.create({email, password, firstname, lastname});
-        // Automatically log the user in after registration.
-        return this.login({email, password, sessionInfo});
+
+        // Verify that an OTP exists and that it matches.
+        if (!user.otpCode || !(await this.#userService.passwordHasherService.verify(otpCode, user.otpCode))) {
+            throw new AppError(
+                statusMessages.INVALID_OTP,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
+        }
+
+        // Check that the OTP is not expired.
+        if (user.otpCodeExpiresAt < new Date()) {
+            throw new AppError(
+                statusMessages.OTP_EXPIRED,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
+        }
+
+        // Mark the email as verified.
+        const updatedUser = await this.#userService.markEmailAsVerified(email);
+
+        // Generate and return session tokens.
+        return this.#generateSessionTokens(updatedUser.id, sessionInfo);
     }
 
     /**
-     * Logs in a user by verifying credentials and handling session creation/reactivation.
-     *
-     * This method verifies the user's credentials and then checks if a session exists for the same IP and device.
-     * - If an active session exists, it throws a conflict error.
-     * - If an inactive session exists, it reactivates the session.
-     * - Otherwise, it creates a new session.
-     *
-     * Finally, it generates JWT tokens with a payload that includes both the user ID and the session ID.
-     *
-     * @param {object} data - Login data.
-     * @param {string} data.email - The user's email.
-     * @param {string} data.password - The user's password.
-     * @param {SessionInfo} data.sessionInfo - Session info containing ip and userAgent.
-     * @returns {Promise<{ accessToken: string, refreshToken: string }>} An object containing accessToken and refreshToken.
-     * @throws {AppError} If credentials are invalid or if the user is already logged in from that device/location.
+     * Logs in a user with credentials and generates session tokens
+     * @param {Object} credentials - Login credentials
+     * @param {string} credentials.email - User's email
+     * @param {string} credentials.password - User's password
+     * @param {SessionInfo} sessionInfo - Session context information
+     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair
+     * @throws {AppError} On invalid credentials or session conflict
      */
-    async login({email, password, sessionInfo}) {
-        // Verify user credentials.
+    async login({email, password}, sessionInfo) {
         const user = await this.#verifyUserCredentials(email, password);
-
-        // Handle session creation or reactivation.
-        const session = await this.#handleSession(user.id, sessionInfo);
-
-        // Build JWT payload and generate tokens.
-        const payload = this.#getPayload(user.id, session.id);
-        const accessToken = await this.#jwtProviderService.generateToken(
-            payload,
-            this.config.accessTokenSecret,
-            this.config.accessTokenExpiry
-        );
-        const refreshToken = await this.#jwtProviderService.generateToken(
-            payload,
-            this.config.refreshTokenSecret,
-            this.config.refreshTokenExpiry
-        );
-
-        return {accessToken, refreshToken};
+        return this.#generateSessionTokens(user.id, sessionInfo);
     }
 
     /**

@@ -16,6 +16,7 @@ const ENDPOINTS = {
     LOGIN: 'auth/login',
     LOGOUT: '/auth/logout',
     REGISTER: '/auth/register',
+    VERIFY_EMAIL: 'auth/verify_email',
 };
 
 class AuthService {
@@ -172,31 +173,63 @@ class AuthService {
     }
 
     /**
-     * Registers a new user by posting their information to the register endpoint.
-     * @param {Object} user - The user registration data.
-     * @param {string} user.email - The user's email.
-     * @param {string} user.password - The user's password.
-     * @param {string} user.firstname - The user's first name.
-     * @param {string} user.lastname - The user's last name.
-     * @returns {Promise<Object>} Response with status code and data.
-     * @throws {Error} If registration fails.
+     * Registers a new user.
+     * <p>
+     * This method sends a POST request to the register endpoint with the user's registration data.
+     * </p>
+     *
+     * @async
+     * @param {Object} userData - The registration details for the new user.
+     * @param {string} userData.email - The email address of the new user.
+     * @param {string} userData.password - The password for the new user.
+     * @param {string} userData.firstname - The first name of the new user.
+     * @param {string} userData.lastname - The last name of the new user.
+     * @returns {Promise<Object>} The API response from the register endpoint.
+     * @throws {Error} If the registration process fails.
      */
     async register({email, password, firstname, lastname}) {
         try {
-            const response = await this.#apiClient.post(ENDPOINTS.REGISTER, {
+            return await this.#apiClient.post(ENDPOINTS.REGISTER, {
                 email,
                 password,
                 firstname,
                 lastname,
             });
-            const {accessToken} = response.data;
-
-            this.#tokenStorageService.setAccessToken(accessToken);
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {email, firstname, lastname}});
-
-            return response;
         } catch (error) {
             return this.#handleError(error, 'Registration failed');
+        }
+    }
+
+    /**
+     * Verifies the user's email using an OTP.
+     * <p>
+     * This method sends a POST request to the verify-email endpoint with the provided
+     * email and OTP.
+     * On a successful response, it sets the access token, retrieves the
+     * authenticated user's details, and emits a login event with the user's information.
+     * </p>
+     *
+     * @async
+     * @param {Object} params - The parameters for email verification.
+     * @param {string} params.email - The email address to verify.
+     * @param {string} params.otpCode - The one-time password (OTP) sent to the user's email.
+     * @returns {Promise<Object>} The API response from the verify-email endpoint.
+     * @throws {Error} If the email verification process fails.
+     */
+    async verifyEmail({email, otpCode}) {
+        try {
+            const response = await this.#apiClient.post(ENDPOINTS.VERIFY_EMAIL, {email, otpCode});
+
+            const {accessToken} = response.data;
+            this.#tokenStorageService.setAccessToken(accessToken);
+
+            const user = await this.#userService.getAuthenticatedUser();
+            const {id, firstname, lastname} = user.data;
+
+            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+            return response;
+        } catch (error) {
+            return this.#handleError(error, 'Email verification failed');
         }
     }
 

@@ -67,28 +67,35 @@ class SessionService {
 
         const now = Date.now();
 
-        // Look for an existing session using plain domain keys.
-        const existingSession = await this.#sessionRepository.findSessionByKeys({
-            userId,
-            ip: parsedIp,
-            browserName: info.browser.name,
-            osName: info.os.name,
-            deviceType: info.device.type,
-        });
-
-        if (existingSession && compareDates(now, existingSession.expiredAt) >= 0) {
-            // Session expired – update it.
-            return this.#sessionRepository.updateSessionById(existingSession.id, {
-                userAgent,
-                expiredAt: parseTime(expiredAt),
-                lastAccessedAt: now,
-                reusedAt: now,
+        try {
+            // Look for an existing session using plain domain keys.
+            const existingSession = await this.#sessionRepository.findSessionByKeys({
+                userId,
+                ip: parsedIp,
+                browserName: info.browser.name,
+                osName: info.os.name,
+                deviceType: info.device.type,
             });
-        }
 
-        if (existingSession) {
-            // Session is active.
-            return existingSession;
+            if (existingSession && compareDates(now, existingSession.expiredAt) >= 0) {
+                // Session expired – update it.
+                return this.#sessionRepository.updateSessionById(existingSession.id, {
+                    userAgent,
+                    expiredAt: parseTime(expiredAt),
+                    lastAccessedAt: now,
+                    reusedAt: now,
+                });
+            }
+            if (existingSession) {
+                // Session is active.
+                return existingSession;
+            }
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
 
         // Construct new session data.
@@ -128,15 +135,22 @@ class SessionService {
             );
         }
         const {info} = parsedUA;
-
-        return this.#sessionRepository.findActiveSessionByKeys({
-            userId,
-            ip: parsedIp,
-            browserName: info.browser.name,
-            osName: info.os.name,
-            deviceType: info.device.type,
-            currentTime: new Date(),
-        });
+        try {
+            return this.#sessionRepository.findActiveSessionByKeys({
+                userId,
+                ip: parsedIp,
+                browserName: info.browser.name,
+                osName: info.os.name,
+                deviceType: info.device.type,
+                currentTime: new Date(),
+            });
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
     }
 
     /**
@@ -146,7 +160,15 @@ class SessionService {
      * @returns {Promise<Object|null>} The session if found.
      */
     async findSessionById(sessionId) {
-        return this.#sessionRepository.findById(sessionId);
+        try {
+            return this.#sessionRepository.findById(sessionId);
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
     }
 
     /**
@@ -157,7 +179,18 @@ class SessionService {
      * @throws {AppError} If the session is not found or is already expired.
      */
     async inactivateSession(sessionId) {
-        const session = await this.#sessionRepository.findById(sessionId);
+        let session;
+
+        try {
+            session = await this.#sessionRepository.findById(sessionId);
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+
         if (!session || compareDates(Date.now(), session.expiredAt) >= 0) {
             throw new AppError(
                 statusMessages.SESSION_NOT_FOUND_OR_ALREADY_LOGGED_OUT,
@@ -165,9 +198,16 @@ class SessionService {
                 httpCodes.UNAUTHORIZED.name
             );
         }
-        return this.#sessionRepository.updateSessionById(sessionId, {
-            expiredAt: new Date(),
-        });
+
+        try {
+            return this.#sessionRepository.updateSessionById(sessionId, {expiredAt: new Date()});
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
     }
 
     /**
@@ -177,7 +217,18 @@ class SessionService {
      * @returns {Promise<boolean>} True if expired or not found.
      */
     async isSessionExpired(sessionId) {
-        const session = await this.findSessionById(sessionId);
+        let session;
+
+        try {
+            session = await this.findSessionById(sessionId);
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+
         return !session || compareDates(Date.now(), session.expiredAt) >= 0;
     }
 
@@ -189,7 +240,18 @@ class SessionService {
      * @throws {AppError} If the session is not found.
      */
     async updateLastAccess(sessionId) {
-        const session = await this.#sessionRepository.findById(sessionId);
+        let session;
+
+        try {
+            session = await this.findSessionById(sessionId);
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+
         if (!session) {
             throw new AppError(
                 statusMessages.SESSION_NOT_FOUND_OR_ALREADY_LOGGED_OUT,
@@ -197,9 +259,16 @@ class SessionService {
                 httpCodes.NOT_FOUND.name
             );
         }
-        return this.#sessionRepository.updateSessionById(sessionId, {
-            lastAccessedAt: Date.now(),
-        });
+
+        try {
+            return this.#sessionRepository.updateSessionById(sessionId, {lastAccessedAt: new Date()});
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
     }
 }
 

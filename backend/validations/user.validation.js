@@ -41,7 +41,7 @@ class UserValidationService {
         if (error) {
             throw new AppError(
                 `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
@@ -53,7 +53,7 @@ class UserValidationService {
         if (error) {
             throw new AppError(
                 `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }
@@ -65,7 +65,7 @@ class UserValidationService {
         if (error) {
             throw new AppError(
                 `${capitalizeFirstLetter(fieldName)}: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }

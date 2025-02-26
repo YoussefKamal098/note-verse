@@ -1,6 +1,7 @@
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const emailConfig = require('../config/emailConfig');
+const emailTemplates = require('../constants/emailTemplates');
 
 /**
  * EmailService is responsible for sending emails using SMTP settings.
@@ -158,6 +159,41 @@ class EmailService {
             console.error('Error sending email:', error);
             throw new Error(`Failed to send email to ${to}: ${error.message}`);
         }
+    }
+
+    /**
+     * Sends a verification email by adding a job to the email queue.
+     *
+     * This method constructs the email context using the provided parameters and enqueues
+     * an email job with the subject "Verify Your Email address" using the 'verify_email' template.
+     *
+     * @async
+     * @param {Object} params - The parameters object.
+     * @param {string} params.email - The recipient's email address.
+     * @param {string} params.name - The recipient's full name.
+     * @param {string} params.otpCode - The one-time password (OTP) code for verification.
+     * @param {Date|string|number} params.otpCodeExpiresAt - The expiration time for the OTP code.
+     * @param {Function} params.formatDate - A function that formats a Date object into a string.
+     * @param {import('bull').Queue} params.emailQueue - The Bull queue instance used to add email jobs.
+     * @returns {Promise<void>} A promise that resolves when the email job is successfully added to the queue.
+     * @throws {Error} If adding the email job to the queue fails.
+     */
+    async sendVerificationEmail({email, name, otpCode, otpCodeExpiresAt, formatDate, emailQueue}) {
+        const emailContext = {
+            name: name,
+            otpCode: otpCode,
+            expiryTime: formatDate(otpCodeExpiresAt),
+            timestamp: formatDate(new Date()),
+            year: new Date().getFullYear()
+        };
+
+        // Add the email job to the queue using the specified template, subject, and constructed context.
+        await emailQueue.add({
+            to: email,
+            subject: emailTemplates.verify_email.subject,
+            template: emailTemplates.verify_email.template,
+            context: emailContext
+        });
     }
 }
 

@@ -16,8 +16,14 @@ const registerLimiterMiddleware = createRateLimiterMiddleware({
     windowMs: time({[timeUnit.MINUTE]: 1})
 });
 
+const verifyLimiterMiddleware = createRateLimiterMiddleware({
+    maxRequests: 10, // 10 attempts per minute
+    windowMs: time({[timeUnit.MINUTE]: 1})
+});
+
 // Routes with appropriate rate-limiting applied
 router.post('/register', registerLimiterMiddleware, asyncRequestHandler(authController.register.bind(authController)));
+router.post('/verify_email', verifyLimiterMiddleware, asyncRequestHandler(authController.verifyEmail.bind(authController)));
 router.post('/login', loginLimiterMiddleware, asyncRequestHandler(authController.login.bind(authController)));
 router.post('/logout', defaultRateLimiterMiddleware, asyncRequestHandler(authController.logout.bind(authController)));
 router.post('/refresh', defaultRateLimiterMiddleware, asyncRequestHandler(authController.refreshToken.bind(authController)));

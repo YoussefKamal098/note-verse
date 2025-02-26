@@ -5,11 +5,12 @@ require('dotenv').config();
 
 const authConfig = Object.freeze({
     accessTokenSecret: parseString(process.env.ACCESS_TOKEN_SECRET, 'your-access-token-secret'),
-    accessTokenExpiry: parseString(process.env.ACCESS_TOKEN_EXPIRY, '1h'),
+    accessTokenExpiry: parseString(process.env.ACCESS_TOKEN_EXPIRY, '1h'), // one hour
     refreshTokenSecret: parseString(process.env.REFRESH_TOKEN_SECRET, 'your-refresh-token-secret'),
-    refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '7d'),
+    refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '7d'), // one week
+    otpTokenExpiry: parseNumber(process.env.OTP_TOKEN_EXPIRY, time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)),
     cookiesName: parseString(process.env.REFRESH_TOKEN_COOKIES_NAME, 'jwt'),
-    cookiesMaxAge: parseNumber(process.env.COOKIES_MAX_AGE, time({[timeUnit.DAY]: 7}, timeUnit.SECOND)),
+    cookiesMaxAge: parseNumber(process.env.COOKIES_MAX_AGE, time({[timeUnit.DAY]: 7})),
     getCookieOptions() {
         const maxAge = time({[timeUnit.SECOND]: this.cookiesMaxAge}, timeUnit.MILLISECOND);
         const expires = timeFromNow({[timeUnit.SECOND]: this.cookiesMaxAge});

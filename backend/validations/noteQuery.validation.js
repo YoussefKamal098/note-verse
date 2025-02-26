@@ -29,7 +29,7 @@ class NoteQueryValidationService {
         if (error) {
             throw new AppError(
                 `Notes Query Parameters: ${error.details[0].message}`,
-                httpCodes.BAD_REQUEST,
+                httpCodes.BAD_REQUEST.code,
                 httpCodes.BAD_REQUEST.name
             );
         }

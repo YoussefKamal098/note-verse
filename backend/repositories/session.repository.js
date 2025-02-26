@@ -48,7 +48,7 @@ class SessionRepository {
      * @returns {Promise<Object>} The created session document, deep-frozen to prevent further modifications.
      * @throws {Error} If an error occurs during session creation.
      */
-    async create(sessionData) {
+    async create(sessionData = {}) {
         try {
             const session = await this.#model.findOneAndUpdate(
                 // Use unique keys that identify the session
@@ -102,7 +102,7 @@ class SessionRepository {
      * @returns {Promise<Object|null>} The session document if found; otherwise, null.
      * @throws {Error} If an error occurs during the query.
      */
-    async findSessionByKeys({userId, ip, browserName, osName, deviceType}) {
+    async findSessionByKeys({userId, ip, browserName, osName, deviceType} = {}) {
         const query = {userId, ip, browserName, osName, deviceType};
         try {
             const sessionDoc = await this.#model.findOne(query).lean();
@@ -153,7 +153,7 @@ class SessionRepository {
      * @returns {Promise<Object|null>} The updated session document if the update was successful; otherwise, null.
      * @throws {Error} If an error occurs during the update.
      */
-    async updateSessionById(sessionId, updates) {
+    async updateSessionById(sessionId, updates = {}) {
         if (!isValidObjectId(sessionId)) return null;
         try {
             const updatedSession = await this.#model

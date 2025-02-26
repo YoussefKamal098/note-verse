@@ -50,6 +50,14 @@ const statusMessages = Object.freeze({
     ACCESS_TOKEN_EXPIRED: "Your access token has expired. Please log in to obtain a new one or refresh it.",
     USER_NOT_AUTHORIZED: "User not authorized. Please log in to continue.",
     USER_ALREADY_EXISTS: "User already exists. Please log in or use a different email.",
+    USER_CREATED: "User created successfully. Please verify your email address to complete registration",
+
+    EMAIL_NOT_FOUND: "No account found with this email address. Please check email and try again later.",
+    EMAIL_ALREADY_VERIFIED: "Email address already verified. No further action required.",
+    INVALID_OTP: "Invalid verification code. Please check the code and try again. ",
+    OTP_EXPIRED: "Verification code has expired.",
+    MISSING_VERIFICATION_DATA: "Email and verification code are required. Please provide both fields to complete verification.",
+    EMAIL_VERIFICATION_SUCCESS: "Email successfully verified! Your account is now fully activated. !",
 
     // Custom messages for session management
     INVALID_IP_ADDRESS: "The IP address provided is invalid or unrecognized. Please provide a valid IPv4 or IPv6 address and try again.",
