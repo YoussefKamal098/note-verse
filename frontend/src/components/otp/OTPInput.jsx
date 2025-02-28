@@ -1,6 +1,24 @@
 import React, {memo, useCallback, useEffect, useState} from "react";
-import {BoxStyled, boxVariants, containerVariants, OTPContainerStyled} from "./otpStyled";
+import {AnimatePresence, motion} from "framer-motion";
+import {BoxStyled, boxVariants, charVariants, containerVariants, OTPContainerStyled} from "./otpStyled";
 import {isAlphanumeric} from "shared-utils/string.utils";
+import {computeAnimationDelays} from "./otpHelpers";
+
+// List of keys that should be ignored (non-printable/control keys)
+const specialKeys = [
+    "Shift",
+    "Control",
+    "Alt",
+    "Meta",
+    "CapsLock",
+    "Tab",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+    "Escape",
+    "Enter"
+];
 
 /**
  * OTPInput Component
@@ -27,11 +45,19 @@ const OTPInput = memo(({
                            animationState = "idle",
                            reset,
                        }) => {
+    const [internalDisabled, setInternalDisabled] = useState(true);
     const [otp, setOtp] = useState("");
+    const [deletingIndex, setDeletingIndex] = useState(-1);
 
-    // Reset OTP when the 'reset' prop changes.
+    useEffect(() => {
+        setTimeout(() => {
+            setInternalDisabled(false);
+        }, computeAnimationDelays.visible(length));
+    }, []);
+
     useEffect(() => {
         setOtp("");
+        setDeletingIndex(-1);
     }, [reset]);
 
     /**
@@ -47,40 +73,41 @@ const OTPInput = memo(({
      * Global keydown handler to update OTP input.
      */
     const handleKeyDown = useCallback((e) => {
-        if (disabled) {
+        if (disabled || internalDisabled) {
             e.preventDefault();
             return;
         }
+
+        if (specialKeys.includes(e.key)) return;
+
         setError("");
 
-        // Handle backspace when no characters are present.
-        if (e.key === "Backspace" && otp.length === 0) {
-            e.preventDefault();
-            return;
-        }
+        if (e.key === "Backspace") {
+            if (otp.length === 0) return;
 
-        // Handle backspace to remove the last character.
-        if (e.key === "Backspace" && otp.length > 0) {
+            // Set deleting index before updating OTP
+            setDeletingIndex(otp.length - 1);
             const newOtp = otp.slice(0, -1);
+
             setOtp(newOtp);
-            onChange && onChange(newOtp);
+            onChange?.(newOtp);
+
             e.preventDefault();
             return;
         }
 
-        // Accept valid alphanumeric input.
         if (isAlphanumeric(e.key) && otp.length < length) {
             const newOtp = otp + e.key;
+
             setOtp(newOtp);
-            onChange && onChange(newOtp);
-            if (newOtp.length === length && onComplete) {
-                onComplete(newOtp);
-            }
+            onChange?.(newOtp);
+
+            if (newOtp.length === length) onComplete?.(newOtp);
         } else if (otp.length < length) {
             setError("Only alphanumeric characters are allowed.");
             e.preventDefault();
         }
-    }, [disabled, otp, length, onChange, onComplete, setError]);
+    }, [disabled, otp, length, onChange, onComplete, setError, internalDisabled]);
 
     /**
      * Global paste handler to support pasting the OTP.
@@ -120,10 +147,10 @@ const OTPInput = memo(({
 
     // Attach global event listeners.
     useEffect(() => {
-        window.addEventListener("keyup", handleKeyDown);
+        window.addEventListener("keydown", handleKeyDown);
         window.addEventListener("paste", handlePaste);
         return () => {
-            window.removeEventListener("keyup", handleKeyDown);
+            window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("paste", handlePaste);
         };
     }, [handleKeyDown, handlePaste]);
@@ -134,10 +161,24 @@ const OTPInput = memo(({
                 <BoxStyled
                     key={index}
                     variants={boxVariants}
+                    initial={boxVariants.hidden}
                     custom={{index, length}}
                     animate={getAnimationVariant()}
                 >
-                    {otp[index] || ""}
+                    <AnimatePresence>
+                        {otp[index] && (
+                            <motion.span
+                                key={`${index}-${otp[index]}`}
+                                variants={charVariants}
+                                initial={index === deletingIndex ? "exit" : "hidden"}
+                                animate="visible"
+                                exit="exit"
+                                custom={{deleting: index === deletingIndex}}
+                            >
+                                {otp[index]}
+                            </motion.span>
+                        )}
+                    </AnimatePresence>
                 </BoxStyled>
             ))}
         </OTPContainerStyled>

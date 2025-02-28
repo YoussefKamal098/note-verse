@@ -4,7 +4,7 @@ import {motion} from "framer-motion";
 import {LuCircleCheckBig} from "react-icons/lu";
 import {isAlphanumeric} from "shared-utils/string.utils";
 import {maskEmail} from "shared-utils/email.utils";
-import {computeErrorAnimateClearDelay} from "./otpUtils";
+import {computeAnimationDelays} from "./otpHelpers";
 import OTPInput from "./OTPInput";
 import Button, {BUTTON_TYPE} from "../buttons/Button";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
@@ -46,7 +46,7 @@ const OTPVerification = memo(({email, length = 6}) => {
 
     // Disable input when verifying or when not idle.
     const disabledInput = isVerifying || animationState !== "idle";
-    const clearDelay = useMemo(() => computeErrorAnimateClearDelay(length), [length]);
+    const clearDelay = useMemo(() => computeAnimationDelays.error(length), [length]);
 
     /**
      * Verifies the OTP using a simulated API call.
