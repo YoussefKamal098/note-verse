@@ -46,35 +46,24 @@ class LoggerService {
                     formatOptions = {timestampFormat: 'YYYY-MM-DD HH:mm:ss'},
                 } = {}) {
         this.#logDir = dir;
-
         // Ensure the log directory exists.
         this.#ensureLogDirectoryExists();
-        // Create the custom format using provided options (or default if not provided).
-        const customFormat = this.#createCustomFormat(formatOptions);
 
-        try {
-            this.transports = this.#createTransports({
-                datePattern,
-                zippedArchive,
-                maxSize,
-                maxFiles,
-                enableConsole,
-            });
-        } catch (err) {
-            console.error('Error creating logger transports:', err);
-            throw err;
+        const transportOptions = {
+            datePattern,
+            zippedArchive,
+            maxSize,
+            maxFiles,
+            enableConsole,
         }
 
-        try {
-            this.#logger = createLogger({
-                format: customFormat,
-                transports: this.transports,
-                exitOnError: false,
-            });
-        } catch (err) {
-            console.error('Error creating Winston logger:', err);
-            throw err;
-        }
+        this.#logger = createLogger({
+            format: this.#createCustomFormat(formatOptions),
+            transports: this.#createTransports(transportOptions),
+            exitOnError: false,
+            handleRejections: true
+        });
+
 
         // Setup a default stream for general logging integration.
         this.#logger.stream = {
@@ -149,45 +138,46 @@ class LoggerService {
      * @returns {Array} Array of Winston transports.
      * @private
      */
-    #createTransports(transportOptions) {
-        const {datePattern, zippedArchive, maxSize, maxFiles, enableConsole} = transportOptions;
-
-        // Transport for error-level logs.
-        const errorTransport = new DailyRotateFile({
-            level: 'error',
-            filename: path.join(this.#logDir, 'error-%DATE%.log'),
+    #createTransports({
+                          datePattern,
+                          zippedArchive,
+                          maxSize,
+                          maxFiles,
+                          enableConsole
+                      } = {}) {
+        const transportConfig = {
             datePattern,
             zippedArchive,
             maxSize,
             maxFiles,
-        });
+            handleExceptions: true,
+            handleRejections: true
+        };
 
-        // Transport for warn-level logs.
-        const warnTransport = new DailyRotateFile({
-            level: 'warn',
-            filename: path.join(this.#logDir, 'warn-%DATE%.log'),
-            datePattern,
-            zippedArchive,
-            maxSize,
-            maxFiles,
-        });
-
-        // Transport for info-level logs.
-        const infoTransport = new DailyRotateFile({
-            level: 'info',
-            filename: path.join(this.#logDir, 'info-%DATE%.log'),
-            datePattern,
-            zippedArchive,
-            maxSize,
-            maxFiles,
-        });
-
-        // Console transport for development.
-        const consoleTransport = new transports.Console({
-            level: 'debug',
-        });
-
-        return [errorTransport, warnTransport, infoTransport, ...(enableConsole ? [consoleTransport] : [])];
+        return [
+            new DailyRotateFile({
+                ...transportConfig,
+                level: 'error',
+                filename: path.join(this.#logDir, 'error-%DATE%.log')
+            }),
+            new DailyRotateFile({
+                ...transportConfig,
+                level: 'warn',
+                filename: path.join(this.#logDir, 'warn-%DATE%.log')
+            }),
+            new DailyRotateFile({
+                ...transportConfig,
+                level: 'info',
+                filename: path.join(this.#logDir, 'info-%DATE%.log')
+            }),
+            ...(enableConsole ? [new transports.Console({
+                format: format.combine(
+                    format.colorize(),
+                    format.simple()
+                ),
+                handleExceptions: true
+            })] : [])
+        ];
     }
 
     /**
