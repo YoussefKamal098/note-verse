@@ -89,9 +89,15 @@ class AuthService {
             try {
                 const {accessToken} = await this.#refreshAccessToken();
                 originalRequest.headers[httpHeaders.AUTHORIZATION] = `Bearer ${accessToken}`;
-                return this.#apiClient.instance(originalRequest);
+                return this.#apiClient.request(originalRequest);
             } catch (refreshError) {
-                return new Promise(() => ({}));
+                if (refreshError.response?.status === HttpStatusCode.UNAUTHORIZED) {
+                    // If refresh fails with 401, return an unresolved promise.
+                    return new Promise(() => ({}));
+                } else {
+                    // For any other error, reject with the refresh error.
+                    return Promise.reject(refreshError);
+                }
             }
         }
 
@@ -109,8 +115,10 @@ class AuthService {
             this.#tokenStorageService.setAccessToken(data.accessToken);
             return {accessToken: data.accessToken};
         } catch (error) {
-            this.#handleRefreshTokenFailure();
-            throw new Error(`Token refresh failed: ${error}`);
+            if (error.response && error.response.status === HttpStatusCode.UNAUTHORIZED) {
+                this.#handleRefreshTokenFailure();
+            }
+            throw error;
         }
     }
 
@@ -164,11 +172,14 @@ class AuthService {
     async logout() {
         try {
             const response = await this.#apiClient.post(ENDPOINTS.LOGOUT);
+            this.#handleLogout();
             return {...response, message: 'Logged out successfully'};
         } catch (error) {
+            if (error.response && error.response.status === HttpStatusCode.UNAUTHORIZED) {
+                this.#handleLogout();
+            }
+
             return this.#handleError(error, 'Logout failed');
-        } finally {
-            this.#handleLogout();
         }
     }
 

@@ -1,7 +1,8 @@
 const {parseString, parseNumber, parseArray} = require('shared-utils/env.utils');
+const {deepFreeze} = require("shared-utils/obj.utils");
 require('dotenv').config();
 
-const config = Object.freeze({
+const appConfig = {
     env: parseString(process.env.NODE_ENV, 'development'),
     port: parseNumber(process.env.PORT, 5000),
     logsDir: parseString(process.env.LOGS_DIR, '/var/app_logs'),
@@ -12,6 +13,9 @@ const config = Object.freeze({
         min: parseNumber(process.env.DB_MIN_POOL_SIZE, 1),
     }),
     allowedOrigins: parseArray(process.env.ALLOWED_ORIGINS, ['http://localhost:3000'])
-});
+};
 
-module.exports = config;
+/**
+ * @type {AppConfig}
+ */
+module.exports = deepFreeze(appConfig);

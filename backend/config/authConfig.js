@@ -1,9 +1,10 @@
 const {parseString, parseNumber} = require('shared-utils/env.utils');
 const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
 const config = require('./config');
+const {deepFreeze} = require("shared-utils/obj.utils");
 require('dotenv').config();
 
-const authConfig = Object.freeze({
+const authConfig = {
     accessTokenSecret: parseString(process.env.ACCESS_TOKEN_SECRET, 'your-access-token-secret'),
     accessTokenExpiry: parseString(process.env.ACCESS_TOKEN_EXPIRY, '1h'), // one hour
     refreshTokenSecret: parseString(process.env.REFRESH_TOKEN_SECRET, 'your-refresh-token-secret'),
@@ -30,6 +31,6 @@ const authConfig = Object.freeze({
             secure: config.env === 'production',
         };
     },
-});
+};
 
-module.exports = authConfig;
+module.exports = deepFreeze(authConfig);

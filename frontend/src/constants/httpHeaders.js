@@ -7,16 +7,17 @@ const httpHeaders = Object.freeze({
     COOKIE: 'Cookie',
     HOST: 'Host',
     USER_AGENT: 'user-agent',
-    X_REQUESTED_WITH: 'X-Requested-With',
-    X_FORWARDED_FOR: 'X-Forwarded-For',
-    X_FORWARDED_PROTO: 'X-Forwarded-Proto',
     IF_MODIFIED_SINCE: 'If-Modified-Since',
     IF_NONE_MATCH: 'If-None-Match',
     REFERER: 'Referer',
     LOCATION: 'Location',
-    CACHE_CONTROL: 'Cache-Control',
+    CACHE_CONTROL: 'cache-control',
+    ETAG: 'ETag',
+    X_REQUESTED_WITH: 'X-Requested-With',
+    X_FORWARDED_FOR: 'X-Forwarded-For',
+    X_FORWARDED_PROTO: 'X-Forwarded-Proto',
     X_CACHE: 'X-Cache',
-    ETAG: 'ETag'
+    X_CSRF_TOKEN: "x_csrf_token"
 });
 
 export default httpHeaders;

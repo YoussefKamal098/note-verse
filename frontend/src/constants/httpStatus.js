@@ -45,6 +45,7 @@ const HttpStatusCode = Object.freeze({
 const HttpStatusMessages = Object.freeze({
     200: "OK - The request has succeeded, and the response contains the requested data.",
     201: "Created - The request has been fulfilled, and a new resource has been created.",
+    304: "The resource has not been modified since the last request",
     400: "Bad Request - The server could not understand the request due to invalid syntax or missing parameters.",
     401: "Unauthorized - The client must authenticate to access the requested resource.",
     403: "Forbidden - The client does not have permission to access the requested resource.",

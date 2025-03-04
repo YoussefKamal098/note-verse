@@ -487,5 +487,5 @@ class CacheService {
     }
 }
 
-const cacheServiceInstance = new CacheService(new IndexedDBManager({version: 4}), {debug: true});
+const cacheServiceInstance = new CacheService(new IndexedDBManager({version: 5}), {debug: true});
 export default cacheServiceInstance;

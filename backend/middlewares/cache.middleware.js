@@ -69,7 +69,7 @@ class CacheMiddleware {
 
         res.setHeader(httpHeaders.CACHE_CONTROL, this.#getCacheControlHeader());
         if (req.headers[httpHeaders.IF_NONE_MATCH] === etag) {
-            return res.status(httpCodes.NOT_MODIFIED.code).end();
+            return res.status(httpCodes.NOT_MODIFIED.code).json({message: httpCodes.NOT_MODIFIED.message});
         }
 
         res.setHeader(httpHeaders.ETAG, etag);

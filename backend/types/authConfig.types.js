@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} AuthConfig
+ * @typedef {Readonly<Object>} AuthConfig
  * @property {string} accessTokenSecret - The secret used to sign access tokens.
  * @property {string} accessTokenExpiry - The expiration duration for access tokens (e.g., "1h").
  * @property {string} refreshTokenSecret - The secret used to sign refresh tokens.

@@ -7,16 +7,19 @@ const httpHeaders = Object.freeze({
     COOKIE: 'Cookie',
     HOST: 'host',
     USER_AGENT: 'user-agent',
-    X_REQUESTED_WITH: 'X-Requested-With',
-    X_FORWARDED_FOR: 'X-Forwarded-For',
-    X_FORWARDED_PROTO: 'X-Forwarded-Proto',
     IF_MODIFIED_SINCE: 'If-Modified-Since',
     IF_NONE_MATCH: 'If-None-Match',
     REFERER: 'Referer',
     LOCATION: 'Location',
     CACHE_CONTROL: 'Cache-Control',
+    ETAG: 'ETag',
+    PRAGMA: 'Pragma',
+    EXPIRES: 'Expires',
+    X_REQUESTED_WITH: 'X-Requested-With',
+    X_FORWARDED_FOR: 'X-Forwarded-For',
+    X_FORWARDED_PROTO: 'X-Forwarded-Proto',
     X_CACHE: 'X-Cache',
-    ETAG: 'ETag'
+    X_CSRF_TOKEN: "x_csrf_token"
 });
 
 module.exports = httpHeaders;

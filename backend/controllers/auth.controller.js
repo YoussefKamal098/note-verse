@@ -7,8 +7,6 @@ const jwtAuthService = require('../services/jwtAuth.service');
 const emailQueue = require('../queues/email.queue');
 const emailService = require('../services/email.service');
 
-// I will implement csrf token generation for secure forms (login/register) later
-
 /**
  * Controller for authentication-related endpoints.
  */

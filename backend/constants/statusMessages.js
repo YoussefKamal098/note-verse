@@ -66,6 +66,12 @@ const statusMessages = Object.freeze({
     USER_ALREADY_LOGGED_IN_SAME_DEVICE: "User is already logged in from this device and location.",
 
     // =======================
+    // CSRF errors
+    // =======================
+    INVALID_CSRF_TOKEN: "The CSRF token provided is invalid or missing. Please refresh the page to retrieve a new token and try your request again. If the problem persists, please contact support.",
+    CSRF_TOKEN_GENERATION_FAILED: "Failed to generate a CSRF token. Please refresh the page and try again. If the issue continues, contact support for assistance.",
+
+    // =======================
     // General errors
     // =======================
     SERVER_ERROR: "An unexpected server error occurred. Please try again later.",
