@@ -67,6 +67,8 @@ ACCESS_TOKEN_EXPIRY=1h
 REFRESH_TOKEN_SECRET=your-refresh-token-secret
 REFRESH_TOKEN_EXPIRY=1d
 REFRESH_TOKEN_COOKIES_NAME=jwt
+CSRF_TOKEN_SECRET=CSRF_TOKEN_SECRET
+CSRF_TOKEN_COOKIES_NAME=csrf-token
 OTP_TOKEN_EXPIRY=15 # The OTP token expiry time, specified in minutes (i.e., tokens expire after 15 minutes)
 COOKIES_MAX_AGE=86400  # 24 hours in seconds
 LOGS_DIR=./logs
@@ -208,14 +210,15 @@ The following routes are used for managing notes:
 
 The following routes are used for user management and authentication:
 
-| HTTP Method | Endpoint                   | Description                                                                     |
-|-------------|----------------------------|---------------------------------------------------------------------------------|
-| `POST`      | `api/v1/auth/register`     | Register a new user and send an OTP code to the provided email for verification |
-| `POST`      | `api/v1/auth/login`        | Log in an existing user                                                         |
-| `POST`      | `api/v1/auth/logout`       | Log out the currently logged-in user                                            |
-| `POST`      | `api/v1/auth/refresh`      | Refresh the access token using the stored JWT in the cookie in browser          |
-| `POST`      | `api/v1/auth/verify_email` | Verify the user's email address using the provided OTP code                     |
-| `GET`       | `api/v1/users/me`          | Retrieve the logged-in user's profile                                           |
+| HTTP Method | Endpoint                   | Description                                                                                                                                                                      |
+|-------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/auth/register`     | Register a new user and send an OTP code to the provided email for verification                                                                                                  |
+| `POST`      | `api/v1/auth/login`        | Log in an existing user                                                                                                                                                          |
+| `POST`      | `api/v1/auth/logout`       | Log out the currently logged-in user                                                                                                                                             |
+| `POST`      | `api/v1/auth/refresh`      | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
+| `POST`      | `api/v1/auth/verify_email` | Verify the user's email address using the provided OTP code                                                                                                                      |
+| `GET`       | `api/v1/csrf-tokens`       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
+| `GET`       | `api/v1/users/me`          | Retrieve the logged-in user's profile                                                                                                                                            |
 
 ---
 
@@ -249,6 +252,7 @@ notes_app/
 │   ├── public/                    # Static files for the frontend (e.g., images, icons)
 │   ├── src/                       # Source code for the React application
 │   │   ├── api/                   # API communication layer (making HTTP requests to backend)
+│   │   │   ├── interceptors/      # interceptors for global request/response handling
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
