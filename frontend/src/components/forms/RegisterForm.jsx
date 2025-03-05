@@ -122,14 +122,13 @@ const RegisterForm = () => {
                                 placeholder="Confirm Password"
                                 label="Confirm Password"
                             />
-                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>Sign Up</SubmitButton>
+                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>SIGN UP</SubmitButton>
                         </Form>
                     )}
                 </Formik>
 
                 <LinkStyled>
-                    <p>Already have an account?</p>
-                    <a href={RoutesPaths.LOGIN}>Login Here</a>
+                    <p>Already have an account? <a href={RoutesPaths.LOGIN}>Sign in</a></p>
                 </LinkStyled>
             </OverriddenFormContainerStyled>
         </HeightTransitionContainer>

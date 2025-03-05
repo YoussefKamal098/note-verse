@@ -44,7 +44,7 @@ const LoginForm = () => {
     return (
         <HeightTransitionContainer keyProp="Login">
             <FormContainerStyled>
-                <FormHeaderStyled>Login</FormHeaderStyled>
+                <FormHeaderStyled>Sign In</FormHeaderStyled>
 
                 <HeightTransitionContainer keyProp={errorMessage}>
                     {errorMessage && (
@@ -72,14 +72,13 @@ const LoginForm = () => {
                                 component={PasswordInput}
                                 innerRef={passwordRef}
                             />
-                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>Login</SubmitButton>
+                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>SIGN IN</SubmitButton>
                         </Form>
                     )}
                 </Formik>
 
                 <LinkStyled>
-                    <p>Don't have an account?</p>
-                    <a href={RoutesPaths.REGISTER}>Register Here</a>
+                    <p>Don't have an account? <a href={RoutesPaths.REGISTER}>Sign up</a></p>
                 </LinkStyled>
             </FormContainerStyled>
         </HeightTransitionContainer>

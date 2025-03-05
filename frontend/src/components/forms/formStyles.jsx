@@ -153,7 +153,7 @@ const LinkStyled = styled.div`
     }
 
     a {
-        font-size: 1em;
+        font-size: 1.2em;
         color: var(--color-accent);
         font-weight: 600;
         text-decoration: none;
