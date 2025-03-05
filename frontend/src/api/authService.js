@@ -147,21 +147,18 @@ class AuthService {
      * @throws {Error} If login fails.
      */
     async login({email, password}) {
-        try {
-            const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password});
-            const {accessToken} = response.data;
+        const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password});
+        const {accessToken} = response.data;
 
-            this.#tokenStorageService.setAccessToken(accessToken);
+        this.#tokenStorageService.setAccessToken(accessToken);
 
-            const user = await this.#userService.getAuthenticatedUser();
-            const {id, firstname, lastname} = user.data;
+        const user = await this.#userService.getUser("me");
+        const {id, firstname, lastname} = user.data;
 
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
 
-            return response;
-        } catch (error) {
-            return this.#handleError(error, 'Login failed');
-        }
+        return response;
+
     }
 
     /**
@@ -179,7 +176,7 @@ class AuthService {
                 this.#handleLogout();
             }
 
-            return this.#handleError(error, 'Logout failed');
+            throw error;
         }
     }
 
@@ -199,16 +196,12 @@ class AuthService {
      * @throws {Error} If the registration process fails.
      */
     async register({email, password, firstname, lastname}) {
-        try {
-            return await this.#apiClient.post(ENDPOINTS.REGISTER, {
-                email,
-                password,
-                firstname,
-                lastname,
-            });
-        } catch (error) {
-            return this.#handleError(error, 'Registration failed');
-        }
+        return await this.#apiClient.post(ENDPOINTS.REGISTER, {
+            email,
+            password,
+            firstname,
+            lastname,
+        });
     }
 
     /**
@@ -228,20 +221,16 @@ class AuthService {
      * @throws {Error} If the email verification process fails.
      */
     async verifyEmail({email, otpCode}) {
-        try {
-            const response = await this.#apiClient.post(ENDPOINTS.VERIFY_EMAIL, {email, otpCode});
+        const response = await this.#apiClient.post(ENDPOINTS.VERIFY_EMAIL, {email, otpCode});
 
-            const {accessToken} = response.data;
-            this.#tokenStorageService.setAccessToken(accessToken);
+        const {accessToken} = response.data;
+        this.#tokenStorageService.setAccessToken(accessToken);
 
-            const user = await this.#userService.getAuthenticatedUser();
-            const {id, firstname, lastname} = user.data;
+        const user = await this.#userService.getUser("me");
+        const {id, firstname, lastname} = user.data;
 
-            this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
-            return response;
-        } catch (error) {
-            return this.#handleError(error, 'Email verification failed');
-        }
+        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+        return response;
     }
 
     /**
@@ -262,17 +251,12 @@ class AuthService {
         this.#eventEmitter.off(event, listener);
     }
 
-    /**
-     * Handles errors by throwing a new error with a meaningful message.
-     * @param {Error} error - The error object.
-     * @param {string} defaultMessage - The default message to use if the error does not have one.
-     * @throws {Error} A wrapped error with a meaningful message.
-     */
-    #handleError(error, defaultMessage) {
-        throw new Error(error.message || defaultMessage);
-    }
 }
 
+/**
+ * Default instance of AuthService
+ * @type {AuthService}
+ */
 const authService = new AuthService(apiClient, tokenStorageService, userService)
 
 export {AUTH_EVENTS};

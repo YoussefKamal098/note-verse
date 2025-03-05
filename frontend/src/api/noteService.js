@@ -1,11 +1,11 @@
 import apiClient from './apiClient';
 
 const ENDPOINTS = {
-    CREATE: '/notes',
-    GET_AUTH_USER_NOTES: '/notes/my_notes',
-    GET_AUTH_USER_NOTE_BY_ID: (noteId) => `/notes/my_note/${noteId}`,
-    UPDATE_AUTH_USER_NOTE_BY_ID: (noteId) => `/notes/my_note/${noteId}`,
-    DELETE_AUTH_USER_NOTE_BY_ID: (noteId) => `/notes/my_note/${noteId}`,
+    CREATE: (userId) => `/users/${userId}/notes`,
+    GET_USER_NOTES: (userId) => `/users/${userId}/notes`,
+    GET_USER_NOTE_BY_ID: (userId, noteId) => `/users/${userId}/notes/${noteId}`,
+    UPDATE_USER_NOTE_BY_ID: (userId, noteId) => `/users/${userId}/notes/${noteId}`,
+    DELETE_USER_NOTE_BY_ID: (userId, noteId) => `/users/${userId}/notes/${noteId}`
 };
 
 class NoteService {
@@ -21,6 +21,7 @@ class NoteService {
 
     /**
      * Create a new note.
+     * @param {string} userId - The ID of the user.
      * @param {Object} params - The note details.
      * @param {string} params.title - Title of the note.
      * @param {string} params.content - Content of the note.
@@ -29,95 +30,73 @@ class NoteService {
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note creation fails.
      */
-    async create({title, content, tags, isPinned}) {
-        try {
-            return await this.#apiClient.post(ENDPOINTS.CREATE, {
-                title,
-                content,
-                tags,
-                isPinned,
-            });
-        } catch (error) {
-            return this.#handleError(error, 'Note creation failed');
-        }
+    async create(userId, {title, content, tags, isPinned}) {
+        return await this.#apiClient.post(ENDPOINTS.CREATE(userId), {
+            title,
+            content,
+            tags,
+            isPinned,
+        });
     }
 
     /**
      * Get notes of the authenticated user.
+     * @param {string} userId - The ID of the user.
      * @param {Object} [queryParams={}] - Query parameters for filtering notes.
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If fetching notes fails.
      */
-    async getAuthenticatedUserNotes(queryParams = {}) {
-        try {
-            return await this.#apiClient.get(ENDPOINTS.GET_AUTH_USER_NOTES, {
-                params: {...queryParams},
-            });
-        } catch (error) {
-            return this.#handleError(error, 'Failed to fetch notes');
-        }
+    async getUserNotes(userId, queryParams = {}) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER_NOTES(userId), {
+            params: {...queryParams},
+        });
     }
 
     /**
      * Get a specific note by ID.
+     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If fetching the note fails.
      */
-    async getAuthenticatedUserNoteById(noteId = '') {
-        try {
-            return await this.#apiClient.get(ENDPOINTS.GET_AUTH_USER_NOTE_BY_ID(noteId));
-        } catch (error) {
-            return this.#handleError(error, 'Failed to fetch note');
-        }
+    async getUserNoteById(userId, noteId) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER_NOTE_BY_ID(userId, noteId));
     }
 
     /**
      * Update a specific note by ID.
+     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
      * @param {Object} params - The updated note details.
-     * @param {string} params.title - Updated title of the note.
-     * @param {string} params.content - Updated content of the note.
+     * @param {string} [params.title] - Updated title of the note.
+     * @param {string} [params.content] - Updated content of the note.
      * @param {string[]} [params.tags] - Updated tags for the note.
      * @param {boolean} [params.isPinned] - Updated pin status of the note.
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note update fails.
      */
-    async updateAuthenticatedUserNoteById(noteId = '', {title, content, tags, isPinned}) {
-        try {
-            return await this.#apiClient.put(
-                ENDPOINTS.UPDATE_AUTH_USER_NOTE_BY_ID(noteId),
-                {title, content, tags, isPinned}
-            );
-        } catch (error) {
-            return this.#handleError(error, 'Note update failed');
-        }
+    async updateUserNoteById(userId, noteId, {title, content, tags, isPinned} = {}) {
+        return await this.#apiClient.put(
+            ENDPOINTS.UPDATE_USER_NOTE_BY_ID(userId, noteId),
+            {title, content, tags, isPinned}
+        );
     }
 
     /**
      * Delete a specific note by ID.
+     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note deletion fails.
      */
-    async deleteAuthenticatedUserNoteById(noteId = '') {
-        try {
-            return await this.#apiClient.delete(ENDPOINTS.DELETE_AUTH_USER_NOTE_BY_ID(noteId));
-        } catch (error) {
-            return this.#handleError(error, 'Failed to delete note');
-        }
-    }
-
-    /**
-     * Handle errors and provide a meaningful message.
-     * @param {Error} error - The error object.
-     * @param {string} defaultMessage - The default error message.
-     * @throws {Error} A wrapped error with a meaningful message.
-     */
-    #handleError(error, defaultMessage) {
-        throw new Error(error.message || defaultMessage);
+    async deleteUserNoteById(userId, noteId) {
+        return await this.#apiClient.delete(ENDPOINTS.DELETE_USER_NOTE_BY_ID(userId, noteId));
     }
 }
 
+/**
+ * Default instance of NoteService
+ * @type {NoteService}
+ */
 const noteService = new NoteService(apiClient)
 export default noteService;

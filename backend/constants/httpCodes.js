@@ -37,7 +37,7 @@ const httpCodes = Object.freeze({
     FORBIDDEN: {
         code: 403,
         name: "Forbidden",
-        message: "Forbidden, you do not have permission",
+        message: "Forbidden, you do not have permission to access this resource",
     },
     NOT_FOUND: {
         code: 404,

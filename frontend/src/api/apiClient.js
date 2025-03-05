@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {HttpStatusMessages} from '../constants/httpStatus';
 import httpHeaders from '../constants/httpHeaders';
-import {isServerErrorStatus} from 'shared-utils/http.utils';
+import {isServerErrorStatus, isSuccessfulStatus} from 'shared-utils/http.utils';
 import {time, timeUnit} from 'shared-utils/date.utils';
 import RoutesPaths from '../constants/RoutesPaths';
 import AppConfig from '../config/config';
@@ -116,7 +116,9 @@ class ApiClient {
             AXIOS_ERROR_MESSAGES[error.code] ||
             "An unexpected error occurred. Please try again later.";
 
-        console.error("API Error:", {statusCode, backendMessage});
+        if (!isSuccessfulStatus(statusCode)) {
+            console.error("API Error:", {statusCode, backendMessage});
+        }
 
         if (isServerErrorStatus(statusCode) || AXIOS_ERROR_CODE[statusCode]) {
             window.location = RoutesPaths.ERROR;

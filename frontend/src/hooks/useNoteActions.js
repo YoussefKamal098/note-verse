@@ -12,7 +12,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         if (!id) return;
 
         try {
-            const {data: note} = await noteService.create({isPinned, tags, title, content});
+            const {data: note} = await noteService.create("me", {isPinned, tags, title, content});
             notify.success(`New note created successfully.`);
             navigate(RoutesPaths.NOTE(note.id), {replace: true});
             return note;
@@ -25,7 +25,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         if (!id) return;
 
         try {
-            const {data: note} = await noteService.updateAuthenticatedUserNoteById(id, {
+            const {data: note} = await noteService.updateUserNoteById("me", id, {
                 isPinned,
                 tags,
                 title,
@@ -66,7 +66,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
 
         try {
             // Delete the note from the backend.
-            await noteService.deleteAuthenticatedUserNoteById(note.id);
+            await noteService.deleteUserNoteById("me", note.id);
 
             // Attempt to delete the note from the cache.
             // If this fails, the error is silently caught and ignored.

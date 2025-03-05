@@ -38,7 +38,7 @@ const NoteCard = React.memo(({
         try {
             setLoading(true);
             setPinButtonLoading(true);
-            await noteService.updateAuthenticatedUserNoteById(noteId, {isPinned: !note.isPinned});
+            await noteService.updateUserNoteById("me", noteId, {isPinned: !note.isPinned});
             setIsPinned(!isPinned);
             togglePin(noteId);
         } catch (error) {
@@ -54,7 +54,7 @@ const NoteCard = React.memo(({
             setLoading(true);
             setDeleteButtonLoading(true);
             const replacedNote = await fetchReplacedNote();
-            await noteService.deleteAuthenticatedUserNoteById(noteId);
+            await noteService.deleteUserNoteById("me", noteId);
             onDelete(noteId, replacedNote);
         } catch (error) {
             notify.error(`Deleting note Error:  ${error.message}`);

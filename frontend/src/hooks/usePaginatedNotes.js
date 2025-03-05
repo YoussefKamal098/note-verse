@@ -25,7 +25,7 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
                 sort: {isPinned: -1, updatedAt: -1, title: 1, createdAt: -1},
             };
 
-            const result = await noteService.getAuthenticatedUserNotes(queryParams);
+            const result = await noteService.getUserNotes("me", queryParams);
 
             return result.data;
         } catch (error) {

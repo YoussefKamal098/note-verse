@@ -66,7 +66,7 @@ class CacheInterceptor {
                         return Promise.reject({
                             response: {
                                 data: cachedEntry.data,
-                                status: HttpStatusCode.OK,
+                                status: HttpStatusCode.NON_AUTHORITATIVE_INFORMATION,
                                 statusText: 'OK (from cache)',
                                 headers: {},
                                 config,

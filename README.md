@@ -198,13 +198,13 @@ NOTES_PER_PAGE=10
 
 The following routes are used for managing notes:
 
-| HTTP Method | Endpoint                   | Description                                            |
-|-------------|----------------------------|--------------------------------------------------------|
-| `POST`      | `api/v1/notes`             | Create a new note                                      |
-| `GET`       | `api/v1/notes/my_notes`    | Retrieve authenticated user paginated notes with query |
-| `GET`       | `api/v1/notes/my_note/:id` | Retrieve the authenticated user's note by its ID       |
-| `PUT`       | `api/v1/notes/my_note/:id` | Update the authenticated user's note by its ID         |
-| `DELETE`    | `api/v1/notes/my_note/:id` | Delete the authenticated user's note by its ID         |
+| HTTP Method | Endpoint                             | Description                                                                                                                    |
+|-------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/users/:userId/notes`         | Create a new note for the specified user. You can use `"me"` as the userId to refer to the authenticated user.                 |
+| `GET`       | `api/v1/users/:userId/notes`         | Retrieve paginated notes for the specified user with optional query parameters. Use `"me"` to refer to the authenticated user. |
+| `GET`       | `api/v1/users/:userId/notes/:noteId` | Retrieve a specific note by its ID for the specified user. You can replace `:userId` with `"me"` for the authenticated user.   |
+| `PUT`       | `api/v1/users/:userId/notes/:noteId` | Update a specific note by its ID for the specified user. Replace `:userId` with `"me"` to target the authenticated user.       |
+| `DELETE`    | `api/v1/users/:userId/notes/:noteId` | Delete a specific note by its ID for the specified user. Use `"me"` in place of `:userId` for the authenticated user.          |
 
 #### User and Authentication API
 
@@ -218,7 +218,7 @@ The following routes are used for user management and authentication:
 | `POST`      | `api/v1/auth/refresh`      | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
 | `POST`      | `api/v1/auth/verify_email` | Verify the user's email address using the provided OTP code                                                                                                                      |
 | `GET`       | `api/v1/csrf-tokens`       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
-| `GET`       | `api/v1/users/me`          | Retrieve the logged-in user's profile                                                                                                                                            |
+| `GET`       | `api/v1/users/:userId`     | Retrieve the user's profile. You can either provide a specific userId or use the keyword "me", which will automatically resolve to the authenticated user's ID.                  |
 
 ---
 

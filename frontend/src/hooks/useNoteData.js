@@ -31,7 +31,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
         }
 
         try {
-            const result = await noteService.getAuthenticatedUserNoteById(id);
+            const result = await noteService.getUserNoteById("me", id);
             return result.data;
         } catch (error) {
             throw new Error(error.message);

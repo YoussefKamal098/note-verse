@@ -12,7 +12,7 @@ class NotesControllerUser {
     }
 
     async create(req, res) {
-        const userId = req.userId;
+        const {userId} = req.params;
         const {title, tags, content, isPinned} = req.body;
 
         const newNote = await this.#noteService.create({userId, title, tags, content, isPinned});
@@ -28,9 +28,8 @@ class NotesControllerUser {
         });
     }
 
-    async findMyNoteById(req, res) {
-        const userId = req.userId;
-        const {noteId} = req.params;
+    async findUserNoteById(req, res) {
+        const {noteId, userId} = req.params;
 
         const note = await this.#noteService.findUserNoteById(userId, noteId);
         res.status(httpCodes.OK.code).json({
@@ -46,9 +45,8 @@ class NotesControllerUser {
 
     }
 
-    async updateMyNote(req, res) {
-        const userId = req.userId;
-        const {noteId} = req.params;
+    async updateUserNoteById(req, res) {
+        const {noteId, userId} = req.params;
         const {title, tags, content, isPinned} = req.body;
 
         const updatedNote = await this.#noteService.updateUserNote(userId, noteId, {
@@ -70,9 +68,8 @@ class NotesControllerUser {
         });
     }
 
-    async deleteMyNoteById(req, res) {
-        const userId = req.userId;
-        const {noteId} = req.params;
+    async deleteUserNoteById(req, res) {
+        const {noteId, userId} = req.params;
 
         const deletedNote = await this.#noteService.deleteUserNoteById(userId, noteId);
         res.status(httpCodes.OK.code).json({
@@ -89,8 +86,8 @@ class NotesControllerUser {
     }
 
     // Retrieve notes with pagination, sorting, and text search filtering
-    async findMyNotes(req, res) {
-        const userId = req.userId;
+    async findPaginatedUserNotes(req, res) {
+        const {userId} = req.params;
         const value = this.#queryValidationService.validateQuery(req.query);
 
         const {page, perPage, sort, searchText} = value;

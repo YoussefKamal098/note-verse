@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 
 const ENDPOINTS = {
-    GET_USER_INFO: '/users/me',
+    GET_USER: (userId) => `/users/${userId}`
 };
 
 /**
@@ -19,28 +19,23 @@ class UserService {
     }
 
     /**
-     * Fetches the authenticated user's information from the server.
+     * Fetches the specified user's information from the server.
+     * @param {string} userId - The ID of the user to fetch.
      * @returns {Promise<Object>} The response object containing status code and user data.
      * @throws {Error} If the request fails or there is an error.
      */
-    async getAuthenticatedUser() {
-        try {
-            return await this.#apiClient.get(ENDPOINTS.GET_USER_INFO);
-        } catch (error) {
-            return this.#handleError(error, 'Failed to retrieve user information');
-        }
-    }
-
-    /**
-     * Handles errors that occur during API calls.
-     * @param {Error} error - The error object returned by the failed request.
-     * @param {string} defaultMessage - The default error message if the error does not provide one.
-     * @throws {Error} A wrapped error with a meaningful message.
-     */
-    #handleError(error, defaultMessage) {
-        throw new Error(error.message || defaultMessage);
+    async getUser(userId) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER(userId));
     }
 }
 
+/**
+ * Default instance of UserService
+ * @type {UserService}
+ */
 const userService = new UserService(apiClient);
 export default userService;
+
+
+
+
