@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const AuthProvider = require('../enums/auth.enum');
 const {Schema} = mongoose;
 
 const userSchema = new Schema({
@@ -14,17 +15,37 @@ const userSchema = new Schema({
         type: String,
         unique: true,
         index: true,
-        required: true,
+        required: true
     },
     password: {
         type: String,
-        required: true
+        required: function () {
+            return this.provider === AuthProvider.LOCAL;
+        }
+    },
+    googleId: {
+        type: String,
+        index: true,
+        unique: true,
+        sparse: true,
+        select: false,
     },
     verifiedAt: {
         type: Date,
+        default: function () {
+            return this.provider !== AuthProvider.LOCAL ? Date.now() : undefined;
+        }
+    },
+    provider: {
+        type: String,
+        enum: Object.values(AuthProvider),
+        default: AuthProvider.LOCAL,
+        required: true,
     },
     otpCode: {
         type: String,
+        unique: true,
+        sparse: true,
         select: false,
     },
     otpCodeExpiresAt: {
@@ -33,7 +54,9 @@ const userSchema = new Schema({
     },
     isVerified: {
         type: Boolean,
-        default: false,
+        default: function () {
+            return this.provider !== AuthProvider.LOCAL;
+        }
     }
 }, {
     timestamps: true,

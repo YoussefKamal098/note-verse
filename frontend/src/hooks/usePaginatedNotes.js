@@ -3,11 +3,6 @@ import RoutesPaths from "../constants/RoutesPaths";
 import {useNavigate} from "react-router-dom";
 import noteService from "../api/noteService";
 
-
-const ERROR_FETCH_PAGE_NOTES = "An error occurred while retrieving your page notes. " +
-    "there was an issue processing your request. " +
-    "Please try again later.";
-
 const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
     const navigate = useNavigate();
     const [notes, setNotes] = useState([]);
@@ -48,7 +43,12 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
             setTotalPages(total);
             setNotes(data);
         } catch (error) {
-            navigate(RoutesPaths.ERROR, {state: {message: ERROR_FETCH_PAGE_NOTES}});
+            navigate(RoutesPaths.ERROR, {
+                state: {
+                    message: "An error occurred while retrieving your page notes. " +
+                        "there was an issue processing your request. Please try again later."
+                }
+            });
         } finally {
             setLoading(false);
         }

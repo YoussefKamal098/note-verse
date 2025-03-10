@@ -32,8 +32,8 @@ const AuthProvider = ({children}) => {
 
     const handleLogin = (data) => {
         const {user} = data;
-        const {id, email, firstname, lastname} = user;
-        const storedUserData = {id, email, firstname, lastname};
+        const {id, firstname, lastname} = user;
+        const storedUserData = {id, firstname, lastname};
 
         setUser(Object.freeze(storedUserData));
         /*

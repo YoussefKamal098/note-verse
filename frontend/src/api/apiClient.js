@@ -3,8 +3,8 @@ import {HttpStatusMessages} from '../constants/httpStatus';
 import httpHeaders from '../constants/httpHeaders';
 import {isServerErrorStatus, isSuccessfulStatus} from 'shared-utils/http.utils';
 import {time, timeUnit} from 'shared-utils/date.utils';
-import RoutesPaths from '../constants/RoutesPaths';
 import AppConfig from '../config/config';
+import RoutesPaths from '../constants/RoutesPaths';
 import CacheInterceptor from './interceptors/cacheInterceptor';
 import CsrfInterceptor from './interceptors/csrfInterceptor';
 

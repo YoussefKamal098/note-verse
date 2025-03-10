@@ -4,14 +4,6 @@ import RoutesPaths from "../constants/RoutesPaths";
 import noteService from "../api/noteService";
 import CacheService from "../services/cacheService";
 
-
-const ERROR_FETCH_NOTE = "An error occurred while retrieving your note. " +
-    "The note might not exist, may not be associated with your account, " +
-    "might not be public, " +
-    "or its visibility settings could have been changed by the owner. " +
-    "or there was an issue processing your request. " +
-    "Please try again later."
-
 const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
@@ -47,7 +39,14 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);
             } catch (error) {
-                navigate(RoutesPaths.ERROR, {state: {message: ERROR_FETCH_NOTE}});
+                navigate(RoutesPaths.ERROR, {
+                    state: {
+                        message: "An error occurred while retrieving your note. " +
+                            "The note might not exist, may not be associated with your account, might not be public, " +
+                            "or its visibility settings could have been changed by the owner. " +
+                            "or there was an issue processing your request. Please try again later."
+                    }
+                });
             } finally {
                 setLoading(false);
             }

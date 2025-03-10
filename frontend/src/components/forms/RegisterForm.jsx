@@ -12,6 +12,8 @@ import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import FirstNameInput from "./FirstNameInput";
 import LastNameInput from "./LastNameInput";
+import AuthSeparator from "./AuthSeparator";
+import GoogleLoginButton from "../buttons/GoogleLoginButton";
 import authService from "../../api/authService";
 import RoutesPaths from "../../constants/RoutesPaths";
 import {
@@ -20,6 +22,8 @@ import {
     nameValidation,
     passwordValidation
 } from "../../validations/userValidation";
+import Overlay from "../common/Overlay";
+
 
 // Create a styled component for the div wrapping the name fields
 const NameFieldsContainerStyled = styled.div`
@@ -33,7 +37,7 @@ const NameFieldsContainerStyled = styled.div`
 // Increase the max-width of FormContainerStyled
 // Override FormContainerStyled by extending it
 const OverriddenFormContainerStyled = styled(FormContainerStyled)`
-    max-width: 450px; // Override the max-width
+    max-width: 400px; // Override the max-width
 `;
 
 const registerValidationSchema = Yup.object({
@@ -45,7 +49,8 @@ const registerValidationSchema = Yup.object({
 });
 
 const RegisterForm = () => {
-    const [loading, setLoading] = useState(false);
+    const [formLoading, setFormLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const firstnameRef = useRef(null);
@@ -58,7 +63,7 @@ const RegisterForm = () => {
 
     const handleSubmit = async (values, {setSubmitting}) => {
         try {
-            setLoading(true);
+            setFormLoading(true);
             setSubmitting(true);
             await authService.register(values);
             // Pass the email to the verified account page via location state
@@ -66,72 +71,80 @@ const RegisterForm = () => {
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
-            setLoading(false);
+            setFormLoading(false);
             setSubmitting(false);
         }
     };
 
     return (
-        <HeightTransitionContainer keyProp="SignUp">
-            <OverriddenFormContainerStyled>
-                <FormHeaderStyled>Sign Up</FormHeaderStyled>
+        <>
+            <Overlay isVisible={formLoading || googleLoading}/>
+            <HeightTransitionContainer keyProp="SignUp">
+                <OverriddenFormContainerStyled>
+                    <FormHeaderStyled>Sign Up</FormHeaderStyled>
 
-                <HeightTransitionContainer keyProp={errorMessage}>
-                    {errorMessage && (
-                        <ErrorMessageStyled>
-                            <FadeInAnimatedText text={errorMessage}/>
-                        </ErrorMessageStyled>
-                    )}
-                </HeightTransitionContainer>
+                    <HeightTransitionContainer keyProp={errorMessage}>
+                        {errorMessage && (
+                            <ErrorMessageStyled>
+                                <FadeInAnimatedText text={errorMessage}/>
+                            </ErrorMessageStyled>
+                        )}
+                    </HeightTransitionContainer>
 
-                <Formik
-                    initialValues={{firstname: "", lastname: "", email: "", password: "", confirmPassword: ""}}
-                    validationSchema={registerValidationSchema}
-                    onSubmit={handleSubmit}
-                >
-                    {({isSubmitting}) => (
-                        <Form onKeyDown={(e) => handleKeyDown(e, isSubmitting)}>
-                            <NameFieldsContainerStyled>
+                    <Formik
+                        initialValues={{firstname: "", lastname: "", email: "", password: "", confirmPassword: ""}}
+                        validationSchema={registerValidationSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {({isSubmitting}) => (
+                            <Form onKeyDown={(e) => handleKeyDown(e, isSubmitting)}>
+                                <NameFieldsContainerStyled>
+                                    <Field
+                                        name="firstname"
+                                        component={FirstNameInput}
+                                        innerRef={firstnameRef}
+                                    />
+                                    <Field
+                                        name="lastname"
+                                        component={LastNameInput}
+                                        innerRef={lastnameRef}
+                                    />
+                                </NameFieldsContainerStyled>
+
                                 <Field
-                                    name="firstname"
-                                    component={FirstNameInput}
-                                    innerRef={firstnameRef}
+                                    name="email"
+                                    component={EmailInput}
+                                    innerRef={emailRef}
+                                    autoFocus
                                 />
                                 <Field
-                                    name="lastname"
-                                    component={LastNameInput}
-                                    innerRef={lastnameRef}
+                                    name="password"
+                                    component={PasswordInput}
+                                    innerRef={passwordRef}
                                 />
-                            </NameFieldsContainerStyled>
+                                <Field
+                                    name="confirmPassword"
+                                    component={PasswordInput}
+                                    innerRef={confirmPasswordRef}
+                                    placeholder="Confirm Password"
+                                    label="Confirm Password"
+                                />
+                                <SubmitButton isSubmitting={isSubmitting} loading={formLoading}
+                                              disabled={googleLoading}>SIGN UP</SubmitButton>
+                            </Form>
+                        )}
+                    </Formik>
 
-                            <Field
-                                name="email"
-                                component={EmailInput}
-                                innerRef={emailRef}
-                                autoFocus
-                            />
-                            <Field
-                                name="password"
-                                component={PasswordInput}
-                                innerRef={passwordRef}
-                            />
-                            <Field
-                                name="confirmPassword"
-                                component={PasswordInput}
-                                innerRef={confirmPasswordRef}
-                                placeholder="Confirm Password"
-                                label="Confirm Password"
-                            />
-                            <SubmitButton isSubmitting={isSubmitting} loading={loading}>SIGN UP</SubmitButton>
-                        </Form>
-                    )}
-                </Formik>
+                    <AuthSeparator/>
 
-                <LinkStyled>
-                    <p>Already have an account? <a href={RoutesPaths.LOGIN}>Sign in</a></p>
-                </LinkStyled>
-            </OverriddenFormContainerStyled>
-        </HeightTransitionContainer>
+                    <GoogleLoginButton onClick={() => setGoogleLoading(true)} disabled={formLoading}/>
+
+                    <LinkStyled>
+                        <p>Already have an account? <a href={RoutesPaths.LOGIN}>Sign in</a></p>
+                    </LinkStyled>
+                </OverriddenFormContainerStyled>
+            </HeightTransitionContainer>
+        </>
     );
 };
 

@@ -11,6 +11,8 @@ const statusMessages = Object.freeze({
     USER_ID_REQUIRED: "User ID is required. Please provide a valid user ID to access this resource.",
     USER_ID_INVALID: "User ID is invalid. Please provide a valid user ID and try again.",
     USER_NOT_AUTH: "Authentication required. Please provide a valid user ID to access this resource.",
+    GOOGLE_USER_CREATE_FAILED: "Google authentication process failed. Please try again later.",
+    MISSING_GOOGLE_AUTH_DATA: "Required Google authentication data is missing",
 
     // =======================
     // User-specific update errors
@@ -42,6 +44,7 @@ const statusMessages = Object.freeze({
     CREDENTIALS_REQUIRED: "Email and password are required. Please provide them to log in.",
     INVALID_OR_EXPIRED_TOKEN: "The token provided is invalid or has expired. Please log in again.",
     INVALID_ACCESS_TOKEN: "Invalid or expired access token. Please authenticate again.",
+    INVALID_STATE_TOKEN: "Invalid or expired state token. Please again with valid one.",
     INVALID_REFRESH_TOKEN: "Invalid or expired refresh token. Please log in again.",
     TOKEN_EXPIRED: "Your session has expired. Please log in again to continue.",
     INVALID_TOKEN: "The token provided is invalid or expired. Please authenticate again.",
@@ -52,6 +55,8 @@ const statusMessages = Object.freeze({
     USER_NOT_AUTHORIZED: "User not authorized. Please log in to continue.",
     USER_ALREADY_EXISTS: "User already exists. Please log in or use a different email.",
     USER_CREATED: "User created successfully. Please verify your email address to complete registration",
+    GOOGLE_USER_ALREADY_EXISTS: "Google User already exists. Please log in or use a different email.",
+    INVALID_GOOGLE_TOKEN: "The provided Google token is invalid or expired. Please verify your credentials and try again.",
 
     EMAIL_NOT_FOUND: "No account found with this email address. Please check email and try again later.",
     EMAIL_ALREADY_VERIFIED: "Email address already verified. No further action required.",

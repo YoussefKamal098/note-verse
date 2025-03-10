@@ -1,12 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const corsOptions = require('./config/corsOptions');
 const config = require('./config/config');
+const asyncRequestHandler = require('./utils/asyncHandler');
 const handleError = require('./middlewares/errorHandler.middleware');
-const cspMiddleware = require('./middlewares/csp.middleware');
+const securityHeadersMiddleware = require('./middlewares/securityHeaders.middleware');
 const timeoutMiddleware = require('./middlewares/timeout.middleware');
 const notFoundMiddleware = require('./middlewares/notFound.middleware');
 const startServer = require('./serverInitializer');
@@ -21,10 +21,10 @@ const app = express();
 app.use(morgan('combined', {stream: loggerService.stream}));
 // Timeout for all requests (e.g., 15 seconds)
 app.use(timeoutMiddleware);
-// Apply general helmet middleware for other security headers
-app.use(helmet());
-// Apply the custom CSP middleware for content security policy
-app.use(cspMiddleware);
+// Apply the custom asynchronous security middleware that sets the Content Security Policy (CSP)
+// along with other security headers. This middleware ensures that all asynchronous tasks complete
+// (such as nonce generation and helmet configuration) before proceeding to the next handler.
+app.use(asyncRequestHandler(securityHeadersMiddleware));
 // Enable CORS with specified options
 app.use(cors(corsOptions));
 // Middleware to parse cookies

@@ -1,13 +1,10 @@
 import styled from "styled-components";
 
 const FormContainerStyled = styled.div`
-    max-width: 425px;
-    margin: 2em auto;
-    padding: 2.5em 2em;
+    max-width: 375px;
+    margin: 0 auto 1em;
+    padding: 0 1em;
     background: var(--color-background-primary);
-    border: calc(var(--border-width) / 2) solid var(--color-border);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
 `;
 
 const FormHeaderStyled = styled.h1`
@@ -16,6 +13,7 @@ const FormHeaderStyled = styled.h1`
     text-align: center;
     color: var(--color-primary);
     margin-bottom: 1.5em;
+    user-select: none;
 `;
 
 const ErrorMessageStyled = styled.div`
@@ -23,22 +21,35 @@ const ErrorMessageStyled = styled.div`
     margin: 1em auto;
     text-align: center;
     font-weight: 500;
+    max-width: 100%;
 `;
 
 const SubmitButtonStyled = styled.button`
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    padding: 0.5em;
-    margin-top: 1.5em;
+    padding: 10px 24px;
+    margin: 35px auto 15px;
     font-size: 1.1em;
     font-weight: 600;
-    color: var(--color-background);
-    background-color: var(--color-primary);
-    border-radius: calc(var(--border-radius) / 1.5);
+    color: var(--color-text);
+    border: calc(var(--border-width) / 1.5) solid var(--color-border-secondary);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: 0.3s ease;
+    overflow: hidden;
 
-    &:hover {
-        background-color: var(--color-primary-hover);
+    &:hover:not(:disabled) {
+        color: var(--color-background-secondary);
+        background-color: var(--color-text);
+        border-color: transparent;
+    }
+
+    &:active:not(:disabled) {
+        scale: 0.9;
     }
 
     &:disabled {

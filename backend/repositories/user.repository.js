@@ -1,6 +1,8 @@
 const User = require("../models/user.model");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
+const dbErrorCodes = require('../constants/dbErrorCodes');
 const {deepFreeze} = require('shared-utils/obj.utils');
+const AuthProvider = require("../enums/auth.enum");
 
 /**
  * Repository for performing CRUD operations on the User collection.
@@ -32,7 +34,7 @@ class UserRepository {
     }
 
     /**
-     * Creates or updates a user document.
+     * Creates or updates a local email/password user document with OTP verification handling.
      *
      * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
      * non-verified user (whose OTP has expired) or create a new user document.
@@ -54,7 +56,7 @@ class UserRepository {
      * @throws {Error} If a duplicate key error occurs (indicating a conflict, e.g., a verified user already exists),
      * or if any other error occurs during the operation.
      */
-    async create(userData = {}) {
+    async createLocalUser(userData = {}) {
         try {
             const {email, ...otherData} = userData; // Remove email from userData for $set
 
@@ -74,15 +76,68 @@ class UserRepository {
             return deepFreeze(sanitizeMongoObject(user));
         } catch (error) {
             // Check for duplicate key error (E11000) which indicates a conflict (e.g., verified user exists)
-            if (error.code === 11000) {
-                console.error("Duplicate email conflict:", error);
-                const conflictError = new Error("Email already exists");
-                conflictError.code = 11000;
-                conflictError.name = "Conflict";
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                console.error("Duplicate local user conflict:", error);
+                const conflictError = new Error("Local user already exists");
+                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;
             }
-            console.error("Error creating user:", error);
-            throw new Error("Unable to create user");
+            console.error("Error creating local user:", error);
+            throw new Error("Unable to create local user");
+        }
+    }
+
+    /**
+     * Finds or creates a Google-authenticated user document.
+     *
+     * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
+     * Google-authenticated user or create a new user document.
+     * The update applies to non-unique fields (firstname and lastname), while the email and googleId fields
+     * are set only upon insertion.
+     *
+     * @param {Object} googleUser - The data for creating or updating the Google user.
+     * @param {string} googleUser.firstname - The user's first name.
+     * @param {string} googleUser.lastname - The user's last name.
+     * @param {string} googleUser.email - The user's email address.
+     * @param {string} googleUser.googleId - The user's Google ID.
+     *
+     * @returns {Promise<Object>} The created or updated user document, deep-frozen.
+     * @throws {Error} If a duplicate key error occurs (e.g., a conflict) or if any other error occurs.
+     */
+    async findOrCreateGoogleUser(googleUser = {}) {
+        try {
+            const {email, googleId, firstname, lastname} = googleUser;
+
+            const user = await this.#model.findOneAndUpdate(
+                {
+                    email: email,
+                    googleId: googleId
+                },
+                {
+                    $set: {
+                        firstname: firstname,
+                        lastname: lastname,
+                        provider: AuthProvider.GOOGLE
+                    },
+                    $setOnInsert: {
+                        email: email,
+                        googleId: googleId
+                    }
+                },
+                {new: true, upsert: true, runValidators: true}
+            ).lean();
+
+            return deepFreeze(sanitizeMongoObject(user));
+        } catch (error) {
+            // Check for duplicate key error (E11000) which indicates a conflict
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                console.error("Duplicate google user conflict:", error);
+                const conflictError = new Error("Google user already exists");
+                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
+                throw conflictError;
+            }
+            console.error("Error creating google user:", error);
+            throw new Error("Unable to create google user");
         }
     }
 
@@ -112,6 +167,7 @@ class UserRepository {
             throw new Error("Error updating user");
         }
     }
+
 
     /**
      * Retrieves a verified user by their ID.

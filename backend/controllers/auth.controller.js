@@ -4,6 +4,7 @@ const {formatDate} = require("shared-utils/date.utils");
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const jwtAuthService = require('../services/jwtAuth.service');
+const googleAuthAuthService = require('../services/googleAuth.service');
 const emailQueue = require('../queues/email.queue');
 const emailService = require('../services/email.service');
 
@@ -17,14 +18,22 @@ class AuthController {
      * @description The JWT authentication service instance.
      */
     #jwtAuthService;
+    /**
+     * @private
+     * @type {import('../services/googleAuth.service')}
+     * @description The Google authentication service instance
+     */
+    #googleAuthService;
 
     /**
      * Constructs a new AuthController.
      *
      * @param {import('../services/jwtAuth.service')} jwtAuthService - The JWT authentication service instance.
+     * @param {import('../services/googleAuth.service')} googleAuthService - The Google authentication service instance.
      */
-    constructor(jwtAuthService) {
+    constructor(jwtAuthService, googleAuthService) {
         this.#jwtAuthService = jwtAuthService;
+        this.#googleAuthService = googleAuthService;
     }
 
     /**
@@ -48,39 +57,34 @@ class AuthController {
      *
      * @param {import('express').Request} req - The Express request object.
      * @param {import('express').Response} res - The Express response object.
-     * @param {Function} next - The Express next middleware function.
      * @returns {Promise<void>}
      * @throws {AppError} If user registration fails.
      */
-    async register(req, res, next) {
-        try {
-            const {firstname, lastname, email, password} = req.body;
-            // Extract session info from request
-            const sessionInfo = {
-                ip: req.ip,
-                userAgent: req.get(httpHeaders.USER_AGENT)
-            };
-            const user = await this.#jwtAuthService.register({
-                firstname,
-                lastname,
-                email,
-                password,
-                sessionInfo
-            });
+    async register(req, res) {
+        const {firstname, lastname, email, password} = req.body;
+        // Extract session info from request
+        const sessionInfo = {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
+        const user = await this.#jwtAuthService.register({
+            firstname,
+            lastname,
+            email,
+            password,
+            sessionInfo
+        });
 
-            await emailService.sendVerificationEmail({
-                email,
-                name: `${firstname} ${lastname}`,
-                otpCode: user.otpCode,
-                otpCodeExpiresAt: user.otpCodeExpiresAt,
-                formatDate: formatDate,
-                emailQueue
-            });
+        await emailService.sendVerificationEmail({
+            email,
+            name: `${firstname} ${lastname}`,
+            otpCode: user.otpCode,
+            otpCodeExpiresAt: user.otpCodeExpiresAt,
+            formatDate: formatDate,
+            emailQueue
+        });
 
-            res.status(httpCodes.CREATED.code).json({message: statusMessages.USER_CREATED});
-        } catch (error) {
-            next(error);
-        }
+        res.status(httpCodes.CREATED.code).json({message: statusMessages.USER_CREATED});
     }
 
     /**
@@ -90,27 +94,23 @@ class AuthController {
      * @param {Function} next - Next middleware
      */
     async verifyEmail(req, res, next) {
-        try {
-            const {email, otpCode} = req.body;
+        const {email, otpCode} = req.body;
 
-            if (!email || !otpCode) {
-                next(new AppError(
-                    statusMessages.MISSING_VERIFICATION_DATA,
-                    httpCodes.BAD_REQUEST.code,
-                    httpCodes.BAD_REQUEST.name
-                ));
-            }
-
-            const sessionInfo = {
-                ip: req.ip,
-                userAgent: req.get(httpHeaders.USER_AGENT)
-            };
-
-            const {accessToken, refreshToken} = await this.#jwtAuthService.verifyEmail(email, otpCode, sessionInfo);
-            this.#sendTokens(res, accessToken, refreshToken);
-        } catch (error) {
-            next(error);
+        if (!email || !otpCode) {
+            next(new AppError(
+                statusMessages.MISSING_VERIFICATION_DATA,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            ));
         }
+
+        const sessionInfo = {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
+
+        const {accessToken, refreshToken} = await this.#jwtAuthService.verifyEmail(email, otpCode, sessionInfo);
+        this.#sendTokens(res, accessToken, refreshToken);
     }
 
     /**
@@ -125,29 +125,94 @@ class AuthController {
      * @throws {AppError} If credentials are missing or invalid.
      */
     async login(req, res, next) {
-        try {
-            const {email, password} = req.body;
-            if (!email || !password) {
-                return next(new AppError(
-                    statusMessages.CREDENTIALS_REQUIRED,
-                    httpCodes.BAD_REQUEST.code,
-                    httpCodes.BAD_REQUEST.name
-                ));
-            }
-            const sessionInfo = {
-                ip: req.ip,
-                userAgent: req.get(httpHeaders.USER_AGENT)
-            };
-
-            const {accessToken, refreshToken} = await this.#jwtAuthService.login({
-                email,
-                password
-            }, sessionInfo);
-
-            this.#sendTokens(res, accessToken, refreshToken);
-        } catch (error) {
-            next(error);
+        const {email, password} = req.body;
+        if (!email || !password) {
+            return next(new AppError(
+                statusMessages.CREDENTIALS_REQUIRED,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            ));
         }
+        const sessionInfo = {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
+
+        const {accessToken, refreshToken} = await this.#jwtAuthService.login({
+            email,
+            password
+        }, sessionInfo);
+
+        this.#sendTokens(res, accessToken, refreshToken);
+    }
+
+
+    /**
+     * Initiates the Google authentication flow.
+     *
+     * Generates a state token based on session info, sets a cookie with the state token,
+     * and returns the Google authorization URL.
+     *
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     * @returns {Promise<void>} A promise that resolves when the response is sent.
+     */
+    initiateGoogleAuth = async (req, res) => {
+        const sessionInfo = {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
+
+        const stateToken = await this.#googleAuthService.generateStateToken(sessionInfo);
+
+        // Use config from service for cookie settings
+        const cookieOptions = this.#googleAuthService.config.getCookieOptions();
+        res.cookie(this.#googleAuthService.config.cookiesName, stateToken, cookieOptions);
+
+        res.json({authUrl: this.#googleAuthService.getAuthorizationUrl()});
+    }
+
+    /**
+     * Handles the callback from Google authentication.
+     *
+     * Exchanges the provided authorization code and state token for JWT tokens,
+     * clears the state cookie, and sends the access and refresh tokens to the client.
+     *
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     * @returns {Promise<void>} A promise that resolves when the tokens are sent.
+     * @throws {AppError} If the authorization code or state token is missing.
+     */
+    handleGoogleCallback = async (req, res) => {
+        const {code} = req.body;
+        const stateToken = req.cookies[this.#googleAuthService.config.cookiesName];
+
+        if (!code || !stateToken) {
+            throw new AppError(
+                statusMessages.MISSING_GOOGLE_AUTH_DATA,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
+        }
+
+        const sessionInfo = {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
+
+        const tokens = await this.#googleAuthService.handleGoogleCallback(
+            code,
+            stateToken,
+            sessionInfo
+        );
+
+        // Clear state cookie using config options
+        const clearCookieOptions = this.#googleAuthService.config.getClearCookieOptions();
+        res.clearCookie(this.#googleAuthService.config.cookiesName, clearCookieOptions);
+
+        const {accessToken, refreshToken} = tokens;
+
+        this.#sendTokens(res, accessToken, refreshToken);
     }
 
     /**
@@ -215,6 +280,7 @@ class AuthController {
             throw error;
         }
     }
+
 }
 
-module.exports = new AuthController(jwtAuthService);
+module.exports = new AuthController(jwtAuthService, googleAuthAuthService);

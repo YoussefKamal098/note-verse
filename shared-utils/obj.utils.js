@@ -93,5 +93,73 @@ function deepEqual(value1, value2) {
     return true;
 }
 
+/**
+ * Performs a deep clone of a given value.
+ *
+ * Supports cloning of:
+ * - Primitive values (returned as-is)
+ * - Dates, RegExps, Arrays, Objects, Maps, Sets
+ * - Custom class instances (clones own enumerable properties and preserves prototype)
+ *
+ * Functions are not cloned but returned by reference.
+ *
+ * Circular references are handled using a WeakMap.
+ *
+ * @param {*} value - The value to deep clone.
+ * @param {WeakMap} [hash=new WeakMap()] - Internal parameter to track cloned objects.
+ * @returns {*} A deep clone of the input value.
+ */
+function deepClone(value, hash = new WeakMap()) {
+    // Return primitives or functions as-is.
+    if (Object(value) !== value || typeof value === 'function') return value;
 
-module.exports = {deepFreeze, deepEqual};
+    // Return already cloned reference for circular structures.
+    if (hash.has(value)) return hash.get(value);
+
+    let result;
+    // Handle Date
+    if (value instanceof Date) {
+        result = new Date(value);
+    }
+    // Handle RegExp
+    else if (value instanceof RegExp) {
+        result = new RegExp(value.source, value.flags);
+    }
+    // Handle Map
+    else if (value instanceof Map) {
+        result = new Map();
+        hash.set(value, result);
+        for (const [key, val] of value) {
+            result.set(deepClone(key, hash), deepClone(val, hash));
+        }
+    }
+    // Handle Set
+    else if (value instanceof Set) {
+        result = new Set();
+        hash.set(value, result);
+        for (const item of value) {
+            result.add(deepClone(item, hash));
+        }
+    }
+    // Handle Array
+    else if (Array.isArray(value)) {
+        result = [];
+        hash.set(value, result);
+        value.forEach((item, index) => {
+            result[index] = deepClone(item, hash);
+        });
+    }
+    // Handle Object (and custom class instances)
+    else {
+        // Create a new object with the same prototype as the original.
+        result = Object.create(Object.getPrototypeOf(value));
+        hash.set(value, result);
+        for (const key of Object.keys(value)) {
+            result[key] = deepClone(value[key], hash);
+        }
+    }
+
+    return result;
+}
+
+module.exports = {deepFreeze, deepEqual, deepClone};

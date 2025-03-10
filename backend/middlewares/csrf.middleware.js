@@ -4,6 +4,7 @@ const errorCodes = require('../constants/errorCodes');
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const csrfConfig = require('../config/csrfConfig');
+const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 
 class CsrfMiddleware {
     #tokens;
@@ -15,7 +16,7 @@ class CsrfMiddleware {
      * @param {CsrfConfig} config - Configuration object
      */
     constructor(config) {
-        this.#config = config;
+        this.#config = deepFreeze(deepClone(config));
         this.#tokens = new Csrf({saltLength: this.#config.saltLength});
         this.#secret = config.secret;
 
@@ -49,7 +50,7 @@ class CsrfMiddleware {
             const token = this.#tokens.create(this.#secret);
 
             // Set CSRF token cookie
-            res.cookie(this.#config.cookieName, token, this.#config.cookieOptions);
+            res.cookie(this.#config.cookieName, token, this.#config.getCookieOptions());
 
             return token;
         } catch (error) {
@@ -63,10 +64,20 @@ class CsrfMiddleware {
     }
 
     /**
-     * Express middleware for CSRF validation
-     * @returns {import('express').RequestHandler}
+     * Returns an Express middleware function for CSRF validation.
+     *
+     * This middleware extracts the CSRF token from the request using the source specified in the options
+     * (or the default source from the configuration).
+     * It then compares the extracted token with the token
+     * stored in the cookie using the token verification function.
+     * If the tokens are missing, invalid, or do not match,
+     * the middleware clears the CSRF cookie and passes an error to the next middleware.
+     *
+     * @param {Object} [options={}] - Options for token extraction.
+     * @param {string} [options.source='header'] - The source to extract the CSRF token ('body', 'header', 'query').
+     * @returns {import('express').RequestHandler} An Express middleware function for CSRF validation.
      */
-    validate() {
+    validate(options = {}) {
         return (req, res, next) => {
             // Skip CSRF validation for safe methods
             if (this.#config.ignoredMethods.includes(req.method)) {
@@ -74,12 +85,16 @@ class CsrfMiddleware {
             }
 
             try {
-                const token = this.#config.getTokenFromRequest(req);
+                // Determine the token source: use provided source or fallback to defaultSource.
+                const tokenSource = options.source || this.#config.defaultSource;
+                // Use the configuration's getTokenFromRequest method to extract the token.
+                const token = this.#config.getTokenFromRequest(req, tokenSource);
                 const cookieToken = req.cookies[this.#config.cookieName];
 
-                // Validate token presence, format, validity and match
+                // Validate token presence and matching.
                 if ((!token || !cookieToken) || !this.#tokens.verify(this.#secret, token) || token !== cookieToken) {
-                    next(new AppError(
+                    res.clearCookie(this.#config.cookieName, this.#config.clearCookieOptions);
+                    return next(new AppError(
                         statusMessages.INVALID_CSRF_TOKEN,
                         httpCodes.FORBIDDEN.code,
                         errorCodes.CSRF_INVALID
@@ -88,6 +103,7 @@ class CsrfMiddleware {
 
                 next();
             } catch (error) {
+                res.clearCookie(this.#config.cookiesName, this.#config.clearCookieOptions);
                 throw new AppError(
                     statusMessages.SERVER_ERROR,
                     httpCodes.INTERNAL_SERVER_ERROR.code,

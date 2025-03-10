@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import {HttpStatusCode} from "../constants/httpStatus";
 import httpHeaders from "../constants/httpHeaders";
+import errorCodes from '../constants/errorCodes';
 import apiClient from './apiClient';
 import tokenStorageService from '../services/tokenStorageService';
 import userService from './userService';
@@ -17,6 +18,8 @@ const ENDPOINTS = {
     LOGOUT: '/auth/logout',
     REGISTER: '/auth/register',
     VERIFY_EMAIL: 'auth/verify_email',
+    GOOGLE_AUTH: '/auth/google',
+    GOOGLE_AUTH_CALLBACK: '/auth/google/callback'
 };
 
 class AuthService {
@@ -77,14 +80,10 @@ class AuthService {
     async #handleResponseError(error) {
         const originalRequest = error.config;
 
-        if (
-            originalRequest.url.includes(ENDPOINTS.REFRESH) ||
-            originalRequest.url.includes(ENDPOINTS.LOGOUT)
+        if (error.response?.status === HttpStatusCode.UNAUTHORIZED &&
+            error.response?.data?.code === errorCodes.ACCESS_TOKEN_FAILED &&
+            !originalRequest._retry
         ) {
-            return Promise.reject(error);
-        }
-
-        if (error.response?.status === HttpStatusCode.UNAUTHORIZED && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
                 const {accessToken} = await this.#refreshAccessToken();
@@ -158,7 +157,42 @@ class AuthService {
         this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
 
         return response;
+    }
 
+    /**
+     * Initiates Google OAuth 2.0 authentication flow.
+     * @async
+     * @returns {Promise<Object>} Response containing authorization URL and state
+     * @throws {Error} If the initiation request fails
+     */
+    async initiateGoogleAuth() {
+        return await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH);
+    }
+
+    /**
+     * Handles Google OAuth callback with authorization code
+     * @async
+     * @param {Object} params - Callback parameters from Google
+     * @param {string} params.code - Authorization code from Google (required)
+     * @param {string} [params.state] - State parameter for CSRF validation (optional)
+     * @returns {Promise<Object>} Authentication result with user data and tokens
+     * @throws {Error} If code is missing or token exchange fails
+     */
+    async handleGoogleCallback({code, state} = {}) {
+        const response = await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH_CALLBACK, {code, state});
+
+        const {accessToken} = response.data;
+
+        // Store the new access token
+        this.#tokenStorageService.setAccessToken(accessToken);
+
+        // Fetch and emit user details
+        const user = await this.#userService.getUser("me");
+        const {id, email, firstname, lastname} = user.data;
+
+        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+
+        return response;
     }
 
     /**

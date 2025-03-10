@@ -17,6 +17,7 @@ class RateLimiterService {
     #maxRequests;
     #generateLimitKey;
     #generateBlockKey;
+    #message;
 
     /**
      * Creates an instance of RateLimiterService.
@@ -30,6 +31,7 @@ class RateLimiterService {
         maxRequests = 60,
         generateLimitKey,
         generateBlockKey,
+        message = {}
     } = {}) {
         this.#cacheService = cacheService;
         this.#blockerService = blockerService;
@@ -38,6 +40,11 @@ class RateLimiterService {
 
         this.#generateLimitKey = generateLimitKey || this.#defaultGenerateLimitKey;
         this.#generateBlockKey = generateBlockKey || this.#defaultGenerateBlockKey;
+        this.#message = {
+            text: message.text || httpCodes.TOO_MANY_REQUESTS.message,
+            code: message.code || httpCodes.TOO_MANY_REQUESTS.code,
+            name: message.name || httpCodes.TOO_MANY_REQUESTS.name
+        };
     }
 
     /**
@@ -99,18 +106,18 @@ class RateLimiterService {
     }
 
     /**
-     * Enforces rate limiting by throwing error when limits are exceeded
+     * Enforces rate limiting by throwing an error when the request exceeds allowed limits.
      *
-     * @param {RateLimiterRequestObject} req - Incoming request to validate
-     * @throws {AppError} - 429 Too Many Requests error when limits exceeded
+     * @param {RateLimiterRequestObject} req - Incoming request to validate.
+     * @throws {AppError} An error with the configured message when the request is rate limited.
      * @returns {Promise<void>}
      */
     async limitOrThrow(req) {
         if (await this.isRateLimited(req)) {
             throw new AppError(
-                httpCodes.TOO_MANY_REQUESTS.message,
-                httpCodes.TOO_MANY_REQUESTS.code,
-                httpCodes.TOO_MANY_REQUESTS.name
+                this.#message.text,
+                this.#message.code,
+                this.#message.name
             );
         }
     }

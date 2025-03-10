@@ -6,7 +6,7 @@ const PasswordHasherService = require('../services/passwordHasher.service');
 const userValidationService = require('../validations/user.validation');
 const userRepository = require("../repositories/user.repository");
 const {deepFreeze} = require('shared-utils/obj.utils');
-
+const dbErrorCodes = require('../constants/dbErrorCodes');
 
 /**
  * Service for managing user operations.
@@ -67,7 +67,7 @@ class UserService {
     }
 
     /**
-     * Creates a new user with the provided details.
+     * Creates or updates a local email/password user document with OTP verification handling.
      *
      * Validates the user's email, password, and names.
      * Hashes the password and OTP code,
@@ -85,23 +85,14 @@ class UserService {
      * @returns {Promise<Object>} The newly created user object, deep-frozen.
      * @throws {AppError} If user creation fails due to a conflict or server error.
      */
-    async create({
-                     firstname,
-                     lastname,
-                     email,
-                     password,
-                     otpCode,
-                     otpCodeExpiry = time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)
-                 } = {}) {
-        const existingUser = await this.findByEmail(email);
-        if (existingUser) {
-            throw new AppError(
-                statusMessages.USER_ALREADY_EXISTS,
-                httpCodes.CONFLICT.code,
-                httpCodes.CONFLICT.name
-            );
-        }
-
+    async createLocalUser({
+                              firstname,
+                              lastname,
+                              email,
+                              password,
+                              otpCode,
+                              otpCodeExpiry = time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)
+                          } = {}) {
         this.#userValidationService.validateEmail('email', email);
         this.#userValidationService.validatePassword('password', password);
         this.#userValidationService.validateName('firstname', firstname);
@@ -121,12 +112,12 @@ class UserService {
         };
 
         try {
-            const user = await this.#userRepository.create(userData);
+            const user = await this.#userRepository.createLocalUser(userData);
             return deepFreeze({...user, otpCode, otpCodeExpiresAt})
         } catch (error) {
-            if (error.name === "Conflict") {
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
                 throw new AppError(
-                    statusMessages.USER_CREATION_FAILED,
+                    statusMessages.USER_ALREADY_EXISTS,
                     httpCodes.CONFLICT.code,
                     httpCodes.CONFLICT.name
                 );
@@ -134,6 +125,41 @@ class UserService {
 
             throw new AppError(
                 statusMessages.USER_CREATION_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+    }
+
+    /**
+     * Creates or retrieves a Google-authenticated user.
+     *
+     * This method delegates to the repository's findOrCreateGoogleUser method, which either finds an
+     * existing user based on the provided email and Google ID or creates a new user document.
+     * The returned user document is deep-frozen to prevent unintended modifications.
+     *
+     * @param {Object} googleUser - The Google user data.
+     * @param {string} googleUser.firstname - The user's first name.
+     * @param {string} googleUser.lastname - The user's last name.
+     * @param {string} googleUser.email - The user's email address.
+     * @param {string} googleUser.googleId - The user's ID Google.
+     * @returns {Promise<Object>} The created or updated user document, deep-frozen.
+     * @throws {Error} If a duplicate key error occurs, or if any other error occurs during the operation.
+     */
+    async createGoogleUser(googleUser = {}) {
+        try {
+            return await this.#userRepository.findOrCreateGoogleUser(googleUser);
+        } catch (error) {
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                throw new AppError(
+                    statusMessages.USER_ALREADY_EXISTS,
+                    httpCodes.CONFLICT.code,
+                    httpCodes.CONFLICT.name
+                );
+            }
+
+            throw new AppError(
+                statusMessages.GOOGLE_USER_CREATE_FAILED,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );

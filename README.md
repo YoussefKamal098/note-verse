@@ -55,30 +55,55 @@ npm install
 **Backend**
 
 ```env
+# Application Configuration
 NODE_ENV=development
 PORT=5000
+
+# Database Configuration
 MONGO_URI=mongodb://localhost:27017/notes
 REDIS_URI=redis://127.0.0.1:6379
 DB_MAX_POOL_SIZE=10
 DB_MIN_POOL_SIZE=1
+
+# Security Configuration
 ALLOWED_ORIGINS=http://localhost:3000
+
+# JWT Configuration
 ACCESS_TOKEN_SECRET=your-access-token-secret
 ACCESS_TOKEN_EXPIRY=1h
 REFRESH_TOKEN_SECRET=your-refresh-token-secret
 REFRESH_TOKEN_EXPIRY=1d
-REFRESH_TOKEN_COOKIES_NAME=jwt
+REFRESH_TOKEN_COOKIES_NAME=refresh_token
+REFRESH_TOKEN_COOKIE_MAX_AGE=86400  # 24 hours in seconds
+
+# CSRF Configuration
 CSRF_TOKEN_SECRET=CSRF_TOKEN_SECRET
-CSRF_TOKEN_COOKIES_NAME=csrf-token
-OTP_TOKEN_EXPIRY=15 # The OTP token expiry time, specified in minutes (i.e., tokens expire after 15 minutes)
-COOKIES_MAX_AGE=86400  # 24 hours in seconds
+CSRF_TOKEN_COOKIE_NAME=csrf-token
+CSRF_TOKEN_COOKIE_MAX_AGE=86400  # 24 hours in seconds
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:5000/auth/google/callback
+STATE_TOKEN_SECRET=STATE_TOKEN_SECRET  # Secret for signing state tokens
+STATE_TOKEN_EXPIRY=5m  # State token expiration (e.g., 5 minutes)
+STATE_TOKEN_COOKIE_NAME=oauth_state  # Cookie name for storing state token
+STATE_TOKEN_COOKIE_MAX_AGE=300  # 5 minutes in seconds (5 * 60)
+
+# OTP Configuration
+OTP_TOKEN_EXPIRY=15  # OTP expiration time in minutes
+
+# Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=465
+EMAIL_SECURE=true
+EMAIL_USER=your-email@example.com
+EMAIL_PASS=your-email-password
+EMAIL_FROM=your-email@example.com
+EMAIL_TEMPLATES_DIR=./templates/emails
+
+# Logging Configuration
 LOGS_DIR=./logs
-EMAIL_HOST=smtp.gmail.com         # SMTP host (default: smtp.gmail.com)
-EMAIL_PORT=465                    # SMTP port (default: 465 for secure connection)
-EMAIL_SECURE=true                 # Whether to use a secure connection (true/false)
-EMAIL_USER=your-email@example.com # Email username
-EMAIL_PASS=your-email-password    # Email password
-EMAIL_FROM=your-email@example.com # Default sender email address (optional)
-EMAIL_TEMPLATES_DIR=./templates/emails  # Directory containing email templates
 ```
 
 **Frontend**
@@ -210,15 +235,17 @@ The following routes are used for managing notes:
 
 The following routes are used for user management and authentication:
 
-| HTTP Method | Endpoint                   | Description                                                                                                                                                                      |
-|-------------|----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POST`      | `api/v1/auth/register`     | Register a new user and send an OTP code to the provided email for verification                                                                                                  |
-| `POST`      | `api/v1/auth/login`        | Log in an existing user                                                                                                                                                          |
-| `POST`      | `api/v1/auth/logout`       | Log out the currently logged-in user                                                                                                                                             |
-| `POST`      | `api/v1/auth/refresh`      | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
-| `POST`      | `api/v1/auth/verify_email` | Verify the user's email address using the provided OTP code                                                                                                                      |
-| `GET`       | `api/v1/csrf-tokens`       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
-| `GET`       | `api/v1/users/:userId`     | Retrieve the user's profile. You can either provide a specific userId or use the keyword "me", which will automatically resolve to the authenticated user's ID.                  |
+| HTTP Method | Endpoint                      | Description                                                                                                                                                                      |
+|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/auth/register`        | Register a new user and send an OTP code to the provided email for verification                                                                                                  |
+| `POST`      | `api/v1/auth/login`           | Log in an existing user                                                                                                                                                          |
+| `POST`      | `api/v1/auth/logout`          | Log out the currently logged-in user                                                                                                                                             |
+| `POST`      | `api/v1/auth/refresh`         | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
+| `POST`      | `api/v1/auth/verify_email`    | Verify the user's email address using the provided OTP code                                                                                                                      |
+| `POST`      | `api/v1/auth/google`          | Initiates the Google OAuth 2.0 authentication process (redirects to Google's consent screen)                                                                                     |
+| `POST`      | `api/v1/auth/google/callback` | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                               |
+| `GET`       | `api/v1/csrf-tokens`          | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
+| `GET`       | `api/v1/users/:userId`        | Retrieve the user's profile. You can either provide a specific userId or use the keyword "me", which will automatically resolve to the authenticated user's ID.                  |
 
 ---
 
@@ -302,52 +329,47 @@ notes_app/
 - Implement unit tests for both backend routes (API endpoints) and frontend components. This will ensure that
   codebase remains stable and is less prone to regressions.
 
-### 2. **Authentication**
-
-- Enhance the authentication mechanism by integrating **OAuth** for social media logins (Google, Facebook, etc.). This
-  would give users more login options and improve the overall user experience.
-
-### 3. **Offline Access**
+### 2. **Offline Access**
 
 - Implement **service workers** and **IndexedDB** for **offline access**. This will allow users to access their notes
   even without an internet connection. The app could sync changes to the backend once the internet is available.
 
-### 4. **Profile Image Upload**
+### 3. **Profile Image Upload**
 
 - Allow users to upload and update their **profile image**. This will make user profiles more personalized and visually
   appealing.
 
-### 5. **N-gram Search Optimization**
+### 4. **N-gram Search Optimization**
 
 - Implement an **n-gram-based search** to optimize full-text searches for faster and more accurate results, especially
   for large datasets.
 
-### 6. **Pagination**
+### 5. **Pagination**
 
 - Implement **cursor-based pagination** for better performance when displaying large sets of data (such as long note
   lists or user activity logs).
 
-### 7. **Email and Password Change**
+### 6. **Email and Password Change**
 
 - Allow users to **update their email** and **password** securely. Adding `multi-factor` authentication (MFA) can also
   improve security during these changes.
 
-### 8. **Delete Account**
+### 7. **Delete Account**
 
 - Provide users with the option to **delete their account**. Ensure that the data is wiped securely from both the
   backend and frontend storage.
 
-### 9. **Compression for Large Markdown Content (Frontend & Backend)**
+### 8. **Compression for Large Markdown Content (Frontend & Backend)**
 
 - Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
   backend) to reduce the amount of data transmitted over the network.
 
-### 10. **Archive and Collection Notes**
+### 9. **Archive and Collection Notes**
 
 - Enable users to **archive or group their notes** into different **collections**. This will help with better
   organization and easier access to notes.
 
-### 11. **User Settings Section (Frontend)**
+### 10. **User Settings Section (Frontend)**
 
 - Create a **user settings page** where users can:
     - Upload or change their profile image.
@@ -355,32 +377,32 @@ notes_app/
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
 
-### 12. **Real-time Collaboration**
+### 11. **Real-time Collaboration**
 
 - Implement **real-time collaboration** for note editing, similar to Google Docs. This would allow multiple users to
   edit a note simultaneously with changes synced in real-time.
 
-### 13. **Version History / Note History**
+### 12. **Version History / Note History**
 
 - Implement a **note history/version control** feature to track changes over time. Users can view past versions of a
   note and restore them if needed. This feature can be especially useful for collaborative environments.
 
-### 14. **Data Encryption (Security)**
+### 13. **Data Encryption (Security)**
 
 - Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
   This will help improve the app's security and protect user privacy.
 
-### 15. **Notification System**
+### 14. **Notification System**
 
 - Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
   their notes or account.
 
-### 16. **Analytics & Reporting**
+### 15. **Analytics & Reporting**
 
 - Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
   use this data to improve the user experience and prioritize new features.
 
-### 17. **Push Notification**
+### 16. **Push Notification**
 
 - Integrated push notification service to notify users of key actions:
     - Login activity.

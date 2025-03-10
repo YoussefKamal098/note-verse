@@ -15,4 +15,8 @@
  * @property {number} [maxRequests=60] - Maximum allowed requests per window
  * @property {function(RateLimiterRequestObject): string} [generateLimitKey] - Custom limit key generator
  * @property {function(RateLimiterRequestObject): string} [generateBlockKey] - Custom block key generator
+ * @property {Object} [message] - Default error message for rate limiting.
+ * @property {string} message.text - Default error message text.
+ * @property {number} message.code - Default error code.
+ * @property {string} message.name - Default error name.
  */

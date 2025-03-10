@@ -4,10 +4,10 @@ const ErrorContainerStyled = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     background-color: var(--color-background-primary);
     color: var(--color-text);
     gap: 2em;
-
 `;
 
 const IconContainerStyled = styled.div`

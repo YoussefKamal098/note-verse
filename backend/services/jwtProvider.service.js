@@ -1,5 +1,4 @@
 const statusMessages = require('../constants/statusMessages');
-const AppError = require('../errors/app.error');
 const jwt = require('jsonwebtoken');
 
 class JwtProviderService {
@@ -8,7 +7,7 @@ class JwtProviderService {
      *
      * @param {object} payload - The payload to include in the token.
      * @param {string} secret - The secret key used for signing the token.
-     * @param {string} expiry - The expiration time (e.g., "1h").
+     * @param {string} expiry - The expiration time (e.g., "1h", "1d" ...).
      * @returns {Promise<string>} The generated JWT token.
      * @throws {AppError} If token generation fails.
      */
@@ -16,7 +15,7 @@ class JwtProviderService {
         return new Promise((resolve, reject) => {
             jwt.sign(payload, secret, {expiresIn: expiry}, (err, token) => {
                 if (err || !token) {
-                    return reject(new AppError(`Token generation failed: ${err}`, 500));
+                    return reject(new Error(`Token generation failed: ${err}`));
                 }
                 resolve(token);
             });
@@ -35,7 +34,7 @@ class JwtProviderService {
         return new Promise((resolve, reject) => {
             jwt.verify(token, secret, (err, decoded) => {
                 if (err) {
-                    return reject(new AppError(`Token verification failed: ${err}`, 500));
+                    return reject(new Error(`Token verification failed: ${err}`));
                 }
                 resolve(decoded);
             });
@@ -54,7 +53,7 @@ class JwtProviderService {
      */
     async detectTokenError(token, secret) {
         return new Promise((resolve) => {
-            jwt.verify(token, secret, (err, decoded) => {
+            jwt.verify(token, secret, (err) => {
                 if (err) {
                     if (err.name === 'TokenExpiredError') {
                         return resolve({expired: true, error: err});

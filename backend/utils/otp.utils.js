@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 /**
  * Gets common OTP generation parameters and validates input
  * @private

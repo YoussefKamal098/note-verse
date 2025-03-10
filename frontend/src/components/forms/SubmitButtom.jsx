@@ -2,10 +2,10 @@ import React from "react";
 import LoadingEffect from "../common/LoadingEffect";
 import {SubmitButtonStyled} from "./formStyles";
 
-const SubmitButton = ({isSubmitting, loading, children}) => {
+const SubmitButton = ({isSubmitting, loading, disabled, children}) => {
     return (
-        <SubmitButtonStyled type="submit" disabled={isSubmitting || loading}>
-            {loading ? (<LoadingEffect color="var(--color-background)" loading={loading} size={19}/>) : children}
+        <SubmitButtonStyled type="submit" disabled={isSubmitting || loading || disabled}>
+            {loading ? (<LoadingEffect color="var(--color-accent)" loading={loading} size={25}/>) : children}
         </SubmitButtonStyled>
     )
 }

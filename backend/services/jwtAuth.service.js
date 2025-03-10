@@ -2,11 +2,13 @@ const {parseTime} = require("shared-utils/date.utils");
 const {generateSecureOTP} = require('../utils/otp.utils');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
+const errorCodes = require('../constants/errorCodes');
 const AppError = require('../errors/app.error');
 const userService = require('../services/user.service');
 const sessionService = require('../services/session.service');
 const JwtProviderService = require('../services/jwtProvider.service');
 const authConfig = require('../config/authConfig');
+const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 
 /**
  * @class JwtAuthService
@@ -40,6 +42,12 @@ class JwtAuthService {
      */
     #jwtProviderService;
 
+    /**
+     * @private
+     * @type {AuthConfig}
+     * @description The authentication configuration object
+     */
+    #config;
 
     /**
      * Constructs a new JwtAuthService.
@@ -53,7 +61,42 @@ class JwtAuthService {
         this.#userService = userService;
         this.#sessionService = sessionService;
         this.#jwtProviderService = jwtProviderService;
-        this.config = config;
+        this.#config = deepFreeze(deepClone(config));
+    }
+
+    /**
+     * Immutable authentication configuration
+     * @type {AuthConfig}
+     * @readonly
+     */
+    get config() {
+        return this.#config;
+    }
+
+    /**
+     * Generates a JWT token using the provided payload, secret, and expiration.
+     *
+     * @public
+     * @param {object} payload - The payload for the JWT.
+     * @param {string} secret - The secret key to sign the token.
+     * @param {string|number} expiresIn - The expiration time for the token ("1h" hours, "1d" days, "1m" minutes etc.).
+     * @returns {Promise<string>} The generated JWT token.
+     */
+    async generateToken(payload, secret, expiresIn) {
+        return await this.#jwtProviderService.generateToken(payload, secret, expiresIn);
+    }
+
+    /**
+     * Verifies a JWT token using the provided secret.
+     *
+     * @public
+     * @param {string} token - The JWT token to verify.
+     * @param {string} secret - The secret key used to verify the token.
+     * @returns {Promise<object>} The decoded token payload.
+     * @throws {AppError} If the token is invalid.
+     */
+    async verifyToken(token, secret) {
+        return await this.#jwtProviderService.verifyToken(token, secret);
     }
 
     /**
@@ -87,9 +130,9 @@ class JwtAuthService {
     async #verifyOrHandleAccessTokenError(token, secret, expiredErrorMsg, invalidErrorMsg) {
         const {expired, error} = await this.#jwtProviderService.detectTokenError(token, secret);
         if (expired) {
-            throw new AppError(expiredErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
+            throw new AppError(expiredErrorMsg, httpCodes.UNAUTHORIZED.code, errorCodes.ACCESS_TOKEN_FAILED);
         } else if (error) {
-            throw new AppError(invalidErrorMsg, httpCodes.UNAUTHORIZED.code, httpCodes.UNAUTHORIZED.name);
+            throw new AppError(invalidErrorMsg, httpCodes.UNAUTHORIZED.code, errorCodes.ACCESS_TOKEN_FAILED);
         }
         return await this.#jwtProviderService.verifyToken(token, secret);
     }
@@ -144,7 +187,7 @@ class JwtAuthService {
             );
         }
 
-        if (!(await this.#userService.passwordHasherService.verify(password, user.password))) {
+        if (!user.password || !(await this.#userService.passwordHasherService.verify(password, user.password))) {
             throw new AppError(
                 statusMessages.INVALID_CREDENTIALS,
                 httpCodes.BAD_REQUEST.code,
@@ -180,7 +223,7 @@ class JwtAuthService {
             );
         }
         // No existing session: create a new one.
-        const expiredAt = parseTime(this.config.refreshTokenExpiry);
+        const expiredAt = parseTime(this.#config.refreshTokenExpiry);
 
         session = await this.#sessionService.createSession({
             userId: userId,
@@ -194,25 +237,24 @@ class JwtAuthService {
 
     /**
      * Generates session tokens after successful authentication
-     * @private
      * @param {string} userId - user id
      * @param {SessionInfo} sessionInfo - Session context information
      * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair
      */
-    async #generateSessionTokens(userId, sessionInfo) {
+    async generateSessionTokens(userId, sessionInfo) {
         const session = await this.#handleSession(userId, sessionInfo);
         const payload = this.#getPayload(userId, session.id);
 
         return {
             accessToken: await this.#jwtProviderService.generateToken(
                 payload,
-                this.config.accessTokenSecret,
-                this.config.accessTokenExpiry
+                this.#config.accessTokenSecret,
+                this.#config.accessTokenExpiry
             ),
             refreshToken: await this.#jwtProviderService.generateToken(
                 payload,
-                this.config.refreshTokenSecret,
-                this.config.refreshTokenExpiry
+                this.#config.refreshTokenSecret,
+                this.#config.refreshTokenExpiry
             )
         };
     }
@@ -235,13 +277,13 @@ class JwtAuthService {
             caseSensitive: true
         });
 
-        return await this.#userService.create({
+        return await this.#userService.createLocalUser({
             email,
             password,
             firstname,
             lastname,
             otpCode,
-            otpCodeExpiry: this.config.otpTokenExpiry
+            otpCodeExpiry: this.#config.otpTokenExpiry
         });
     }
 
@@ -296,7 +338,7 @@ class JwtAuthService {
         const updatedUser = await this.#userService.markEmailAsVerified(email);
 
         // Generate and return session tokens.
-        return this.#generateSessionTokens(updatedUser.id, sessionInfo);
+        return this.generateSessionTokens(updatedUser.id, sessionInfo);
     }
 
     /**
@@ -310,7 +352,7 @@ class JwtAuthService {
      */
     async login({email, password}, sessionInfo) {
         const user = await this.#verifyUserCredentials(email, password);
-        return this.#generateSessionTokens(user.id, sessionInfo);
+        return this.generateSessionTokens(user.id, sessionInfo);
     }
 
     /**
@@ -323,10 +365,10 @@ class JwtAuthService {
      * @returns {Promise<JwtPayload>} The decoded JWT payload.
      * @throws {AppError} If the token is invalid/expired or if the session is inactive.
      */
-    async verify(accessToken) {
+    async verifyAccessToken(accessToken) {
         const payload = await this.#verifyOrHandleAccessTokenError(
             accessToken,
-            this.config.accessTokenSecret,
+            this.#config.accessTokenSecret,
             statusMessages.ACCESS_TOKEN_EXPIRED,
             statusMessages.ACCESS_TOKEN_EXPIRED
         );
@@ -335,7 +377,7 @@ class JwtAuthService {
             throw new AppError(
                 statusMessages.ACCESS_TOKEN_EXPIRED,
                 httpCodes.UNAUTHORIZED.code,
-                httpCodes.UNAUTHORIZED.name
+                errorCodes.ACCESS_TOKEN_FAILED
             );
         }
 
@@ -356,7 +398,7 @@ class JwtAuthService {
     async logout(refreshToken) {
         const payload = await this.#verifyOrHandleRefreshTokenError(
             refreshToken,
-            this.config.refreshTokenSecret,
+            this.#config.refreshTokenSecret,
             statusMessages.REFRESH_TOKEN_EXPIRED,
             statusMessages.INVALID_REFRESH_TOKEN
         );
@@ -378,7 +420,7 @@ class JwtAuthService {
     async refreshToken(refreshToken) {
         const payload = await this.#verifyOrHandleRefreshTokenError(
             refreshToken,
-            this.config.refreshTokenSecret,
+            this.#config.refreshTokenSecret,
             statusMessages.REFRESH_TOKEN_EXPIRED,
             statusMessages.INVALID_REFRESH_TOKEN
         );
@@ -394,8 +436,8 @@ class JwtAuthService {
         const newPayload = this.#getPayload(payload.userId, payload.sessionId);
         const newAccessToken = await this.#jwtProviderService.generateToken(
             newPayload,
-            this.config.accessTokenSecret,
-            this.config.accessTokenExpiry
+            this.#config.accessTokenSecret,
+            this.#config.accessTokenExpiry
         );
 
         await this.#sessionService.updateLastAccess(payload.sessionId);
