@@ -16,13 +16,15 @@ const NoteMarkdownTabsWrapperStyled = styled.div`
 const PreviewStyled = styled(MarkdownPreview)`
     text-align: left;
     padding: 1em 2em;
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 1em !important;
+    font-family: "Poppins", sans-serif !important;
+    font-weight: 700 !important;
 `;
 
 const EditorStyled = styled(MarkdownEditor)`
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 0.9em !important;
+    font-family: "Poppins", sans-serif !important;
+    font-weight: 700 !important;
 `;
 
 const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onContentChange}) {
