@@ -10,12 +10,13 @@ import Overlay from "../../common/Overlay";
 import Spinner from "../../buttons/LoadingSpinnerButton";
 import {useAuth} from "../../../contexts/AuthContext";
 import {useTheme} from "../../../contexts/ThemeContext";
-import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
-import RoutesPaths from "../../../constants/RoutesPaths";
-import authService from "../../../api/authService";
 import useIsMobile from "../../../hooks/useIsMobile";
 import useResize from "../../../hooks/useResize";
 import useOutsideClick from "../../../hooks/useOutsideClick";
+import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
+import RoutesPaths from "../../../constants/RoutesPaths";
+import authService from "../../../api/authService";
+import userService from "../../../api/userService";
 
 import {
     ArrowStyled,
@@ -50,6 +51,7 @@ const UserMenu = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [appearanceMenuOpen, setAppearanceMenuOpen] = useState(false);
+    const [userData, setUserData] = useState({firstname: "", lastname: ""});
     const [closeButtonStyle, setCloseButtonStyle] = useState({});
     const wrapperRef = useRef(null);
     const menuRef = useRef(null);
@@ -60,10 +62,25 @@ const UserMenu = () => {
     // Determine if mobile using our reusable hook.
     const isMobile = useIsMobile(mobileSize);
 
-    const initials = useMemo(
-        () => getInitials(user.firstname, user.lastname),
-        [user.firstname, user.lastname]
-    );
+
+    // Fetch user details on component mount
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await userService.getUser("me");
+                setUserData({
+                    firstname: response.data.firstname || "",
+                    lastname: response.data.lastname || "",
+                });
+            } catch (error) {
+                notify.error("Failed to fetch user details");
+            }
+        };
+
+        if (user) fetchUserData();
+    }, []);
+
+    const initials = useMemo(() => getInitials(userData.firstname, userData.lastname), [userData]);
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
@@ -134,7 +151,7 @@ const UserMenu = () => {
                                 <span>{initials}</span>
                             </UserMenuAvatarStyled>
                             <FullNameStyled>
-                                {user.firstname} {user.lastname}
+                                {userData.firstname} {userData.lastname}
                             </FullNameStyled>
                         </HeaderStyled>
 

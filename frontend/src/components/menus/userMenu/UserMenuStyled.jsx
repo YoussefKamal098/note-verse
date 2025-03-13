@@ -5,6 +5,8 @@ const AvatarStyled = styled.div`
     position: relative;
     width: 2.25em;
     height: 2.25em;
+    min-width: 2.25em;
+    min-height: 2.25em;
     display: flex;
     align-items: center;
     justify-content: center;

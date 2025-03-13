@@ -32,14 +32,10 @@ const AuthProvider = ({children}) => {
 
     const handleLogin = (data) => {
         const {user} = data;
-        const {id, firstname, lastname} = user;
-        const storedUserData = {id, firstname, lastname};
+        const {id} = user;
+        const storedUserData = {id};
 
         setUser(Object.freeze(storedUserData));
-        /*
-         * User data will be encrypted securely and stored
-         * using cacheService to ensure privacy and protect against unauthorized access.
-        */
         localStorage.setItem(AUTH_USER_STORED_KEY, JSON.stringify(storedUserData));
     };
 
