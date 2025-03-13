@@ -1,11 +1,9 @@
 const httpCodes = require('../constants/httpCodes');
 const httpHeaders = require('../constants/httpHeaders');
-const {formatDate} = require("shared-utils/date.utils");
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const jwtAuthService = require('../services/jwtAuth.service');
 const googleAuthAuthService = require('../services/googleAuth.service');
-const emailQueue = require('../queues/email.queue');
 const emailService = require('../services/email.service');
 
 /**
@@ -79,9 +77,7 @@ class AuthController {
             email,
             name: `${firstname} ${lastname}`,
             otpCode: user.otpCode,
-            otpCodeExpiresAt: user.otpCodeExpiresAt,
-            formatDate: formatDate,
-            emailQueue
+            otpCodeExpiresAt: user.otpCodeExpiresAt
         });
 
         res.status(httpCodes.CREATED.code).json({message: statusMessages.USER_CREATED});

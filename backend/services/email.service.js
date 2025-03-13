@@ -2,6 +2,8 @@ const fs = require('fs');
 const nodemailer = require('nodemailer');
 const emailConfig = require('../config/emailConfig');
 const emailTemplates = require('../constants/emailTemplates');
+const emailQueue = require('../queues/email.queue');
+const {formatDate} = require("shared-utils/date.utils");
 
 /**
  * EmailService is responsible for sending emails using SMTP settings.
@@ -16,6 +18,7 @@ class EmailService {
     #from;
     #templatesDir;
     #transporter;
+    #emailQueue;
     #isSetupComplete = false;
 
     /**
@@ -29,6 +32,7 @@ class EmailService {
      * @param {string} config.pass - SMTP password.
      * @param {string} config.from - Default sender email.
      * @param {string} config.templatesDir - Directory for email templates.
+     * @param {Queue} emailQueue - The Bull queue instance for email processing.
      *
      * @throws {Error} If required configuration (user or pass) is missing or if setup fails.
      */
@@ -40,7 +44,7 @@ class EmailService {
                     pass,
                     from,
                     templatesDir
-                } = {}) {
+                } = {}, emailQueue) {
         this.#host = host;
         this.#port = port;
         this.#secure = secure;
@@ -48,6 +52,7 @@ class EmailService {
         this.#pass = pass;
         this.#from = from;
         this.#templatesDir = templatesDir;
+        this.#emailQueue = emailQueue;
 
         // Validate required configuration.
         if (!this.#user || !this.#pass) {
@@ -173,12 +178,10 @@ class EmailService {
      * @param {string} params.name - The recipient's full name.
      * @param {string} params.otpCode - The one-time password (OTP) code for verification.
      * @param {Date|string|number} params.otpCodeExpiresAt - The expiration time for the OTP code.
-     * @param {Function} params.formatDate - A function that formats a Date object into a string.
-     * @param {import('bull').Queue} params.emailQueue - The Bull queue instance used to add email jobs.
      * @returns {Promise<void>} A promise that resolves when the email job is successfully added to the queue.
      * @throws {Error} If adding the email job to the queue fails.
      */
-    async sendVerificationEmail({email, name, otpCode, otpCodeExpiresAt, formatDate, emailQueue}) {
+    async sendVerificationEmail({email, name, otpCode, otpCodeExpiresAt}) {
         const emailContext = {
             name: name,
             otpCode: otpCode,
@@ -188,7 +191,7 @@ class EmailService {
         };
 
         // Add the email job to the queue using the specified template, subject, and constructed context.
-        await emailQueue.add({
+        await this.#emailQueue.add({
             to: email,
             subject: emailTemplates.verify_email.subject,
             template: emailTemplates.verify_email.template,
@@ -205,6 +208,6 @@ const emailService = new EmailService({
     pass: emailConfig.pass,
     from: emailConfig.from,
     templatesDir: emailConfig.templatesDir,
-});
+}, emailQueue);
 
 module.exports = emailService;
