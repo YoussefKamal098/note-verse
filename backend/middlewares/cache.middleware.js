@@ -2,22 +2,67 @@ const httpCodes = require("../constants/httpCodes");
 const {isSuccessfulStatus} = require("shared-utils/http.utils");
 const httpHeaders = require("../constants/httpHeaders");
 const {timeUnit, time} = require("shared-utils/date.utils");
+const CacheControlBuilder = require("../utils/cacheControlBuilder");
 const hasherService = require('../services/hasher.service');
 const cacheService = require("../services/cache.service");
 
 class CacheMiddleware {
+    /**
+     * @private
+     * @type {object}
+     * @description Instance of the caching service used to store and retrieve cache entries.
+     */
     #cacheService;
+    /**
+     * @private
+     * @type {object}
+     * @description Instance of the hashing service used to generate ETags for response bodies.
+     */
     #hasherService;
+    /**
+     * @private
+     * @type {string}
+     * @description The Cache-Control header value built from cache directives.
+     */
     #cacheControl;
+    /**
+     * @private
+     * @type {Function}
+     * @description Function to generate a unique cache key based on the request.
+     */
     #generateCacheKey;
+    /**
+     * @private
+     * @type {number}
+     * @description Time-to-live (TTL) in seconds for cache entries.
+     */
     #ttl;
 
+
+    /**
+     * Constructs a new CacheMiddleware instance.
+     *
+     * @param {object} cacheService - The caching service instance used to store and retrieve cache entries.
+     * @param {object} hasherService - The hashing service instance used to generate ETags.
+     * @param {object} [options={}] - Configuration options for caching.
+     * @param {object} [options.cacheControl={}] - Cache control directives.
+     * @param {boolean} [options.cacheControl.isPrivate=true] - Marks the response as private.
+     * @param {boolean} [options.cacheControl.noCache=true] - If true, instructs clients not to cache the response.
+     * @param {boolean} [options.cacheControl.noStore=false] - If true, prevents storage of the response in any cache.
+     * @param {boolean} [options.cacheControl.mustRevalidate=true] - If true, forces caches to revalidate the response.
+     * @param {boolean} [options.cacheControl.immutable=false] - If true, indicates that the response will not change.
+     * @param {boolean} [options.cacheControl.noTransform=false] - If true, prevents caches from modifying the response.
+     * @param {number|null} [options.cacheControl.maxAge=null] - Maximum age in seconds the response is considered fresh.
+     * @param {number|null} [options.cacheControl.sMaxAge=null] - Shared max age in seconds for public caches.
+     * @param {Function} [options.generateCacheKey=(req) => req.originalUrl] - Function to generate a unique cache key based on the request.
+     * @param {number} [options.ttl=time({[timeUnit.DAY]: 1})] - Time-to-live (TTL) for cache entries in seconds.
+     */
     constructor(cacheService, hasherService, {
         cacheControl: {
             isPrivate = true,
             noCache = true,
             noStore = false,
-            mustRevalidate = false,
+            mustRevalidate = true,
             immutable = false,
             noTransform = false,
             maxAge = null,
@@ -28,22 +73,31 @@ class CacheMiddleware {
     } = {}) {
         this.#cacheService = cacheService;
         this.#hasherService = hasherService;
-        this.#cacheControl = Object.freeze(Object.freeze({
-            private: isPrivate,
-            noCache,
-            noStore,
-            mustRevalidate,
-            immutable,
-            noTransform,
-            maxAge,
-            sMaxAge
-        }));
+        this.#cacheControl = new CacheControlBuilder()
+            .setPrivate(isPrivate)
+            .setNoCache(noCache)
+            .setNoStore(noStore)
+            .setMustRevalidate(mustRevalidate)
+            .setImmutable(immutable)
+            .setNoTransform(noTransform)
+            .setMaxAge(maxAge)
+            .setSMaxAge(sMaxAge)
+            .build();
+
         this.#generateCacheKey = generateCacheKey;
         this.#ttl = ttl;
+
     }
 
     /**
-     * Middleware entry point for caching and response retrieval.
+     * Express middleware entry point for caching responses.
+     *
+     * Retrieves a cached response if available; otherwise, intercepts the response to cache it.
+     *
+     * @param {import('express').Request} req - Express request object.
+     * @param {import('express').Response} res - Express response object.
+     * @param {Function} next - Express next middleware function.
+     * @returns {Promise<void>}
      */
     async cache(req, res, next) {
         const cacheKey = this.#generateCacheKey(req);
@@ -57,8 +111,18 @@ class CacheMiddleware {
         next();
     }
 
+
     /**
-     * Handle a cache hit scenario.
+     * Handles a cache hit by serving the cached response.
+     *
+     * Refreshes the TTL for the cache entry and sets the appropriate HTTP headers.
+     * If the client sends a matching ETag in the 'If-None-Match' header, a 304 Not Modified response is returned.
+     *
+     * @private
+     * @param {import('express').Request} req - Express a request object.
+     * @param {import('express').Response} res - Express response object.
+     * @param {string} cachedData - JSON string containing the cached response data (ETag and body).
+     * @returns {Promise<void>}
      */
     async #handleCacheHit(req, res, cachedData) {
         const {etag, body} = JSON.parse(cachedData);
@@ -67,9 +131,10 @@ class CacheMiddleware {
         const cacheKey = this.#generateCacheKey(req);
         await this.#refreshCacheTTL(cacheKey);
 
-        res.setHeader(httpHeaders.CACHE_CONTROL, this.#getCacheControlHeader());
+        res.setHeader(httpHeaders.CACHE_CONTROL, this.#cacheControl);
         if (req.headers[httpHeaders.IF_NONE_MATCH] === etag) {
-            return res.status(httpCodes.NOT_MODIFIED.code).json({message: httpCodes.NOT_MODIFIED.message});
+            res.status(httpCodes.NOT_MODIFIED.code).json({message: httpCodes.NOT_MODIFIED.message});
+            return;
         }
 
         res.setHeader(httpHeaders.ETAG, etag);
@@ -78,7 +143,13 @@ class CacheMiddleware {
     }
 
     /**
-     * Refresh the TTL for a cache key using Redis's EXPIRE command.
+     * Refreshes the TTL (time-to-live) for a given cache key using the caching service.
+     *
+     * This method attempts to extend the expiration time of a cache entry without re-setting its value.
+     *
+     * @private
+     * @param {string} cacheKey - The cache key to refresh.
+     * @returns {Promise<void>}
      */
     async #refreshCacheTTL(cacheKey) {
         try {
@@ -90,57 +161,12 @@ class CacheMiddleware {
     }
 
     /**
-     * Generate the Cache-Control header value.
-     */
-    #getCacheControlHeader() {
-        const directives = [];
-
-        // Handle no-store (overrides everything)
-        if (this.#cacheControl.noStore) {
-            directives.push("no-store");
-            return directives.join(", "); // No other directives are allowed
-        }
-
-        // Handle public/private (mutually exclusive)
-        if (this.#cacheControl.private) {
-            directives.push("private");
-        } else {
-            directives.push("public");
-        }
-
-        // Handle no-cache (overrides max-age and s-maxage)
-        if (this.#cacheControl.noCache) {
-            directives.push("no-cache");
-        } else {
-            // Add max-age and s-maxage only if no-cache is not set
-            if (this.#cacheControl.maxAge !== null && !isNaN(this.#cacheControl.maxAge)) {
-                directives.push(`max-age=${this.#cacheControl.maxAge}`);
-            }
-            if (this.#cacheControl.sMaxAge !== null && !isNaN(this.#cacheControl.sMaxAge)) {
-                directives.push(`s-maxage=${this.#cacheControl.sMaxAge}`);
-            }
-        }
-
-        // Handle must-revalidate (ignored if immutable is set)
-        if (this.#cacheControl.mustRevalidate && !this.#cacheControl.immutable) {
-            directives.push("must-revalidate");
-        }
-
-        // Handle immutable
-        if (this.#cacheControl.immutable) {
-            directives.push("immutable");
-        }
-
-        // Handle no-transform
-        if (this.#cacheControl.noTransform) {
-            directives.push("no-transform");
-        }
-
-        return directives.join(", ");
-    }
-
-    /**
-     * Mark the response as a cache miss and store cacheKey in res.locals.
+     * Marks a cache miss by setting appropriate headers and storing the cache key in res.locals.
+     *
+     * @private
+     * @param {object} res - Express response object.
+     * @param {string} cacheKey - The cache key that was not found.
+     * @returns {void}
      */
     #markCacheMiss(res, cacheKey) {
         res.setHeader(httpHeaders.X_CACHE, "MISS");
@@ -148,7 +174,14 @@ class CacheMiddleware {
     }
 
     /**
-     * Intercept the response to cache the body.
+     * Intercepts the response to cache its body if the response is successful.
+     *
+     * Overrides the default `res.send` method to cache the response body before sending it.
+     *
+     * @private
+     * @param {object} res - Express response object.
+     * @param {string} cacheKey - The key under which the response will be cached.
+     * @returns {void}
      */
     #interceptResponse(res, cacheKey) {
         const originalSend = res.send;
@@ -168,7 +201,14 @@ class CacheMiddleware {
     }
 
     /**
-     * Cache the response body with a TTL.
+     * Caches the response body by generating an ETag and storing the response data.
+     *
+     * The response is stored with a TTL (time-to-live) to ensure it expires after the configured duration.
+     *
+     * @private
+     * @param {string} cacheKey - The cache key under which the response will be stored.
+     * @param {string} body - The response body to cache.
+     * @returns {Promise<void>}
      */
     async #cacheResponse(cacheKey, body) {
         const etag = await this.#hasherService.generateHash(body);
@@ -176,6 +216,12 @@ class CacheMiddleware {
     }
 }
 
+/**
+ * Clears a specific cache entry.
+ *
+ * @param {string} key - The cache key to delete.
+ * @returns {Promise<void>}
+ */
 const clearCache = async (key) => {
     try {
         await cacheService.delete(key);
@@ -184,6 +230,12 @@ const clearCache = async (key) => {
     }
 }
 
+/**
+ * Clears all cache entries that match a given pattern.
+ *
+ * @param {string} pattern - The pattern to match cache keys.
+ * @returns {Promise<void>}
+ */
 const clearCachePattern = async (pattern) => {
     try {
         await cacheService.clearKeysByPattern(pattern);
@@ -192,7 +244,12 @@ const clearCachePattern = async (pattern) => {
     }
 }
 
-// Create reusable cache middleware instance
+/**
+ * Creates a reusable Express caching middleware instance with the provided options.
+ *
+ * @param {object} [options={}] - Configuration options for caching.
+ * @returns {Function} The Express middleware function for caching.
+ */
 const createCacheMiddleware = (options = {}) => {
     const cacheMiddleware = new CacheMiddleware(cacheService, hasherService, options);
     return cacheMiddleware.cache.bind(cacheMiddleware);
