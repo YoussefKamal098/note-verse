@@ -86,7 +86,6 @@ class CacheMiddleware {
 
         this.#generateCacheKey = generateCacheKey;
         this.#ttl = ttl;
-
     }
 
     /**
@@ -110,7 +109,6 @@ class CacheMiddleware {
         this.#interceptResponse(res, cacheKey);
         next();
     }
-
 
     /**
      * Handles a cache hit by serving the cached response.
@@ -248,6 +246,18 @@ const clearCachePattern = async (pattern) => {
  * Creates a reusable Express caching middleware instance with the provided options.
  *
  * @param {object} [options={}] - Configuration options for caching.
+ * @param {object} [options={}] - Configuration options for caching.
+ * @param {object} [options.cacheControl={}] - Cache control directives.
+ * @param {boolean} [options.cacheControl.isPrivate=true] - Marks the response as private.
+ * @param {boolean} [options.cacheControl.noCache=true] - If true, instructs clients not to cache the response.
+ * @param {boolean} [options.cacheControl.noStore=false] - If true, prevents storage of the response in any cache.
+ * @param {boolean} [options.cacheControl.mustRevalidate=true] - If true, forces caches to revalidate the response.
+ * @param {boolean} [options.cacheControl.immutable=false] - If true, indicates that the response will not change.
+ * @param {boolean} [options.cacheControl.noTransform=false] - If true, prevents caches from modifying the response.
+ * @param {number|null} [options.cacheControl.maxAge=null] - Maximum age in seconds the response is considered fresh.
+ * @param {number|null} [options.cacheControl.sMaxAge=null] - Shared max age in seconds for public caches.
+ * @param {Function} [options.generateCacheKey=(req) => req.originalUrl] - Function to generate a unique cache key based on the request.
+ * @param {number} [options.ttl=time({[timeUnit.DAY]: 1})] - Time-to-live (TTL) for cache entries in seconds.
  * @returns {Function} The Express middleware function for caching.
  */
 const createCacheMiddleware = (options = {}) => {
