@@ -19,6 +19,11 @@ const httpCodes = Object.freeze({
         name: "No Content",
         message: "No content to return",
     },
+    MULTI_STATUS: {
+        code: 207,
+        name: 'Multi-Status',
+        message: 'The response contains multiple status codes, typically used when multiple operations are performed concurrently (e.g., in WebDAV).'
+    },
     BAD_REQUEST: {
         code: 400,
         name: "Bad Request",
@@ -48,6 +53,11 @@ const httpCodes = Object.freeze({
         code: 405,
         name: "Method Not Allowed",
         message: "Method not allowed for this endpoint",
+    },
+    PAYLOAD_TOO_LARGE: {
+        code: 413,
+        name: "Payload Too Large",
+        message: "Request Entity Too Large"
     },
     INTERNAL_SERVER_ERROR: {
         code: 500,

@@ -23,6 +23,11 @@ const userSchema = new Schema({
             return this.provider === AuthProvider.LOCAL;
         }
     },
+    avatar: {
+        type: String,
+        ref: 'File',
+        index: true,
+    },
     googleId: {
         type: String,
         index: true,
@@ -69,6 +74,13 @@ const userSchema = new Schema({
             return ret;
         }
     }
+});
+
+userSchema.virtual('avatarFile', {
+    ref: 'File',        // The model to use for population
+    localField: 'avatar', // Find files where `fileId`
+    foreignField: 'fileId', // matches `user.avatar`
+    justOne: true       // Only return one document
 });
 
 const User = mongoose.model('User', userSchema);

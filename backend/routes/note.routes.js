@@ -25,9 +25,9 @@ const noteCacheMiddleware = createCacheMiddleware({
 // Routes
 router.post("/",
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
-    asyncRequestHandler(async (req, res, next) => {
+    asyncRequestHandler(async (req, res) => {
         await clearCachePattern(cacheKeys.getUserNotesCachePattern(req));
-        await notesController.create(req, res, next);
+        await notesController.create(req, res);
     }));
 
 router.get("/",

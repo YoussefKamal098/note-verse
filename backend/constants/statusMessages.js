@@ -10,6 +10,8 @@ const statusMessages = Object.freeze({
     USER_ID_MISSING: "User ID is missing. Please provide a valid user ID to proceed.",
     USER_ID_REQUIRED: "User ID is required. Please provide a valid user ID to access this resource.",
     USER_ID_INVALID: "User ID is invalid. Please provide a valid user ID and try again.",
+    AVATAR_UPDATE_FAILED: "Failed to update user avatar. Please try again later.",
+    AVATAR_FETCH_FAILED: "Failed to retrieve user avatar. Please try again later.",
     USER_NOT_AUTH: "Authentication required. Please provide a valid user ID to access this resource.",
     GOOGLE_USER_CREATE_FAILED: "Google authentication process failed. Please try again later.",
     MISSING_GOOGLE_AUTH_DATA: "Required Google authentication data is missing",
@@ -85,6 +87,21 @@ const statusMessages = Object.freeze({
     CORS_NOT_ALLOWED: "Cross-Origin Resource Sharing (CORS) is not allowed from this origin. Access to the requested resource has been denied.",
     REQUEST_TIMEOUT: "The server took too long to respond. Please try again later.",
     TOO_MANY_REQUESTS: "You have made too many requests in a short period. Please try again later.",
+
+
+    // =======================
+    // File upload errors
+    // =======================
+    INVALID_CONTENT_TYPE: "Invalid content type.",
+    FILE_NOT_FOUND: "The requested file could not be found. Please check the file ID or try again later.",
+    NO_FILES_UPLOADED: "No files uploaded!",
+    NO_AVATAR_UPLOADED: "No avatar uploaded!",
+    UPLOAD_FILE_STREAM_READ_ERROR: "Upload file Stream read error.",
+    UPLOAD_FILE_WRITE_STREAM_ERROR: "Upload file Write stream error.",
+    UPLOAD_FILE_PROCESS_FAILED: "Upload file process failed.",
+    DOWNLOAD_FILE_FAILED: "Download file failed.",
+    DELETE_FILE_FAILED: "Delete file failed.",
+    CHECK_FILE_EXISTENCE_FAILED: "Checking file existence failed.",
 });
 
 module.exports = statusMessages

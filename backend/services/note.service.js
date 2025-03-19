@@ -127,7 +127,7 @@ class NoteService {
      *
      * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
-     * @returns {Promise<Object | null>} The note object deep-frozen if found.
+     * @returns {Promise<Object>} The note object deep-frozen if found.
      * @throws {AppError} If the note is not found or does not belong to the user.
      */
     async findUserNoteById(userId, noteId) {
@@ -168,7 +168,7 @@ class NoteService {
      * @param {Array} [updates.tags] - The updated tags for the note.
      * @param {string} [updates.content] - The updated content of the note.
      * @param {boolean} [updates.isPinned] - The updated pinned status.
-     * @returns {Promise<Object | null>} The updated note object deep-frozen if found.
+     * @returns {Promise<Object>} The updated note object deep-frozen if found.
      * @throws {AppError} If the update operation fails.
      */
     async updateUserNote(userId, noteId, {title, tags, content, isPinned}) {

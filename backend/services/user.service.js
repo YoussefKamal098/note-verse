@@ -5,6 +5,7 @@ const AppError = require('../errors/app.error');
 const PasswordHasherService = require('../services/passwordHasher.service');
 const userValidationService = require('../validations/user.validation');
 const userRepository = require("../repositories/user.repository");
+const fileRepository = require("../repositories/file.repository");
 const {deepFreeze} = require('shared-utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
 
@@ -32,6 +33,11 @@ class UserService {
      */
     #userRepository;
     /**
+     * @private
+     * @type {FileRepository}
+     */
+    #fileRepository;
+    /**
      * @type {PasswordHasherService}
      */
     passwordHasherService;
@@ -42,11 +48,13 @@ class UserService {
      * @param {UserValidationService} userValidationService - Service for validating user data.
      * @param {PasswordHasherService} passwordHasherService - Service for hashing and verifying passwords.
      * @param {UserRepository} userRepository - Repository for user database operations.
+     * @param {FileRepository} fileRepository - Repository for file database operations.
      */
-    constructor(userValidationService, passwordHasherService, userRepository) {
+    constructor(userValidationService, passwordHasherService, userRepository, fileRepository) {
         this.#userValidationService = userValidationService;
         this.passwordHasherService = passwordHasherService;
         this.#userRepository = userRepository;
+        this.#fileRepository = fileRepository;
     }
 
     /**
@@ -254,6 +262,46 @@ class UserService {
             );
         }
     }
+
+    /**
+     * Updates a user's avatar by linking to a File document via fileId.
+     *
+     * @param {string} userId - The ID of the user to update
+     * @param {string} fileId - unique identifier of the File document from storage service
+     * @returns {Promise<string>} Updated fileId
+     * @throws {AppError} If:
+     * - User doesn't exist (404)
+     * - File doesn't exist (404)
+     * - Database update fails (500)
+     */
+    async updateAvatar(userId, fileId) {
+        await this.ensureUserExists(userId);
+
+        // Verify the file exists first
+        const file = await this.#fileRepository.findByFileId(fileId);
+        if (!file) {
+            throw new AppError(
+                statusMessages.FILE_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        try {
+            const updatedUser = await this.#userRepository.findByIdAndUpdate(
+                userId,
+                {avatar: fileId}
+            );
+
+            return updatedUser.avatar; // Returns the fileId string
+        } catch (error) {
+            throw new AppError(
+                statusMessages.AVATAR_UPDATE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+    }
 }
 
-module.exports = new UserService(new userValidationService(), new PasswordHasherService(), userRepository);
+module.exports = new UserService(new userValidationService(), new PasswordHasherService(), userRepository, fileRepository);

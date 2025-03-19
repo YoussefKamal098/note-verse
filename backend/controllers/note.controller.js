@@ -3,14 +3,33 @@ const NoteQueryValidationService = require('../validations/noteQuery.validation.
 const noteService = require('../services/note.service');
 
 class NotesControllerUser {
-    #noteService;
+    /**
+     * @private
+     * @type {NoteService}
+     * @description The file storage service instance.
+     */
+    #noteService
+    /**
+     * @private
+     * @type {NoteQueryValidationService}
+     * @description The file storage service instance.
+     */
     #queryValidationService;
 
+    /**
+     * @param {NoteService} noteService - Service for handling note operations.
+     * @param {NoteQueryValidationService} noteQueryValidationService - Service for validating query parameters.
+     */
     constructor(noteService, noteQueryValidationService) {
         this.#noteService = noteService;
         this.#queryValidationService = noteQueryValidationService;
     }
 
+    /**
+     * Creates a new note for a user.
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     */
     async create(req, res) {
         const {userId} = req.params;
         const {title, tags, content, isPinned} = req.body;
@@ -28,6 +47,11 @@ class NotesControllerUser {
         });
     }
 
+    /**
+     * Retrieves a specific note for a user by ID.
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     */
     async findUserNoteById(req, res) {
         const {noteId, userId} = req.params;
 
@@ -45,6 +69,11 @@ class NotesControllerUser {
 
     }
 
+    /**
+     * Updates a user's note by ID.
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     */
     async updateUserNoteById(req, res) {
         const {noteId, userId} = req.params;
         const {title, tags, content, isPinned} = req.body;
@@ -68,6 +97,11 @@ class NotesControllerUser {
         });
     }
 
+    /**
+     * Deletes a user's note by ID.
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     */
     async deleteUserNoteById(req, res) {
         const {noteId, userId} = req.params;
 
@@ -85,7 +119,11 @@ class NotesControllerUser {
 
     }
 
-    // Retrieve notes with pagination, sorting, and text search filtering
+    /**
+     * Retrieves paginated, sorted, and filtered notes for a user.
+     * @param {import('express').Request} req - The Express request object.
+     * @param {import('express').Response} res - The Express response object.
+     */
     async findPaginatedUserNotes(req, res) {
         const {userId} = req.params;
         const value = this.#queryValidationService.validateQuery(req.query);

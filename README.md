@@ -102,6 +102,13 @@ EMAIL_PASS=your-email-password
 EMAIL_FROM=your-email@example.com
 EMAIL_TEMPLATES_DIR=./templates/emails
 
+# Backblaze B2 Storage Configuration
+B2_APPLICATION_KEY_ID=your-b2-application-key-id
+B2_APPLICATION_KEY=your-b2-application-key
+B2_BUCKET_ID=your-b2-bucket-id
+B2_BUCKET_NAME=your-b2-bucket-name
+B2_BUCKET_REGION=your-b2-bucket-region
+
 # Logging Configuration
 LOGS_DIR=./logs
 ```
@@ -219,6 +226,14 @@ NOTES_PER_PAGE=10
 
 ### Routes
 
+### File Management API
+
+The following routes are used for file operations:
+
+| HTTP Method | Endpoint                             | Description                                                                                                              |
+|-------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| `GET`       | `api/v1/users/:userId/files/:fileId` | Retrieve a specific file by its ID for the specified user. You can replace :userId with "me" for the authenticated user. |
+
 #### Notes API
 
 The following routes are used for managing notes:
@@ -246,6 +261,7 @@ The following routes are used for user management and authentication:
 | `POST`      | `api/v1/auth/google/callback` | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                               |
 | `GET`       | `api/v1/csrf-tokens`          | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
 | `GET`       | `api/v1/users/:userId`        | Retrieve the user's profile. You can either provide a specific userId or use the keyword "me", which will automatically resolve to the authenticated user's ID.                  |
+| `POST`      | `api/v1/users/:userId/avatar` | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user         |   
 
 ---
 
@@ -261,12 +277,14 @@ notes_app/
 │   ├── constants/                 # Centralized application constants and configurations
 │   ├── controllers/               # Controller files for handling HTTP requests
 │   ├── errors/                    # Error handling classes and functions
+│   ├── interfaces/                # Contains interface definitions to standardize data structures
 │   ├── middlewares/               # Middleware for various backend operations
 │   ├── models/                    # Database models using ORM/ODM (e.g., Mongoose schemas)
 │   ├── queues/                    # Background job queues and workers and task scheduling (e.g., using Bull)
 │   ├── repositories/              # Data access layer for database queries and operations
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── services/                  # Service layer for business logic and external integrations
+│   │   ├── storage/                # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
 │   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
 │   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
 │   ├── utils/                     # Utility functions for various tasks

@@ -7,7 +7,7 @@ const config = require('./config/config');
 const asyncRequestHandler = require('./utils/asyncHandler');
 const handleError = require('./middlewares/errorHandler.middleware');
 const securityHeadersMiddleware = require('./middlewares/securityHeaders.middleware');
-const timeoutMiddleware = require('./middlewares/timeout.middleware');
+const {createTimeoutMiddleware} = require('./middlewares/timeout.middleware');
 const notFoundMiddleware = require('./middlewares/notFound.middleware');
 const startServer = require('./serverInitializer');
 const loggerService = require('./services/logger.service');
@@ -20,7 +20,7 @@ const app = express();
 // Use Morgan with the loggerService's stream method
 app.use(morgan('combined', {stream: loggerService.stream}));
 // Timeout for all requests (e.g., 15 seconds)
-app.use(timeoutMiddleware);
+app.use(createTimeoutMiddleware());
 // Apply the custom asynchronous security middleware that sets the Content Security Policy (CSP)
 // along with other security headers. This middleware ensures that all asynchronous tasks complete
 // (such as nonce generation and helmet configuration) before proceeding to the next handler.
