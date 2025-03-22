@@ -392,10 +392,9 @@ notes_app/
 - Enable users to **archive or group their notes** into different **collections**. This will help with better
   organization and easier access to notes.
 
-### 10. **User Settings Section (Frontend)**
+### 10. **User Settings Section**
 
 - Create a **user settings page** where users can:
-    - Upload or change their profile image.
     - Update their email and password.
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
