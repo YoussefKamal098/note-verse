@@ -2,6 +2,7 @@ const httpCodes = require('../constants/httpCodes');
 const AppError = require('../errors/app.error');
 const userService = require('../services/user.service');
 const statusMessages = require("../constants/statusMessages");
+const config = require("../config/config");
 
 /**
  * Controller for user-related operations.
@@ -47,7 +48,7 @@ class UserController {
             email: user?.email,
             firstname: user?.firstname,
             lastname: user?.lastname,
-            avatar: user?.avatar
+            avatarUrl: config.storage.constructFileUrl(user?.avatar)
         });
     }
 
@@ -73,7 +74,7 @@ class UserController {
 
         const avatar = await this.#userService.updateAvatar(userId, req.files[0].fileId);
 
-        res.status(httpCodes.CREATED.code).json({avatar});
+        res.status(httpCodes.CREATED.code).json({avatarUrl: config.storage.constructFileUrl(avatar)});
     }
 }
 

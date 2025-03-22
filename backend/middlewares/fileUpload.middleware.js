@@ -15,7 +15,7 @@ const AppError = require("../errors/app.error");
 
 /**
  * @typedef {Object} UploadMiddlewareConfig
- * @property {number} [maxFileSize=104857600] - Maximum file size in bytes (default: 100MB)
+ * @property {number} [maxFileSize=10485760] - Maximum file size in bytes (default: 10MB)
  * @property {number} [maxFiles=1] - Maximum number of files allowed per request
  * @property {string[]|null} [allowedMimeTypes=null] - Allowed MIME types for upload validation
  * @property {number} [maxBufferSize=4096] - Buffer size for MIME type detection
@@ -159,7 +159,7 @@ class StorageServiceAdapter {
  * ]
  */
 function createUploadMiddleware(storageService, {
-    maxFileSize = 100 * 1024 * 1024, // 100MB
+    maxFileSize = 10 * 1024 * 1024, // 10MB
     maxFiles = 1,
     allowedMimeTypes = null,
     maxBufferSize = 4096 // 4KB

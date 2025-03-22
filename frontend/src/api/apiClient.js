@@ -29,11 +29,11 @@ class ApiClient {
      * Creates an instance of ApiClient.
      * @param {Object} [options={}] - Configuration options.
      * @param {string} [options.baseURL=AppConfig.API_BASE_URL] - The base URL for API requests.
-     * @param {number} [options.timeout=time({[timeUnit.SECOND]: 5}, timeUnit.MILLISECOND)] - Request timeout in milliseconds.
+     * @param {number} [options.timeout=time({[timeUnit.SECOND]: 15}, timeUnit.MILLISECOND)] - Request timeout in milliseconds.
      */
     constructor({
                     baseURL = AppConfig.API_BASE_URL,
-                    timeout = time({[timeUnit.SECOND]: 5}, timeUnit.MILLISECOND)
+                    timeout = time({[timeUnit.SECOND]: 15}, timeUnit.MILLISECOND)
                 } = {}) {
         this.#api = axios.create({
             baseURL,

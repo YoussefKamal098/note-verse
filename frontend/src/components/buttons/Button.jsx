@@ -59,7 +59,7 @@ const Button = ({
                     disabled = false,
                     onClick = () => ({}),
                     icon: Icon = null,
-                    children = "Click Me"
+                    children = ""
                 }) => {
     return (
         <ButtonStyled type={type} disabled={disabled} onClick={onClick}>

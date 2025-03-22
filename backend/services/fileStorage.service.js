@@ -110,19 +110,18 @@ class FileStorageService {
     }
 
     /**
-     * Downloads a file with owner validation as a readable stream.
+     * Downloads a file as a readable stream.
      *
      * @async
      * @param {string} fileId - Unique file name identifier
-     * @param {string} owner - Owner user ID
      * @returns {Promise<{stream: ReadStream, metadata: {
      * hash: string, lastModified: Date, size: number,
      * mimetype:string, ext: string, owner: string
      * }}>} - The file stream.
      */
-    async download(fileId, owner) {
+    async download(fileId) {
         try {
-            const fileDoc = await this.#fileRepository.findByFileIdAndOwner(fileId, owner);
+            const fileDoc = await this.#fileRepository.findByFileId(fileId);
             if (!fileDoc) {
                 throw new AppError(
                     statusMessages.FILE_NOT_FOUND,

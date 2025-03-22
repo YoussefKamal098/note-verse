@@ -109,6 +109,10 @@ B2_BUCKET_ID=your-b2-bucket-id
 B2_BUCKET_NAME=your-b2-bucket-name
 B2_BUCKET_REGION=your-b2-bucket-region
 
+# Storage Configuration
+STORAGE_BASE_URL=https://storage.yourdomain.com
+STORAGE_API_VERSION=v1
+
 # Logging Configuration
 LOGS_DIR=./logs
 ```
@@ -230,9 +234,9 @@ NOTES_PER_PAGE=10
 
 The following routes are used for file operations:
 
-| HTTP Method | Endpoint                             | Description                                                                                                              |
-|-------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `GET`       | `api/v1/users/:userId/files/:fileId` | Retrieve a specific file by its ID for the specified user. You can replace :userId with "me" for the authenticated user. |
+| HTTP Method | Endpoint               | Description                         |
+|-------------|------------------------|-------------------------------------|
+| `GET`       | `api/v1/files/:fileId` | Retrieve a specific file by its ID. |
 
 #### Notes API
 
@@ -312,10 +316,11 @@ notes_app/
 │   │   │   ├── noteCards/         # Components for displaying notes
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
+│   │   │   ├── profileImageUploader/           # This folder contains React components for profile image uploading and editing.
+│   │   │   ├── progressiveImage/               # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
-│   │   │   ├── userMenu/          # Contains the UserMenu component and related styles/components for displaying and interacting with the user menu (e.g., toggling the dropdown, showing the user avatar, theme switch, etc.).
 │   │   ├── config/                # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
 │   │   ├── contexts/              # React contexts for managing global state

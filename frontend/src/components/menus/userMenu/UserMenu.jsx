@@ -1,9 +1,10 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import isEqual from "react-fast-compare";
 import {CSSTransition} from "react-transition-group";
 import {useNavigate} from "react-router-dom";
-import {getInitials} from "shared-utils/string.utils";
 import {MdKeyboardArrowRight, MdKeyboardArrowUp, MdNoteAlt} from "react-icons/md";
 import {LuLightbulb, LuLightbulbOff} from "react-icons/lu";
+import {RiUserSettingsLine} from "react-icons/ri";
 import {FaArrowRightFromBracket} from "react-icons/fa6";
 import {TiTickOutline} from "react-icons/ti";
 import Overlay from "../../common/Overlay";
@@ -13,6 +14,7 @@ import {useTheme} from "../../../contexts/ThemeContext";
 import useIsMobile from "../../../hooks/useIsMobile";
 import useResize from "../../../hooks/useResize";
 import useOutsideClick from "../../../hooks/useOutsideClick";
+import ProgressiveImage from "../../progressiveImage/ProgressiveImage";
 import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
 import RoutesPaths from "../../../constants/RoutesPaths";
 import authService from "../../../api/authService";
@@ -51,7 +53,13 @@ const UserMenu = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [appearanceMenuOpen, setAppearanceMenuOpen] = useState(false);
-    const [userData, setUserData] = useState({firstname: "", lastname: ""});
+
+    const [userData, setUserData] = useState(() => ({
+        firstname: "",
+        lastname: "",
+        avatarUrl: ""
+    }));
+
     const [closeButtonStyle, setCloseButtonStyle] = useState({});
     const wrapperRef = useRef(null);
     const menuRef = useRef(null);
@@ -62,25 +70,40 @@ const UserMenu = () => {
     // Determine if mobile using our reusable hook.
     const isMobile = useIsMobile(mobileSize);
 
+    const fetchUserData = useCallback(async () => {
+        try {
+            const response = await userService.getUser("me");
+
+            // Update only if data actually changes
+            setUserData(prev => {
+                const newData = {
+                    firstname: response.data.firstname,
+                    lastname: response.data.lastname,
+                    avatarUrl: response.data.avatarUrl
+                };
+
+                // Deep comparison to prevent unnecessary updates
+                return isEqual(prev, newData) ? prev : newData;
+            });
+        } catch (error) {
+            notify.error("Failed to fetch user details");
+        }
+    }, [notify]);
 
     // Fetch user details on component mount
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await userService.getUser("me");
-                setUserData({
-                    firstname: response.data.firstname || "",
-                    lastname: response.data.lastname || "",
-                });
-            } catch (error) {
-                notify.error("Failed to fetch user details");
-            }
-        };
+        if (user) {
+            const fetchData = async () => {
+                try {
+                    await fetchUserData();
+                } catch (error) {
+                    notify.error(`Failed to fetch user details, ${error.message}`);
+                }
+            };
 
-        if (user) fetchUserData();
-    }, []);
-
-    const initials = useMemo(() => getInitials(userData.firstname, userData.lastname), [userData]);
+            fetchData();
+        }
+    }, [user, fetchUserData, notify]);
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
@@ -108,7 +131,7 @@ const UserMenu = () => {
         }
     };
 
-    const handleAddNewNoteOptionCLick = () => navigate(RoutesPaths.NOTE("new"));
+    const handleRouteOptionCLick = (route) => () => navigate(route);
 
     // Use our reusable hook to close the menu on outside clicks.
     useOutsideClick(wrapperRef, () => setMenuOpen(false));
@@ -134,7 +157,10 @@ const UserMenu = () => {
                     </BarsContainerStyled>
                 ) : (
                     <AvatarStyled onClick={toggleMenu}>
-                        <span>{initials}</span>
+                        <ProgressiveImage
+                            src={userData.avatarUrl}
+                            alt={"avatar"}
+                        />
                     </AvatarStyled>
                 )}
 
@@ -148,14 +174,27 @@ const UserMenu = () => {
 
                         <HeaderStyled>
                             <UserMenuAvatarStyled>
-                                <span>{initials}</span>
+                                <ProgressiveImage
+                                    src={userData.avatarUrl}
+                                    alt={"avatar"}
+                                />
                             </UserMenuAvatarStyled>
                             <FullNameStyled>
                                 {userData.firstname} {userData.lastname}
                             </FullNameStyled>
                         </HeaderStyled>
 
+
                         <OptionsStyled>
+                            <OptionWrapperStyled>
+                                <OptionStyled onClick={handleRouteOptionCLick(RoutesPaths.PROFILE)}>
+                                    <OptionIconStyled>
+                                        <RiUserSettingsLine/>
+                                    </OptionIconStyled>
+                                    <OptionTextStyled>Profile</OptionTextStyled>
+                                </OptionStyled>
+                            </OptionWrapperStyled>
+
                             <OptionWrapperStyled className="appearance-wrapper">
                                 <OptionStyled onClick={toggleAppearanceMenu}>
                                     <OptionIconStyled>
@@ -189,7 +228,7 @@ const UserMenu = () => {
                             </OptionWrapperStyled>
 
                             <OptionWrapperStyled>
-                                <OptionStyled onClick={handleAddNewNoteOptionCLick}>
+                                <OptionStyled onClick={handleRouteOptionCLick(RoutesPaths.NOTE("new"))}>
                                     <OptionIconStyled>
                                         <MdNoteAlt/>
                                     </OptionIconStyled>

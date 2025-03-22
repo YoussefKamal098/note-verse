@@ -1,7 +1,9 @@
 import apiClient from './apiClient';
+import httpHeaders from "../constants/httpHeaders";
 
 const ENDPOINTS = {
-    GET_USER: (userId) => `/users/${userId}`
+    GET_USER: (userId) => `/users/${userId}`,
+    AVATAR_UPLOAD: (userId) => `/users/${userId}/avatar`
 };
 
 /**
@@ -27,6 +29,44 @@ class UserService {
     async getUser(userId) {
         return await this.#apiClient.get(ENDPOINTS.GET_USER(userId));
     }
+
+    /**
+     * Uploads a user avatar using native File object metadata
+     * @param {string} userId - ID of the user to upload avatar for
+     * @param {File} file - Image File object to upload
+     * @returns {Promise<Object>} API response with upload result
+     * @throws {Error} For invalid files or upload failures
+     *
+     * @example
+     * // Upload avatar from file input
+     * const fileInput = document.querySelector('input[type="file"]');
+     * uploadAvatar('user-123', fileInput.files[0])
+     *   .then(console.log)
+     *   .catch(console.error);
+     */
+    async uploadAvatar(userId, file) {
+        const formData = new FormData();
+
+        // Extract metadata from File object
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+        const mimeType = file.type || 'image/png';
+
+        // Create formatted File with consistent naming
+        const formattedFile = new File([file], `avatar.${ext}`, {
+            type: mimeType
+        });
+
+        formData.append('file', formattedFile);
+
+        return this.#apiClient.post(
+            ENDPOINTS.AVATAR_UPLOAD(userId),
+            formData, {
+                headers: {
+                    [httpHeaders.CONTENT_TYPE]: 'multipart/form-data'
+                }
+            }
+        );
+    }
 }
 
 /**
@@ -35,7 +75,3 @@ class UserService {
  */
 const userService = new UserService(apiClient);
 export default userService;
-
-
-
-

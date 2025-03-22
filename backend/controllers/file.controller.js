@@ -31,10 +31,9 @@ class FileController {
      * @returns {Promise<void>} A promise that resolves when the file is streamed.
      */
     async getFile(req, res) {
-        const {fileId, userId} = req.params;
+        const {fileId} = req.params;
 
-        const {stream, metadata} = await this.#fileStorageService.download(fileId, userId);
-
+        const {stream, metadata} = await this.#fileStorageService.download(fileId);
 
         const etag = `"${metadata.hash}"`;
         const cacheControl = new CacheControlBuilder()

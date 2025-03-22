@@ -12,8 +12,8 @@ const router = express.Router();
 // routes
 router.use('/auth', authRoutes);
 router.use('/csrf-tokens', [defaultRateLimiterMiddleware, csrfRoutes]);
-router.use('/users', [authenticate, defaultRateLimiterMiddleware, userRoutes]);
-router.use('/users/:userId/files', [authenticate, defaultRateLimiterMiddleware, fileRoutes]);
+router.use('/files', [defaultRateLimiterMiddleware, fileRoutes]);
 router.use('/users/:userId/notes', [authenticate, defaultRateLimiterMiddleware, noteRoutes]);
+router.use('/users', [authenticate, defaultRateLimiterMiddleware, userRoutes]);
 
 module.exports = router;

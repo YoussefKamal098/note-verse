@@ -18,6 +18,7 @@ const AvatarStyled = styled.div`
     font-weight: bold;
     cursor: pointer;
     user-select: none;
+    overflow: hidden;
 `;
 
 const BarsContainerStyled = styled.div`

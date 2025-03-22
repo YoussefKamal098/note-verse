@@ -7,6 +7,7 @@ import RoutesPaths from "../constants/RoutesPaths";
 
 // Lazy load components
 const HomePage = React.lazy(() => import('../pages/HomePage'));
+const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
 const LoginPage = React.lazy(() => import('../pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
 const NotePage = React.lazy(() => import('../pages/NotePage'));
@@ -24,6 +25,7 @@ const RoutesDefinition = [
     {path: RoutesPaths.NOT_FOUND, element: <NotFoundPage/>},
     {path: RoutesPaths.VERIFY_ACCOUNT, element: <OTPVerificationPage/>},
     {path: RoutesPaths.GOOGLE_AUTH_CALLBACK, element: <AuthRoute><GoogleCallbackAuthPage/></AuthRoute>},
+    {path: RoutesPaths.PROFILE, element: <PrivateRoute><ProfilePage/></PrivateRoute>}
 ];
 
 export default RoutesDefinition;
