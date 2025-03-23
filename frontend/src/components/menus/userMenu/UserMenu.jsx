@@ -173,7 +173,7 @@ const UserMenu = () => {
                         )}
 
                         <HeaderStyled>
-                            <UserMenuAvatarStyled>
+                            <UserMenuAvatarStyled onClick={handleRouteOptionCLick(RoutesPaths.HOME)}>
                                 <ProgressiveImage
                                     src={userData.avatarUrl}
                                     alt={"avatar"}

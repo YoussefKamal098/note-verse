@@ -6,6 +6,7 @@ import Overlay from "../common/Overlay";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NoteCardStyles";
+import RoutesPaths from "../../constants/RoutesPaths";
 import noteService from "../../api/noteService";
 import {formatDate} from "shared-utils/date.utils";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
@@ -69,7 +70,7 @@ const NoteCard = React.memo(({
             <Overlay isVisible={loading}/>
             <CardContainerStyled loading={loading ? "true" : undefined} index={index}>
                 <div className="left">
-                    <Link style={{textDecoration: "none"}} to={`/note/${note.id}`}>
+                    <Link style={{textDecoration: "none"}} to={RoutesPaths.NOTE(note.id)}>
                         <TitleStyled>{note.title}</TitleStyled>
                     </Link>
                     <CreatedAt>{formatDate(note.createdAt)}</CreatedAt>

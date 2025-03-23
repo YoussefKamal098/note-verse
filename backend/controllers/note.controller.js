@@ -1,4 +1,5 @@
 const httpCodes = require('../constants/httpCodes');
+const statusMessages = require('../constants/statusMessages');
 const NoteQueryValidationService = require('../validations/noteQuery.validation.js');
 const noteService = require('../services/note.service');
 
@@ -105,18 +106,8 @@ class NotesControllerUser {
     async deleteUserNoteById(req, res) {
         const {noteId, userId} = req.params;
 
-        const deletedNote = await this.#noteService.deleteUserNoteById(userId, noteId);
-        res.status(httpCodes.OK.code).json({
-            id: noteId,
-            userId: userId,
-            title: deletedNote.title,
-            tags: deletedNote.tags,
-            content: deletedNote.content,
-            isPinned: deletedNote.isPinned,
-            createdAt: deletedNote.createdAt,
-            updatedAt: deletedNote.updatedAt
-        });
-
+        await this.#noteService.deleteUserNoteById(userId, noteId);
+        res.status(httpCodes.OK.code).json({message: statusMessages.NOTE_DELETION_SUCCESS});
     }
 
     /**
@@ -140,7 +131,6 @@ class NotesControllerUser {
                 userId: note.userId,
                 title: note.title,
                 tags: note.tags,
-                content: note.content,
                 isPinned: note.isPinned,
                 createdAt: note.createdAt,
                 updatedAt: note.updatedAt

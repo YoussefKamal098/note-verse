@@ -198,20 +198,14 @@ class NoteRepository {
     async findWithSearchText(searchText = "", query = {}, options = {}) {
         const {page = 1, perPage = 10, sort = {createdAt: -1}} = options;
 
-        // Escape the substring to prevent regex injection
-        const sanitizedSearchText = sanitizeString(searchText);
         let baseQuery = {...query};
 
-        if (sanitizedSearchText) {
-            const regex = new RegExp(sanitizedSearchText, "i");
+        if (searchText.trim()) {
+            // Escape the substring to prevent regex injection
+            const sanitizedSearchText = sanitizeString(searchText);
 
-            baseQuery = {
-                ...baseQuery,
-                $or: [
-                    {title: {$regex: regex}},
-                    {tags: {$in: [regex]}}
-                ]
-            };
+            // Using MongoDB Full-Text Search for efficient lookup
+            baseQuery.$text = {$search: sanitizedSearchText};
         }
 
         this.#paginator.page = page;

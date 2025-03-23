@@ -138,8 +138,14 @@ class PaginatorService {
                         metadata: [
                             {$count: "totalItems"}
                         ],
+
                         data: [
                             {$sort: this.sort},
+                            {
+                                $project: {
+                                    content: 0 // Exclude content field
+                                }
+                            },
                             {$skip: this.skip},
                             {$limit: this.perPage}
                         ]

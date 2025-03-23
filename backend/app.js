@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const corsOptions = require('./config/corsOptions');
@@ -16,6 +17,12 @@ const routes = require('./routes/index');
 const app = express();
 
 // I will enable HTTPS (SSL/TLS) later
+
+// Enable response compression
+app.use(compression({
+    level: 6, // Compression level (0-9). 6 is a good balance between speed and compression.
+    threshold: 1024, // Compress responses larger than 1KB
+}));
 
 // Use Morgan with the loggerService's stream method
 app.use(morgan('combined', {stream: loggerService.stream}));

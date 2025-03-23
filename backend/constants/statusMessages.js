@@ -30,6 +30,7 @@ const statusMessages = Object.freeze({
     NOTE_CREATION_FAILED: "Failed to create the note. Please check your inputs and try again later.",
     NOTE_UPDATE_FAILED: "Unable to update the note. Ensure the note exists and your data is valid and try again later.",
     NOTE_DELETION_FAILED: "Unable to delete the note. It may not exist or is not associated with your account.",
+    NOTE_DELETION_SUCCESS: "The note has been successfully deleted.",
     NOTE_NOT_FOUND: "The note you requested does not exist.",
     USER_NOTE_NOT_FOUND: "The note you requested either does not exist or is not linked to your account.",
     USER_NOTE_FORBIDDEN: "Forbidden: You do not have permission to access this note.",
