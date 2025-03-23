@@ -52,6 +52,9 @@ const CircleStyled = styled.circle`
 // -----------------------
 
 const ContainerStyled = styled.div`
+    height: 100%;
+    min-height: 100%;
+    aspect-ratio: 1/1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -79,13 +82,13 @@ const AvatarEditorStyled = styled(AvatarEditor)`
 
 const ProfileImageContainerStyled = styled.div`
     position: relative;
-    width: 150px;
-    height: 150px;
-    min-width: 150px;
-    min-height: 150px;
+    height: 100%;
+    min-height: 100%;
+    aspect-ratio: 1/1;
     border-radius: 50%;
     overflow: visible;
     margin-bottom: 1rem;
+    border: var(--border-width) solid var(--color-border);
 `;
 
 const EditButtonStyled = styled.div`

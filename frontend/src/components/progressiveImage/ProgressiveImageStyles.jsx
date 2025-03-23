@@ -16,7 +16,6 @@ const ProgressivePlaceholderWrapperStyled = styled.div`
     top: 0;
     left: 0;
     border-radius: 50%;
-    border: 0.1rem solid var(--color-border);
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -45,9 +44,7 @@ const ProgressivePlaceholderStyled = styled(ProgressiveStyled)`
     transform: scale(1);
 `;
 
-const ProgressiveHighResStyled = styled(ProgressiveStyled)`
-    border: 0.1rem solid var(--color-border);
-`;
+const ProgressiveHighResStyled = styled(ProgressiveStyled)``;
 
 export {
     ProgressiveImageWrapperStyled,

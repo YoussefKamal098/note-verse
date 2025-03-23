@@ -7,6 +7,7 @@ import ProfileImageUploader from "../components/profileImageUploader/ProfileImag
 import userService from "../api/userService";
 
 const ProfileImageSection = styled.div`
+    height: 175px;
     display: flex;
     justify-content: start;
     align-items: center;
