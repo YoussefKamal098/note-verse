@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import {LuNotebookPen} from "react-icons/lu";
+import {GiPencilRuler} from "react-icons/gi";
 import {FadeInAnimation} from "../animations/ContainerAnimation";
 
 const NoNotesStyled = styled.div`
@@ -19,7 +19,7 @@ const NoNotes = ({children}) => {
     return (
         <FadeInAnimation keyProp="no-notes">
             <NoNotesStyled>
-                <LuNotebookPen size={100}/>
+                <GiPencilRuler size={100}/>
                 {children}
             </NoNotesStyled>
         </FadeInAnimation>

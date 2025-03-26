@@ -28,13 +28,6 @@ const userSchema = new Schema({
         ref: 'File',
         index: true,
     },
-    googleId: {
-        type: String,
-        index: true,
-        unique: true,
-        sparse: true,
-        select: false,
-    },
     verifiedAt: {
         type: Date,
         default: function () {
@@ -76,11 +69,18 @@ const userSchema = new Schema({
     }
 });
 
+userSchema.virtual('googleAuth', {
+    ref: 'GoogleAuth',
+    localField: '_id',
+    foreignField: 'userId',
+    justOne: true
+});
+
 userSchema.virtual('avatarFile', {
-    ref: 'File',        // The model to use for population
-    localField: 'avatar', // Find files where `fileId`
-    foreignField: 'fileId', // matches `user.avatar`
-    justOne: true       // Only return one document
+    ref: 'File',
+    localField: 'avatar',
+    foreignField: 'fileId',
+    justOne: true
 });
 
 const User = mongoose.model('User', userSchema);

@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const GoogleAuth = require("../models/googleAuth.model");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
 const {deepFreeze} = require('shared-utils/obj.utils');
@@ -20,17 +21,26 @@ class UserRepository {
     /**
      * @private
      * @type {import('mongoose').Model}
-     * @description The Mongoose model used for user operations.
+     * @description The Mongoose model for users.
      */
-    #model;
+    #userModel;
+
+    /**
+     * @private
+     * @type {import('mongoose').Model}
+     * @description The Mongoose model for Google authentication mappings.
+     */
+    #googleAuthModel;
 
     /**
      * Creates an instance of UserRepository.
      *
-     * @param {import('mongoose').Model} model - The Mongoose model for users.
+     * @param {import('mongoose').Model} userModel - The Mongoose model for users.
+     * @param {import('mongoose').Model} googleAuthModel - The Mongoose model for Google authentication mappings.
      */
-    constructor(model) {
-        this.#model = model;
+    constructor(userModel, googleAuthModel) {
+        this.#userModel = userModel;
+        this.#googleAuthModel = googleAuthModel;
     }
 
     /**
@@ -60,7 +70,7 @@ class UserRepository {
         try {
             const {email, ...otherData} = userData; // Remove email from userData for $set
 
-            const user = await this.#model.findOneAndUpdate(
+            const user = await this.#userModel.findOneAndUpdate(
                 {
                     email: email,
                     isVerified: false,
@@ -88,56 +98,104 @@ class UserRepository {
     }
 
     /**
-     * Finds or creates a Google-authenticated user document.
+     * Finds a user associated with a given Google authentication ID.
      *
-     * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
-     * Google-authenticated user or create a new user document.
-     * The update applies to non-unique fields (firstname and lastname), while the email and googleId fields
-     * are set only upon insertion.
+     * This method searches the `googleAuth` collection for a record with the specified `googleId`.
+     * If found, it retrieves the corresponding user document from the `user` collection.
      *
-     * @param {Object} googleUser - The data for creating or updating the Google user.
+     * @private
+     * @param {string} googleId - The unique Google authentication ID.
+     * @param {import("mongoose").ClientSession} [session=null] - An optional MongoDB session for transaction consistency.
+     *
+     * @returns {Promise<Object|null>} The user document if found, otherwise `null`.
+     */
+    async #findUserByGoogleAuth(googleId, session = null) {
+        const query = this.#googleAuthModel.findOne({googleId});
+        if (session) query.session(session);
+        const googleAuth = await query.lean();
+        if (!googleAuth) return null;
+
+        const userQuery = this.#userModel.findById(googleAuth.userId);
+        if (session) userQuery.session(session);
+        return userQuery.lean();
+    }
+
+    /**
+     * Finds an existing Google user by `googleId` or creates a new Google-authenticated user.
+     *
+     * This method performs the following steps:
+     * 1. Start a MongoDB session and transaction.
+     * 2. Checks if the user is already associated with the given `googleId`.
+     *    - If found, returns the existing user.
+     * 3. Checks if an unlinked user exists with the same email.
+     *    - If found, throws a `DUPLICATE_KEY` error.
+     * 4. Create a new user document with Google as the authentication provider.
+     * 5. Creates a corresponding `googleAuth` entry linking the user to their Google account.
+     * 6. Commits the transaction and returns the newly created user.
+     *
+     * @param {Object} googleUser - The Google user data.
+     * @param {string} googleUser.email - The user's email address.
+     * @param {string} googleUser.googleId - The unique Google authentication ID.
      * @param {string} googleUser.firstname - The user's first name.
      * @param {string} googleUser.lastname - The user's last name.
-     * @param {string} googleUser.email - The user's email address.
-     * @param {string} googleUser.googleId - The user's Google ID.
+     * @param {string} [googleUser.avatarUrl] - The URL of the user's Google profile picture.
      *
-     * @returns {Promise<Object>} The created or updated user document, deep-frozen.
-     * @throws {Error} If a duplicate key error occurs (e.g., a conflict) or if any other error occurs.
+     * @returns {Promise<Object>} The created or existing user document, deep-frozen.
+     *
+     * @throws {Error} Throws an error if:
+     * - A **duplicate key conflict** occurs (`DUPLICATE_KEY`),
+     *   meaning a non-Google user with the same email already exists.
+     * - Any other database error happens during the operation.
      */
     async findOrCreateGoogleUser(googleUser = {}) {
+        const session = await this.#userModel.db.startSession();
         try {
-            const {email, googleId, firstname, lastname} = googleUser;
+            session.startTransaction();
+            const {email, googleId, firstname, lastname, avatarUrl} = googleUser;
 
-            const user = await this.#model.findOneAndUpdate(
-                {
-                    email: email,
-                    googleId: googleId
-                },
-                {
-                    $set: {
-                        firstname: firstname,
-                        lastname: lastname,
-                        provider: AuthProvider.GOOGLE
-                    },
-                    $setOnInsert: {
-                        email: email,
-                        googleId: googleId
-                    }
-                },
-                {new: true, upsert: true, runValidators: true}
-            ).lean();
+            // Check existing GoogleAuth
+            const existingUser = await this.#findUserByGoogleAuth(googleId, session);
+            if (existingUser) {
+                await session.commitTransaction();
+                return deepFreeze(sanitizeMongoObject(existingUser));
+            }
 
-            return deepFreeze(sanitizeMongoObject(user));
+            // Check for existing email
+            const emailUser = await this.#userModel.findOne({email}).session(session).lean();
+            if (emailUser) {
+                throw {code: dbErrorCodes.DUPLICATE_KEY};
+            }
+
+            // Create new User
+            const newUser = await this.#userModel.create([{
+                firstname,
+                lastname,
+                email,
+                provider: AuthProvider.GOOGLE,
+                isVerified: true,
+                verifiedAt: new Date()
+            }], {session});
+
+            // Create GoogleAuth
+            await this.#googleAuthModel.create([{
+                userId: newUser[0]._id,
+                googleId,
+                avatarUrl
+            }], {session});
+
+            await session.commitTransaction();
+            return deepFreeze(sanitizeMongoObject(newUser[0].toObject()));
         } catch (error) {
-            // Check for duplicate key error (E11000) which indicates a conflict
+            await session.abortTransaction();
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
-                console.error("Duplicate google user conflict:", error);
-                const conflictError = new Error("Google user already exists");
+                const conflictError = new Error("User already exists");
                 conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;
             }
-            console.error("Error creating google user:", error);
-            throw new Error("Unable to create google user");
+            console.error("Error creating Google user:", error);
+            throw new Error("Unable to create Google user");
+        } finally {
+            await session.endSession();
         }
     }
 
@@ -156,7 +214,7 @@ class UserRepository {
 
         try {
             // Only update if the user is verified
-            const updatedUser = await this.#model.findOneAndUpdate(
+            const updatedUser = await this.#userModel.findOneAndUpdate(
                 {_id: convertToObjectId(userId), isVerified: true},
                 {$set: updates},
                 {new: true, runValidators: true}
@@ -167,7 +225,6 @@ class UserRepository {
             throw new Error("Error updating user");
         }
     }
-
 
     /**
      * Retrieves a verified user by their ID.
@@ -183,10 +240,15 @@ class UserRepository {
 
         try {
             // Return the user only if they are verified.
-            const user = await this.#model.findOne({
+            const user = await this.#userModel.findOne({
                 _id: convertToObjectId(userId),
                 isVerified: true
+            }).populate({
+                path: 'googleAuth',
+                select: 'googleId avatarUrl -_id -userId', // Include googleId and avatarUrl, exclude _id and userId
+                options: {lean: true} // Return a plain object
             }).lean();
+
             return user ? deepFreeze(sanitizeMongoObject(user)) : null;
         } catch (error) {
             console.error("Error finding user by ID:", error);
@@ -204,7 +266,7 @@ class UserRepository {
      */
     async findByEmailAndUpdate(email, updates = {}) {
         try {
-            const updatedUser = await this.#model.findOneAndUpdate(
+            const updatedUser = await this.#userModel.findOneAndUpdate(
                 {email},
                 {$set: updates},
                 {new: true, runValidators: true}
@@ -227,7 +289,7 @@ class UserRepository {
      */
     async findOne(query = {}, projection = {}) {
         try {
-            const user = await this.#model.findOne(query)
+            const user = await this.#userModel.findOne(query)
                 .select(projection)
                 .lean();
             return user ? deepFreeze(sanitizeMongoObject(user)) : null;
@@ -238,4 +300,4 @@ class UserRepository {
     }
 }
 
-module.exports = new UserRepository(User);
+module.exports = new UserRepository(User, GoogleAuth);

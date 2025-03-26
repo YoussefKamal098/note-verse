@@ -151,6 +151,7 @@ class UserService {
      * @param {string} googleUser.lastname - The user's last name.
      * @param {string} googleUser.email - The user's email address.
      * @param {string} googleUser.googleId - The user's ID Google.
+     * @param {string} [googleUser.avatarUrl] - The URL of the user's Google profile picture.
      * @returns {Promise<Object>} The created or updated user document, deep-frozen.
      * @throws {Error} If a duplicate key error occurs, or if any other error occurs during the operation.
      */

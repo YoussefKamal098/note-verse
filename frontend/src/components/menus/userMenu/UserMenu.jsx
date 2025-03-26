@@ -14,8 +14,8 @@ import {useTheme} from "../../../contexts/ThemeContext";
 import useIsMobile from "../../../hooks/useIsMobile";
 import useResize from "../../../hooks/useResize";
 import useOutsideClick from "../../../hooks/useOutsideClick";
-import ProgressiveImage from "../../progressiveImage/ProgressiveImage";
 import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
+import Avatar from '../../common/Avatar';
 import RoutesPaths from "../../../constants/RoutesPaths";
 import authService from "../../../api/authService";
 import userService from "../../../api/userService";
@@ -157,10 +157,7 @@ const UserMenu = () => {
                     </BarsContainerStyled>
                 ) : (
                     <AvatarStyled onClick={toggleMenu}>
-                        <ProgressiveImage
-                            src={userData.avatarUrl}
-                            alt={"avatar"}
-                        />
+                        <Avatar avatarUrl={userData.avatarUrl}/>
                     </AvatarStyled>
                 )}
 
@@ -174,10 +171,7 @@ const UserMenu = () => {
 
                         <HeaderStyled>
                             <UserMenuAvatarStyled onClick={handleRouteOptionCLick(RoutesPaths.HOME)}>
-                                <ProgressiveImage
-                                    src={userData.avatarUrl}
-                                    alt={"avatar"}
-                                />
+                                <Avatar avatarUrl={userData.avatarUrl}/>
                             </UserMenuAvatarStyled>
                             <FullNameStyled>
                                 {userData.firstname} {userData.lastname}

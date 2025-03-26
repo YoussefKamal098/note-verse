@@ -94,8 +94,8 @@ const InputContainerStyled = styled.div`
     input {
         width: 100%;
         color: var(--color-text);
-        font-size: 1em;
-        font-weight: 500;
+        font-size: 0.9em;
+        font-weight: 600;
         transition: 0.3s ease;
     }
 

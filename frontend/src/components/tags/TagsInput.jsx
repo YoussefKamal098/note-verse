@@ -34,7 +34,7 @@ const TagInputStyled = styled.input`
     &::placeholder {
         color: var(--color-placeholder);
         font-size: 0.9em;
-        font-weight: 500;
+        font-weight: 600;
         transition: color 0.3s;
     }
 

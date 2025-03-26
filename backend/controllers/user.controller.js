@@ -35,6 +35,7 @@ class UserController {
     async getUser(req, res, next) {
         const {userId} = req.params;
         const user = await this.#userService.findById(userId);
+
         if (!user) {
             next(new AppError(
                 statusMessages.USER_NOT_FOUND,
@@ -48,7 +49,7 @@ class UserController {
             email: user?.email,
             firstname: user?.firstname,
             lastname: user?.lastname,
-            avatarUrl: config.storage.constructFileUrl(user?.avatar)
+            avatarUrl: user?.avatar ? config.storage.constructFileUrl(user?.avatar) : user?.googleAuth?.avatarUrl
         });
     }
 

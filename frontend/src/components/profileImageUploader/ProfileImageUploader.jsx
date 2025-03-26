@@ -6,6 +6,7 @@ import {CgClose} from 'react-icons/cg';
 import {AnimatePresence} from 'framer-motion';
 import {formatBytes} from 'shared-utils/string.utils';
 import Button, {BUTTON_TYPE} from '../buttons/Button';
+import Avatar from '../common/Avatar';
 import {useToastNotification} from '../../contexts/ToastNotificationsContext';
 import ProgressiveImage from '../progressiveImage/ProgressiveImage';
 
@@ -203,7 +204,8 @@ const ProfileImageUploader = ({
                 )}
             </AnimatePresence>
             <ProfileImageContainerStyled>
-                <ProgressiveImage src={savedImageUrl} alt="avatar"/>
+                {savedImageUrl ? <ProgressiveImage src={savedImageUrl} alt="User Avatar"/> :
+                    <Avatar avatarUrl={savedImageUrl}/>}
                 {loading && <Loader/>}
                 <EditButtonStyled onClick={triggerFileInput}>
                     <FaCamera/>

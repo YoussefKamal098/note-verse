@@ -191,6 +191,7 @@ class GoogleAuthService {
             googleId: payload.sub,
             firstname: payload.given_name,
             lastname: payload.family_name,
+            avatarUrl: payload.picture
         });
 
         // Generate session tokens for the authenticated user
