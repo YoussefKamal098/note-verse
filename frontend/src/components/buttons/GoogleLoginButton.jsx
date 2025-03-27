@@ -68,7 +68,7 @@ const textVariants = {
         width: 0,
         transition: {
             duration: 0.2,
-            width: {duration: 0.5}
+            width: {duration: 0.15}
         }
     }
 };

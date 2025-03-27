@@ -9,6 +9,7 @@ const googleAuthConfig = require('../config/googleAuthConfig');
 const {compareDates, timeUnit, time} = require("shared-utils/date.utils");
 const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 const {generateTokenAsync} = require('../utils/crypto.utils');
+const authProvider = require("../enums/auth.enum");
 
 
 /**
@@ -186,13 +187,13 @@ class GoogleAuthService {
         }
 
         // Create or update the Google user in your system
-        const user = await this.#userService.createGoogleUser({
+        const user = await this.#userService.createAuthProviderUser({
             email: payload.email,
-            googleId: payload.sub,
+            providerId: payload.sub,
             firstname: payload.given_name,
             lastname: payload.family_name,
             avatarUrl: payload.picture
-        });
+        }, authProvider.GOOGLE);
 
         // Generate session tokens for the authenticated user
         return this.#jwtAuthService.generateSessionTokens(user.id, sessionInfo);

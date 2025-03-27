@@ -104,6 +104,7 @@ const InputContainerStyled = styled.div`
     }
 
     input::placeholder {
+        opacity: 0.6;
         color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
         transition: 0.3s ease;
     }

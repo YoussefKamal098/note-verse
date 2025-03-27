@@ -1,6 +1,6 @@
-const AuthProvider = Object.freeze({
+const authProvider = Object.freeze({
     LOCAL: 'local',
     GOOGLE: 'google'
 })
 
-module.exports = AuthProvider;
+module.exports = authProvider;

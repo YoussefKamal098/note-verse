@@ -140,24 +140,28 @@ class UserService {
     }
 
     /**
-     * Creates or retrieves a Google-authenticated user.
+     * Creates or retrieves an authenticated user for a given provider.
      *
-     * This method delegates to the repository's findOrCreateGoogleUser method, which either finds an
-     * existing user based on the provided email and Google ID or creates a new user document.
+     * This method interacts with the repository to either find an existing user
+     * based on the provided authentication data and provider or create a new user.
      * The returned user document is deep-frozen to prevent unintended modifications.
      *
-     * @param {Object} googleUser - The Google user data.
-     * @param {string} googleUser.firstname - The user's first name.
-     * @param {string} googleUser.lastname - The user's last name.
-     * @param {string} googleUser.email - The user's email address.
-     * @param {string} googleUser.googleId - The user's ID Google.
-     * @param {string} [googleUser.avatarUrl] - The URL of the user's Google profile picture.
-     * @returns {Promise<Object>} The created or updated user document, deep-frozen.
-     * @throws {Error} If a duplicate key error occurs, or if any other error occurs during the operation.
+     * @param {Object} authUserData - The authentication provider user data.
+     * @param {string} authUserData.email - The user's email address.
+     * @param {string} authUserData.providerId - The unique provider authentication ID.
+     * @param {string} authUserData.firstname - The user's first name.
+     * @param {string} authUserData.lastname - The user's last name.
+     * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
+     * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
+     * @returns {Promise<Object>} The created or retrieved user object, deep-frozen.
+     * @throws {AppError} If a duplicate key error occurs or if the creation process fails.
      */
-    async createGoogleUser(googleUser = {}) {
+    async createAuthProviderUser(authUserData = {}, provider) {
         try {
-            return await this.#userRepository.findOrCreateGoogleUser(googleUser);
+            return await this.#userRepository.findOrCreateAuthUser(
+                authUserData,
+                provider
+            );
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
                 throw new AppError(
@@ -168,7 +172,7 @@ class UserService {
             }
 
             throw new AppError(
-                statusMessages.GOOGLE_USER_CREATE_FAILED,
+                `${provider} user creation failed`,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );

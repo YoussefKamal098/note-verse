@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const AuthProvider = require('../enums/auth.enum');
+const authProvider = require('../enums/auth.enum');
 const {Schema} = mongoose;
 
 const userSchema = new Schema({
@@ -20,7 +20,7 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: function () {
-            return this.provider === AuthProvider.LOCAL;
+            return this.provider === authProvider.LOCAL;
         }
     },
     avatar: {
@@ -31,13 +31,13 @@ const userSchema = new Schema({
     verifiedAt: {
         type: Date,
         default: function () {
-            return this.provider !== AuthProvider.LOCAL ? Date.now() : undefined;
+            return this.provider !== authProvider.LOCAL ? Date.now() : undefined;
         }
     },
     provider: {
         type: String,
-        enum: Object.values(AuthProvider),
-        default: AuthProvider.LOCAL,
+        enum: Object.values(authProvider),
+        default: authProvider.LOCAL,
         required: true,
     },
     otpCode: {
@@ -53,7 +53,7 @@ const userSchema = new Schema({
     isVerified: {
         type: Boolean,
         default: function () {
-            return this.provider !== AuthProvider.LOCAL;
+            return this.provider !== authProvider.LOCAL;
         }
     }
 }, {
@@ -69,8 +69,8 @@ const userSchema = new Schema({
     }
 });
 
-userSchema.virtual('googleAuth', {
-    ref: 'GoogleAuth',
+userSchema.virtual('authProvider', {
+    ref: 'AuthProvider',
     localField: '_id',
     foreignField: 'userId',
     justOne: true

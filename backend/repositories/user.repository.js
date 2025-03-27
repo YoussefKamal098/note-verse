@@ -1,9 +1,9 @@
 const User = require("../models/user.model");
-const GoogleAuth = require("../models/googleAuth.model");
+const authProvider = require("../models/authProvider.model");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
 const {deepFreeze} = require('shared-utils/obj.utils');
-const AuthProvider = require("../enums/auth.enum");
+
 
 /**
  * Repository for performing CRUD operations on the User collection.
@@ -30,17 +30,17 @@ class UserRepository {
      * @type {import('mongoose').Model}
      * @description The Mongoose model for Google authentication mappings.
      */
-    #googleAuthModel;
+    #authProviderModel;
 
     /**
      * Creates an instance of UserRepository.
      *
      * @param {import('mongoose').Model} userModel - The Mongoose model for users.
-     * @param {import('mongoose').Model} googleAuthModel - The Mongoose model for Google authentication mappings.
+     * @param {import('mongoose').Model} authProviderModel - The Mongoose model for authentication mappings.
      */
-    constructor(userModel, googleAuthModel) {
+    constructor(userModel, authProviderModel) {
         this.#userModel = userModel;
-        this.#googleAuthModel = googleAuthModel;
+        this.#authProviderModel = authProviderModel;
     }
 
     /**
@@ -98,69 +98,67 @@ class UserRepository {
     }
 
     /**
-     * Finds a user associated with a given Google authentication ID.
+     * Finds a user associated with a given authentication provider ID.
      *
-     * This method searches the `googleAuth` collection for a record with the specified `googleId`.
+     * This method searches the `authProvider` collection for a record with the specified `provider` and `providerId`.
      * If found, it retrieves the corresponding user document from the `user` collection.
      *
      * @private
-     * @param {string} googleId - The unique Google authentication ID.
+     * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
+     * @param {string} providerId - The unique authentication provider ID.
      * @param {import("mongoose").ClientSession} [session=null] - An optional MongoDB session for transaction consistency.
      *
      * @returns {Promise<Object|null>} The user document if found, otherwise `null`.
      */
-    async #findUserByGoogleAuth(googleId, session = null) {
-        const query = this.#googleAuthModel.findOne({googleId});
+    async #findUserByAuthProvider(provider, providerId, session = null) {
+        const query = this.#authProviderModel.findOne({provider, providerId});
         if (session) query.session(session);
-        const googleAuth = await query.lean();
-        if (!googleAuth) return null;
-
-        const userQuery = this.#userModel.findById(googleAuth.userId);
-        if (session) userQuery.session(session);
-        return userQuery.lean();
+        const authProvider = await query.lean();
+        return authProvider?.userId ? this.#userModel.findById(authProvider.userId).lean() : null;
     }
 
     /**
-     * Finds an existing Google user by `googleId` or creates a new Google-authenticated user.
+     * Finds an existing user by an authentication provider ID or creates a new user.
      *
      * This method performs the following steps:
      * 1. Start a MongoDB session and transaction.
-     * 2. Checks if the user is already associated with the given `googleId`.
+     * 2. Checks if the user is already associated with the given `providerId`.
      *    - If found, returns the existing user.
      * 3. Checks if an unlinked user exists with the same email.
      *    - If found, throws a `DUPLICATE_KEY` error.
-     * 4. Create a new user document with Google as the authentication provider.
-     * 5. Creates a corresponding `googleAuth` entry linking the user to their Google account.
+     * 4. Create a new user document with the specified authentication provider.
+     * 5. Creates a corresponding `authProvider` entry linking the user to their provider account.
      * 6. Commits the transaction and returns the newly created user.
      *
-     * @param {Object} googleUser - The Google user data.
-     * @param {string} googleUser.email - The user's email address.
-     * @param {string} googleUser.googleId - The unique Google authentication ID.
-     * @param {string} googleUser.firstname - The user's first name.
-     * @param {string} googleUser.lastname - The user's last name.
-     * @param {string} [googleUser.avatarUrl] - The URL of the user's Google profile picture.
+     * @param {Object} authUserData - The authentication provider user data.
+     * @param {string} authUserData.email - The user's email address.
+     * @param {string} authUserData.providerId - The unique provider authentication ID.
+     * @param {string} authUserData.firstname - The user's first name.
+     * @param {string} authUserData.lastname - The user's last name.
+     * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
+     * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
      *
      * @returns {Promise<Object>} The created or existing user document, deep-frozen.
      *
      * @throws {Error} Throws an error if:
      * - A **duplicate key conflict** occurs (`DUPLICATE_KEY`),
-     *   meaning a non-Google user with the same email already exists.
+     *   meaning a non-authenticated user with the same email already exists.
      * - Any other database error happens during the operation.
      */
-    async findOrCreateGoogleUser(googleUser = {}) {
+    async findOrCreateAuthUser(authUserData = {}, provider) {
         const session = await this.#userModel.db.startSession();
         try {
             session.startTransaction();
-            const {email, googleId, firstname, lastname, avatarUrl} = googleUser;
+            const {email, providerId, firstname, lastname, avatarUrl} = authUserData;
 
-            // Check existing GoogleAuth
-            const existingUser = await this.#findUserByGoogleAuth(googleId, session);
+            // Check existing auth provider
+            const existingUser = await this.#findUserByAuthProvider(provider, providerId, session);
             if (existingUser) {
                 await session.commitTransaction();
                 return deepFreeze(sanitizeMongoObject(existingUser));
             }
 
-            // Check for existing email
+            // Check for existing email conflict
             const emailUser = await this.#userModel.findOne({email}).session(session).lean();
             if (emailUser) {
                 throw {code: dbErrorCodes.DUPLICATE_KEY};
@@ -171,15 +169,16 @@ class UserRepository {
                 firstname,
                 lastname,
                 email,
-                provider: AuthProvider.GOOGLE,
+                provider: provider,
                 isVerified: true,
                 verifiedAt: new Date()
             }], {session});
 
-            // Create GoogleAuth
-            await this.#googleAuthModel.create([{
+            // Create AuthProvider entry
+            await this.#authProviderModel.create([{
                 userId: newUser[0]._id,
-                googleId,
+                provider,
+                providerId,
                 avatarUrl
             }], {session});
 
@@ -192,10 +191,41 @@ class UserRepository {
                 conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;
             }
-            console.error("Error creating Google user:", error);
-            throw new Error("Unable to create Google user");
+            console.error(`Error creating ${provider} user:`, error);
+            throw new Error(`Unable to create ${provider} user`);
         } finally {
             await session.endSession();
+        }
+    }
+
+    /**
+     * Finds a verified user by ID.
+     *
+     * Only users with `isVerified` set to `true` will be retrieved.
+     *
+     * @param {string} userId - The ID of the user to retrieve.
+     *
+     * @returns {Promise<Readonly<Object>|null>} The user document if found, or `null` if not found.
+     * @throws {Error} If an error occurs while retrieving the user.
+     */
+    async findById(userId) {
+        if (!isValidObjectId(userId)) return null;
+
+        try {
+            const user = await this.#userModel.findOne({
+                _id: convertToObjectId(userId),
+                isVerified: true
+            }).populate({
+                path: 'authProvider',
+                select: 'providerId avatarUrl -_id -userId',
+                options: {lean: true}
+            }).lean();
+
+            if (!user) return null;
+            return deepFreeze(sanitizeMongoObject(user));
+        } catch (error) {
+            console.error("Error finding user by ID:", error);
+            throw new Error("Error finding user by ID");
         }
     }
 
@@ -223,36 +253,6 @@ class UserRepository {
         } catch (error) {
             console.error("Error updating user:", error);
             throw new Error("Error updating user");
-        }
-    }
-
-    /**
-     * Retrieves a verified user by their ID.
-     *
-     * Only return the user if they are marked as verified.
-     *
-     * @param {string} userId - The ID of the user.
-     * @returns {Promise<Readonly<Object|null>>} The user document if found and verified; otherwise, null.
-     * @throws {Error} If an error occurs during the query.
-     */
-    async findById(userId) {
-        if (!isValidObjectId(userId)) return null;
-
-        try {
-            // Return the user only if they are verified.
-            const user = await this.#userModel.findOne({
-                _id: convertToObjectId(userId),
-                isVerified: true
-            }).populate({
-                path: 'googleAuth',
-                select: 'googleId avatarUrl -_id -userId', // Include googleId and avatarUrl, exclude _id and userId
-                options: {lean: true} // Return a plain object
-            }).lean();
-
-            return user ? deepFreeze(sanitizeMongoObject(user)) : null;
-        } catch (error) {
-            console.error("Error finding user by ID:", error);
-            throw new Error("Error finding user by ID");
         }
     }
 
@@ -300,4 +300,4 @@ class UserRepository {
     }
 }
 
-module.exports = new UserRepository(User, GoogleAuth);
+module.exports = new UserRepository(User, authProvider);
