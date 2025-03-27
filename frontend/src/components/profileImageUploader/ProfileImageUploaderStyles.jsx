@@ -35,8 +35,9 @@ const SvgLoaderStyled = styled.svg`
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    translate: -5% -5%;
+    width: 110%;
+    height: 110%;
     display: block;
     animation: ${rotate} 2s linear infinite;
 `;

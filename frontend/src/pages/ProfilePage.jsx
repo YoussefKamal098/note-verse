@@ -25,7 +25,7 @@ const ProfileHeader = styled.div`
 const ProfilePage = () => {
     const {user} = useAuth();
     const {notify} = useToastNotification();
-    const [userImageUrl, setUserImageUrl] = useState(null);
+    const [userImageUrl, setUserImageUrl] = useState("");
 
     // Fetch user details on component mount
     useEffect(() => {

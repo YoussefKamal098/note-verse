@@ -60,21 +60,20 @@ const TextContainer = styled.span`
 const textVariants = {
     initial: {
         opacity: 1,
-        width: "100%",
+        scale: 1,
+        width: '100%',
         transition: {duration: 0.2}
     },
     exit: {
         opacity: 0,
-        width: 0,
-        transition: {
-            duration: 0.2,
-            width: {duration: 0.15}
-        }
+        scale: 0,
+        width: '0',
+        transition: {duration: 0.2}
     }
 };
 
 const loaderVariants = {
-    initial: {opacity: 0, scale: 0},
+    initial: {opacity: 0},
     animate: {
         opacity: 1,
         scale: 1,
@@ -83,19 +82,32 @@ const loaderVariants = {
     exit: {
         opacity: 0,
         scale: 0,
-        transition: {duration: 0.5}
+        transition: {duration: 0.2}
     }
 };
 
-
-const GoogleButton = ({onClick = async () => ({}), disabled = false, children}) => {
+const GoogleButton = (
+    {
+        onClick = async () => ({}),
+        disabled = false,
+        setError = (message) => ({message}),
+        onLoadingChange = (boolean) => ({boolean}),
+        children
+    }) => {
     const [loading, setLoading] = React.useState(false);
 
     const handleAuthInit = async () => {
-        setLoading(true);
-        await onClick();
-        const result = await AuthService.initiateGoogleAuth();
-        window.location.href = result.data.authUrl;
+        try {
+            setLoading(true);
+            onLoadingChange(true);
+            await onClick();
+            const result = await AuthService.initiateGoogleAuth();
+            window.location.href = result.data.authUrl;
+        } catch (error) {
+            setLoading(false);
+            onLoadingChange(false);
+            setError(error.message || 'Failed to initiate Google authentication');
+        }
     };
 
     return (
@@ -138,11 +150,12 @@ const GoogleButton = ({onClick = async () => ({}), disabled = false, children}) 
     );
 };
 
-
 GoogleButton.propTypes = {
     onClick: PropTypes.func,
     disabled: PropTypes.bool,
     children: PropTypes.node,
+    setError: PropTypes.func,
+    onLoadingChange: PropTypes.func,
 };
 
 export default GoogleButton;

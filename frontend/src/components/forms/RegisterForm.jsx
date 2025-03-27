@@ -137,7 +137,11 @@ const RegisterForm = () => {
 
                     <AuthSeparator/>
 
-                    <GoogleLoginButton onClick={() => setGoogleLoading(true)} disabled={formLoading}/>
+                    <GoogleLoginButton onClick={() => setGoogleLoading(true)}
+                                       setError={setErrorMessage}
+                                       onLoadingChange={setGoogleLoading}
+                                       disabled={formLoading}
+                    />
 
                     <LinkStyled>
                         <p>Already have an account? <a href={RoutesPaths.LOGIN}>Sign in</a></p>

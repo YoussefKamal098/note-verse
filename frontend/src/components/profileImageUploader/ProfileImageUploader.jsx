@@ -34,7 +34,7 @@ import {
 
 const Loader = () => (
     <SvgLoaderStyled viewBox="0 0 50 50">
-        <CircleStyled cx="25" cy="25" r="24" fill="none" strokeWidth="1.5"/>
+        <CircleStyled cx="25" cy="25" r="24" fill="none" strokeWidth="1"/>
     </SvgLoaderStyled>
 );
 
@@ -42,7 +42,7 @@ const ProfileImageUploader = ({
                                   onSaveImage,
                                   imageUrl,
                                   maxFileSize = 1024 * 1024, // 1MB default
-                                  allowedMimeTypes = ['image/png', 'image/jpeg', 'image/webp']
+                                  allowedMimeTypes = ['image/png', 'image/jpeg', "image/jpg", 'image/webp']
                               }) => {
     const {notify} = useToastNotification();
     const [savedImageUrl, setSavedImageUrl] = useState(imageUrl);

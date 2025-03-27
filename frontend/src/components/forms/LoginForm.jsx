@@ -87,7 +87,11 @@ const LoginForm = () => {
 
                     <AuthSeparator/>
 
-                    <GoogleLoginButton onClick={() => setGoogleLoading(true)} disabled={formLoading}/>
+                    <GoogleLoginButton onClick={() => setGoogleLoading(true)}
+                                       setError={setErrorMessage}
+                                       onLoadingChange={setGoogleLoading}
+                                       disabled={formLoading}
+                    />
 
                     <LinkStyled>
                         <p>Don't have an account? <a href={RoutesPaths.REGISTER}>Sign up</a></p>
