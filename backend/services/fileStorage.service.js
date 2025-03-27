@@ -47,10 +47,10 @@ class FileStorageService {
      * @param {Object} fileInfo
      * @param {string} fileInfo.mimetype - Detected MIME type
      * @param {string} fileInfo.ext - extension of a file
-     * @param {string} fileInfo.owner - User ID of a file owner
-     * @returns {Promise<{fileId: string, size: number, mimetype: string, ext: string, owner: string}>}
+     * @param {string} fileInfo.userId - User ID of a file owner
+     * @returns {Promise<{fileId: string, size: number, mimetype: string, ext: string, userId: string}>}
      */
-    async upload(stream, {mimetype, ext, owner}) {
+    async upload(stream, {mimetype, ext, userId}) {
         const filename = this.#generateFilename();
 
         const {writeStream, promise} = await this.#storageEngine.uploadStream(filename);
@@ -72,22 +72,25 @@ class FileStorageService {
 
             promise.then(async ({filename, hash, uploadTimestamp, size}) => {
                 const fileData = {
-                    fileId: filename,
-                    size: size,
-                    owner: owner,
                     uploadTimestamp,
+                    name: filename,
+                    size: size,
                     mimetype,
+                    userId,
                     hash,
                     ext
                 };
+
                 try {
                     const fileDoc = await this.#fileRepository.createFile(fileData);
+
                     resolve({
-                        fileId: fileDoc.fileId,
+                        id: fileDoc.id,
+                        name: fileDoc.name,
                         mimetype: fileDoc.mimetype,
                         size: fileDoc.size,
                         ext: fileDoc.ext,
-                        owner: fileDoc.owner
+                        userId: fileDoc.userId
                     });
                 } catch (err) {
                     reject(new Error(`Upload file process failed ${err}`));
@@ -116,7 +119,7 @@ class FileStorageService {
      * @param {string} fileId - Unique file name identifier
      * @returns {Promise<{stream: ReadStream, metadata: {
      * hash: string, lastModified: Date, size: number,
-     * mimetype:string, ext: string, owner: string
+     * mimetype:string, ext: string, userId: string
      * }}>} - The file stream.
      */
     async download(fileId) {
@@ -130,7 +133,7 @@ class FileStorageService {
                 );
             }
 
-            const {stream} = await this.#storageEngine.downloadStream(fileId);
+            const {stream} = await this.#storageEngine.downloadStream(fileDoc.name);
             return {
                 stream,
                 metadata: {
@@ -139,7 +142,7 @@ class FileStorageService {
                     size: fileDoc.size,
                     mimetype: fileDoc.mimetype,
                     ext: fileDoc.ext,
-                    owner: fileDoc.owner
+                    userId: fileDoc.userId
                 }
             };
         } catch (error) {
@@ -156,13 +159,13 @@ class FileStorageService {
      *
      * @async
      * @param {string} fileId - Unique file name identifier
-     * @param {string} owner - Owner user ID
+     * @param {string} userId - Owner user ID
      * @param {boolean} [silent=true] - Suppress errors
      * @returns {Promise<{size: number, mimetype: string, ext: string, owner: string} | null>}
      */
-    async delete(fileId, owner, silent = true) {
+    async delete(fileId, userId, silent = true) {
         try {
-            const fileDoc = await this.#fileRepository.deleteByFileIdAndOwner(fileId, owner);
+            const fileDoc = await this.#fileRepository.deleteByFileIdAndOwner(fileId, userId);
             if (!silent && !fileDoc) {
                 throw new AppError(
                     statusMessages.FILE_NOT_FOUND,
@@ -175,13 +178,13 @@ class FileStorageService {
                 return null;
             }
 
-            await this.#storageEngine.delete(fileId);
+            await this.#storageEngine.delete(fileDoc.name);
 
             return {
                 size: fileDoc.size,
                 mimetype: fileDoc.mimetype,
                 ext: fileDoc.ext,
-                owner: fileDoc.owner
+                userId: fileDoc.userId
             };
         } catch (error) {
             if (!silent) return null;
@@ -206,7 +209,7 @@ class FileStorageService {
             const fileDoc = await this.#fileRepository.findByFileId(fileId);
             if (!fileDoc) return false;
 
-            return this.#storageEngine.exists(fileId);
+            return this.#storageEngine.exists(fileDoc.name);
         } catch (error) {
             throw new Error(`Checking file existence failed: ${error.message}`);
         }

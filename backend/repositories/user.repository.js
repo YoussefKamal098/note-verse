@@ -169,9 +169,7 @@ class UserRepository {
                 firstname,
                 lastname,
                 email,
-                provider: provider,
-                isVerified: true,
-                verifiedAt: new Date()
+                provider: provider
             }], {session});
 
             // Create AuthProvider entry

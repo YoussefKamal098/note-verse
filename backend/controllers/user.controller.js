@@ -35,7 +35,7 @@ class UserController {
     async getUser(req, res, next) {
         const {userId} = req.params;
         const user = await this.#userService.findById(userId);
-        console.log(user);
+
         if (!user) {
             next(new AppError(
                 statusMessages.USER_NOT_FOUND,

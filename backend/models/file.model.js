@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const fileSchema = new Schema({
-    fileId: {
+    name: {
         type: String,
         index: true,
         unique: true,
@@ -28,7 +28,7 @@ const fileSchema = new Schema({
         type: Date,
         required: true, // Timestamp when the file was uploaded
     },
-    owner: {
+    userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         index: true,
@@ -47,7 +47,7 @@ const fileSchema = new Schema({
     },
 });
 
-fileSchema.index({fileId: 1, owner: 1}, {unique: true});
+fileSchema.index({_id: 1, userId: 1}, {unique: true});
 
 const File = mongoose.model('File', fileSchema);
 

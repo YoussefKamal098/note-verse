@@ -37,20 +37,20 @@ class FileRepository {
      * @returns {Object} The sanitized file object.
      */
     #sanitizeFileMongoObject(file) {
-        return {...sanitizeMongoObject(file), owner: file.owner.toString()};
+        return {...sanitizeMongoObject(file), userId: file.userId.toString()};
     }
 
     /**
      * Creates a new file record with auto-generated UUID.
      *
      * @param {Object} fileData
-     * @param {string} fileData.fileId - Unique file name identifier
+     * @param {string} fileData.name - Unique file name identifier
      * @param {string} fileData.ext - File extension
      * @param {string} fileData.hash - SHA-1 hash of the file content
      * @param {string} fileData.uploadTimestamp - Upload timestamp in milliseconds since epoch
      * @param {string} fileData.mimetype - MIME type
      * @param {number} fileData.size - File size in bytes
-     * @param {string} fileData.owner - Owner's user ID
+     * @param {string} fileData.userId - Owner's user ID
      * @returns {Promise<Readonly<Object>>} Created file document
      * @throws {Error} If duplicate fileId or validation error occurs
      */
@@ -60,6 +60,7 @@ class FileRepository {
             return deepFreeze(this.#sanitizeFileMongoObject(file.toObject()));
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                
                 const conflictError = new Error("File ID conflict");
                 conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;
@@ -77,8 +78,8 @@ class FileRepository {
      */
     async findByFileId(fileId) {
         try {
-            const file = await this.#model.findOne({fileId}).lean();
-            return file ? deepFreeze(this.#sanitizeFileMongoObject(file)) : null;
+            const fileDoc = await this.#model.findById(convertToObjectId(fileId)).lean();
+            return fileDoc ? deepFreeze(this.#sanitizeFileMongoObject(fileDoc)) : null;
         } catch (error) {
             console.error("Error finding a file document by fileId:", error);
             throw new Error("Error finding a file document by fileId");
@@ -93,7 +94,7 @@ class FileRepository {
      */
     async deleteByFileId(fileId) {
         try {
-            const deletedFile = await this.#model.findOneAndDelete({fileId}).lean();
+            const deletedFile = await this.#model.findByIdAndDelete(convertToObjectId(fileId)).lean();
 
             return deletedFile ? deepFreeze(this.#sanitizeFileMongoObject(deletedFile)) : null;
         } catch (error) {
@@ -105,14 +106,14 @@ class FileRepository {
     /**
      * Finds a file by both fileId and owner ID
      * @param {string} fileId - Unique file identifier
-     * @param {string} owner - Owner user ID
+     * @param {string} userId - Owner user ID
      * @returns {Promise<Readonly<Object|null>>}
      */
-    async findByFileIdAndOwner(fileId, owner) {
+    async findByFileIdAndOwner(fileId, userId) {
         try {
             const file = await this.#model.findOne({
-                fileId,
-                owner: convertToObjectId(owner)
+                _id: convertToObjectId(fileId),
+                userId: convertToObjectId(userId)
             }).lean();
             return file ? deepFreeze(this.#sanitizeFileMongoObject(file)) : null;
         } catch (error) {
@@ -124,14 +125,14 @@ class FileRepository {
     /**
      * Deletes a file by both fileId and owner ID
      * @param {string} fileId - Unique file identifier
-     * @param {string} owner - Owner user ID
+     * @param {string} userId - Owner user ID
      * @returns {Promise<Readonly<Object|null>>} Deleted document
      */
-    async deleteByFileIdAndOwner(fileId, owner) {
+    async deleteByFileIdAndOwner(fileId, userId) {
         try {
             const deletedFile = await this.#model.findOneAndDelete({
-                fileId,
-                owner: convertToObjectId(owner)
+                _id: convertToObjectId(fileId),
+                userId: convertToObjectId(userId)
             }).lean();
             return deletedFile ? deepFreeze(this.#sanitizeFileMongoObject(deletedFile)) : null;
         } catch (error) {

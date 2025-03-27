@@ -18,7 +18,8 @@ const authProviderSchema = new Schema({
     providerId: {
         type: String,
         required: true,
-        index: true
+        index: true,
+        unique: true
     },
     avatarUrl: String
 }, {

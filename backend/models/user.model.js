@@ -24,8 +24,10 @@ const userSchema = new Schema({
         }
     },
     avatar: {
-        type: String,
+        type: Schema.Types.ObjectId,
         ref: 'File',
+        unique: true,
+        sparse: true,
         index: true,
     },
     verifiedAt: {
@@ -73,13 +75,6 @@ userSchema.virtual('authProvider', {
     ref: 'AuthProvider',
     localField: '_id',
     foreignField: 'userId',
-    justOne: true
-});
-
-userSchema.virtual('avatarFile', {
-    ref: 'File',
-    localField: 'avatar',
-    foreignField: 'fileId',
     justOne: true
 });
 

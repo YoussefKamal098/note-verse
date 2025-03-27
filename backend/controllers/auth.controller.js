@@ -5,6 +5,7 @@ const AppError = require('../errors/app.error');
 const jwtAuthService = require('../services/jwtAuth.service');
 const googleAuthAuthService = require('../services/googleAuth.service');
 const emailService = require('../services/email.service');
+const emailQueue = require('../queues/email.queue');
 
 /**
  * Controller for authentication-related endpoints.
@@ -73,7 +74,7 @@ class AuthController {
             sessionInfo
         });
 
-        await emailService.sendVerificationEmail({
+        await emailService.sendVerificationEmail(emailQueue, {
             email,
             name: `${firstname} ${lastname}`,
             otpCode: user.otpCode,

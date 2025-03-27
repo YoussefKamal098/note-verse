@@ -70,7 +70,7 @@ class StorageServiceAdapter {
                         storagePromise = this.#storageService.upload(uploadStream, {
                             mimetype: fileType.mime,
                             ext: fileType.ext,
-                            owner: req.params.userId
+                            userId: req.params.userId
                         }).then(storageInfo => ({
                             storageInfo,
                             fileType,
@@ -95,14 +95,16 @@ class StorageServiceAdapter {
                     try {
                         const {storageInfo, fileType, originalName} = await storagePromise;
                         const parsed = path.parse(originalName);
+                      
                         cb(null, {
                             name: parsed.name,
                             originalname: originalName,
-                            fileId: storageInfo.fileId,
+                            fileId: storageInfo.id,
+                            filename: storageInfo.name,
                             ext: fileType?.ext || parsed.ext.slice(1),
                             mimetype: fileType?.mime,
                             size: storageInfo.size,
-                            owner: req.params.userId
+                            userId: req.params.userId
                         });
                     } catch (err) {
                         cb(err);
@@ -152,9 +154,10 @@ class StorageServiceAdapter {
  *     mimetype: 'application/pdf',
  *     name: 'document',
  *     fileId: '90a7a4f3-dbe1-4cbf-aec5-63996a370fb8',
+ *     filename: "9c65ad55-6237-4248-90c1-f02b8ea65faf-1743099241907",
  *     ext: 'pdf',
  *     size: 437239,
- *     owner: '67b5ffd859ffe5016346c1c9'
+ *     userId: '67b5ffd859ffe5016346c1c9'
  *   }
  * ]
  */
