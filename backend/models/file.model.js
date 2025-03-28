@@ -24,10 +24,6 @@ const fileSchema = new Schema({
         type: String,
         required: true, // Hash of the file for integrity verification and deduplication
     },
-    uploadTimestamp: {
-        type: Date,
-        required: true, // Timestamp when the file was uploaded
-    },
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',

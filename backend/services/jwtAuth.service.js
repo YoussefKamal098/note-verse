@@ -1,5 +1,4 @@
 const {parseTime} = require("shared-utils/date.utils");
-const {generateSecureOTP} = require('../utils/otp.utils');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
 const errorCodes = require('../constants/errorCodes');
@@ -267,23 +266,24 @@ class JwtAuthService {
      * @param {string} [data.lastname] - The user's last name (optional).
      * @param {string} data.email - The user's email.
      * @param {string} data.password - The user's password.
-     * @returns {Promise<Object>} An object containing user data.
+     * @returns {Promise<Readonly<{otpCode, otpCodeExpiresAt}>>} A deep-frozen object containing the plain OTP code and OTP expiry date.
      * @throws {AppError} If a user with the given email already exists.
      */
     async register({firstname, lastname, email, password}) {    // Generate OTP and expiration
-        const otpCode = generateSecureOTP({
-            length: 6,
-            charType: 'alphanumeric',
-            caseSensitive: true
-        });
+        const existUser = await this.#userService.findByEmail(email);
+        if (existUser) {
+            throw new AppError(
+                statusMessages.USER_ALREADY_EXISTS,
+                httpCodes.CONFLICT.code,
+                httpCodes.CONFLICT.name
+            );
+        }
 
-        return await this.#userService.createLocalUser({
+        return await this.#userService.createUnverifiedUser({
             email,
             password,
             firstname,
             lastname,
-            otpCode,
-            otpCodeExpiry: this.#config.otpTokenExpiry
         });
     }
 
@@ -297,22 +297,22 @@ class JwtAuthService {
      * @throws {AppError} If verification fails.
      */
     async verifyEmail(email, otpCode, sessionInfo) {
-        // Retrieve the user along with OTP details.
-        const user = await this.#userService.getUserForEmailVerification(email);
+        const existUser = await this.#userService.findByEmail(email);
+        if (existUser) {
+            throw new AppError(
+                statusMessages.EMAIL_ALREADY_VERIFIED,
+                httpCodes.CONFLICT.code,
+                httpCodes.CONFLICT.name
+            );
+        }
 
+        // Retrieve the user along with OTP details.
+        const user = await this.#userService.findUnverifiedEmail(email);
         if (!user) {
             throw new AppError(
                 statusMessages.EMAIL_NOT_FOUND,
                 httpCodes.NOT_FOUND.code,
                 httpCodes.NOT_FOUND.name
-            );
-        }
-
-        if (user.isVerified) {
-            throw new AppError(
-                statusMessages.EMAIL_ALREADY_VERIFIED,
-                httpCodes.CONFLICT.code,
-                httpCodes.CONFLICT.name
             );
         }
 
@@ -335,7 +335,7 @@ class JwtAuthService {
         }
 
         // Mark the email as verified.
-        const updatedUser = await this.#userService.markEmailAsVerified(email);
+        const updatedUser = await this.#userService.verifyEmail(email);
 
         // Generate and return session tokens.
         return this.generateSessionTokens(updatedUser.id, sessionInfo);

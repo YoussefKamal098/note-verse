@@ -90,9 +90,6 @@ STATE_TOKEN_EXPIRY=5m  # State token expiration (e.g., 5 minutes)
 STATE_TOKEN_COOKIE_NAME=oauth_state  # Cookie name for storing state token
 STATE_TOKEN_COOKIE_MAX_AGE=300  # 5 minutes in seconds (5 * 60)
 
-# OTP Configuration
-OTP_TOKEN_EXPIRY=15  # OTP expiration time in minutes
-
 # Email Configuration
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=465

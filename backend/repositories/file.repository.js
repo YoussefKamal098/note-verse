@@ -47,7 +47,6 @@ class FileRepository {
      * @param {string} fileData.name - Unique file name identifier
      * @param {string} fileData.ext - File extension
      * @param {string} fileData.hash - SHA-1 hash of the file content
-     * @param {string} fileData.uploadTimestamp - Upload timestamp in milliseconds since epoch
      * @param {string} fileData.mimetype - MIME type
      * @param {number} fileData.size - File size in bytes
      * @param {string} fileData.userId - Owner's user ID
@@ -60,7 +59,6 @@ class FileRepository {
             return deepFreeze(this.#sanitizeFileMongoObject(file.toObject()));
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
-                
                 const conflictError = new Error("File ID conflict");
                 conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;

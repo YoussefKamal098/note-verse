@@ -61,7 +61,7 @@ const statusMessages = Object.freeze({
     GOOGLE_USER_ALREADY_EXISTS: "Google User already exists. Please log in or use a different email.",
     INVALID_GOOGLE_TOKEN: "The provided Google token is invalid or expired. Please verify your credentials and try again.",
 
-    EMAIL_NOT_FOUND: "No account found with this email address. Please check email and try again later.",
+    EMAIL_NOT_FOUND: "No account found with this email address or the OTP has expired or incorrect. Please check your email or request a new OTP.",
     EMAIL_ALREADY_VERIFIED: "Email address already verified. No further action required.",
     INVALID_OTP: "Invalid verification code. Please check the code and try again. ",
     OTP_EXPIRED: "Verification code has expired.",

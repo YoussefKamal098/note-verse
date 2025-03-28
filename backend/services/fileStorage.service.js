@@ -72,7 +72,6 @@ class FileStorageService {
 
             promise.then(async ({filename, hash, uploadTimestamp, size}) => {
                 const fileData = {
-                    uploadTimestamp,
                     name: filename,
                     size: size,
                     mimetype,
@@ -138,7 +137,7 @@ class FileStorageService {
                 stream,
                 metadata: {
                     hash: fileDoc.hash,
-                    lastModified: fileDoc.uploadTimestamp,
+                    lastModified: fileDoc.createdAt,
                     size: fileDoc.size,
                     mimetype: fileDoc.mimetype,
                     ext: fileDoc.ext,

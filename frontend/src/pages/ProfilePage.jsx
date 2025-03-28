@@ -33,7 +33,7 @@ const ProfilePage = () => {
             const fetchUserData = async () => {
                 try {
                     const response = await userService.getUser("me");
-                    setUserImageUrl(response?.data.avatarUrl);
+                    setUserImageUrl(response?.data?.avatarUrl || "");
                 } catch (error) {
                     notify.error(`Failed to fetch user details, ${error.message}`);
                 }

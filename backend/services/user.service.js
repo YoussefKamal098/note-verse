@@ -1,13 +1,16 @@
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
-const {timeUnit, timeFromNow, time} = require('shared-utils/date.utils');
+const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
+const {deepFreeze} = require('shared-utils/obj.utils');
+const {generateSecureOTP} = require("../utils/otp.utils");
 const AppError = require('../errors/app.error');
 const PasswordHasherService = require('../services/passwordHasher.service');
 const userValidationService = require('../validations/user.validation');
+const cacheService = require('../services/cache.service');
 const userRepository = require("../repositories/user.repository");
 const fileRepository = require("../repositories/file.repository");
-const {deepFreeze} = require('shared-utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
+
 
 /**
  * Service for managing user operations.
@@ -38,9 +41,15 @@ class UserService {
      */
     #fileRepository;
     /**
+     * @private
+     * @type {CacheService}
+     */
+    #cacheService
+    /**
      * @type {PasswordHasherService}
      */
     passwordHasherService;
+
 
     /**
      * Creates an instance of UserService.
@@ -49,12 +58,14 @@ class UserService {
      * @param {PasswordHasherService} passwordHasherService - Service for hashing and verifying passwords.
      * @param {UserRepository} userRepository - Repository for user database operations.
      * @param {FileRepository} fileRepository - Repository for file database operations.
+     * @param {CacheService} cacheService - The cache service instance used for caching operations.
      */
-    constructor(userValidationService, passwordHasherService, userRepository, fileRepository) {
+    constructor(userValidationService, passwordHasherService, userRepository, fileRepository, cacheService) {
         this.#userValidationService = userValidationService;
         this.passwordHasherService = passwordHasherService;
         this.#userRepository = userRepository;
         this.#fileRepository = fileRepository;
+        this.#cacheService = cacheService;
     }
 
     /**
@@ -75,62 +86,58 @@ class UserService {
     }
 
     /**
-     * Creates or updates a local email/password user document with OTP verification handling.
+     * Generates the cache key for an unverified user.
      *
-     * Validates the user's email, password, and names.
-     * Hashes the password and OTP code,
-     * sets the OTP expiry time, and stores the new user.
-     *
-     * @param {Object} userDetails - The details of the user.
-     * @param {string} userDetails.firstname - The user's first name.
-     * @param {string} userDetails.lastname - The user's last name.
-     * @param {string} userDetails.email - The user's email address.
-     * @param {string} userDetails.password - The user's password.
-     * @param {string} userDetails.otpCode - The one-time password (OTP) code for email verification.
-     * @param {number|Date|string} [userDetails.otpCodeExpiry=time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)]
-     *        - The expiry time for the OTP code.
-     *        Defaults to 15 minutes.
-     * @returns {Promise<Object>} The newly created user object, deep-frozen.
-     * @throws {AppError} If user creation fails due to a conflict or server error.
+     * @private
+     * @param {string} email - The user's email address.
+     * @returns {string} The generated cache key.
      */
-    async createLocalUser({
-                              firstname,
-                              lastname,
-                              email,
-                              password,
-                              otpCode,
-                              otpCodeExpiry = time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)
-                          } = {}) {
-        this.#userValidationService.validateEmail('email', email);
-        this.#userValidationService.validatePassword('password', password);
-        this.#userValidationService.validateName('firstname', firstname);
-        this.#userValidationService.validateName('lastname', lastname);
+    #getUnverifiedUserCacheKey(email) {
+        return `user:unverified:${email}`;
+    }
 
-        const hashedPassword = await this.passwordHasherService.hash(password);
+    /**
+     * Creates an unverified user by validating the user details, hashing the password and OTP,
+     * generating an OTP code and expiry time, and caching the user data for later verification.
+     *
+     * This method performs the following steps:
+     * 1. Validates the user's email, password, and names.
+     * 2. Generates a secure OTP code.
+     * 3. Hashes both the password and the OTP code.
+     * 4. Calculates the OTP expiry time (default is 15 minutes).
+     * 5. Caches the user data (with hashed values) in the cache service using a key based on the email.
+     * 6. Returns the plain OTP code and its expiry time (both deep-frozen) for further verification.
+     *
+     * @param {Object} userData - The details of the user.
+     * @param {string} userData.firstname - The user's first name.
+     * @param {string} userData.lastname - The user's last name.
+     * @param {string} userData.email - The user's email address.
+     * @param {string} userData.password - The user's password.
+     * @returns {Promise<Readonly<{otpCode, otpCodeExpiresAt}>>} A deep-frozen object containing the plain OTP code and OTP expiry date.
+     * @throws {AppError} If caching the unverified user data fails.
+     */
+    async createUnverifiedUser(userData) {
+        this.#userValidationService.validateEmail('email', userData.email);
+        this.#userValidationService.validatePassword('password', userData.password);
+        this.#userValidationService.validateName('firstname', userData.firstname);
+        this.#userValidationService.validateName('lastname', userData.lastname);
+
+        const otpCode = generateSecureOTP({
+            length: 6,
+            charType: 'alphanumeric',
+            caseSensitive: true
+        });
+
+        const hashedPassword = await this.passwordHasherService.hash(userData.password);
         const hashedOtpCode = await this.passwordHasherService.hash(otpCode);
-        const otpCodeExpiresAt = timeFromNow({[timeUnit.MINUTE]: otpCodeExpiry});
+        const otpCodeExpiry = time({[timeUnit.MINUTE]: 15});
 
-        const userData = {
-            firstname,
-            lastname,
-            email,
-            password: hashedPassword,
-            otpCode: hashedOtpCode,
-            otpCodeExpiresAt
-        };
+        userData = {...userData, otpCode: hashedOtpCode, password: hashedPassword};
 
         try {
-            const user = await this.#userRepository.createLocalUser(userData);
-            return deepFreeze({...user, otpCode, otpCodeExpiresAt})
+            await this.#cacheService.set(this.#getUnverifiedUserCacheKey(userData.email), JSON.stringify(userData), otpCodeExpiry);
+            return deepFreeze({otpCode, otpCodeExpiresAt: timeFromNow({[timeUnit.SECOND]: otpCodeExpiry})});
         } catch (error) {
-            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
-                throw new AppError(
-                    statusMessages.USER_ALREADY_EXISTS,
-                    httpCodes.CONFLICT.code,
-                    httpCodes.CONFLICT.name
-                );
-            }
-
             throw new AppError(
                 statusMessages.USER_CREATION_FAILED,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
@@ -185,15 +192,13 @@ class UserService {
      * The returned object includes the OTP code, OTP expiration, and verification status.
      *
      * @param {string} email - The email address of the user.
-     * @returns {Promise<Object | null>} The user object deep-frozen containing OTP-related fields if found.
+     * @returns {Promise<Readonly<Object | null>>} The user object deep-frozen containing OTP-related fields if found.
      * @throws {AppError} If an error occurs during retrieval.
      */
-    async getUserForEmailVerification(email) {
+    async findUnverifiedEmail(email) {
         try {
-            return await this.#userRepository.findOne(
-                {email},
-                {otpCode: 1, otpCodeExpiresAt: 1, isVerified: 1}
-            );
+            const data = await this.#cacheService.get(this.#getUnverifiedUserCacheKey(email));
+            return data ? JSON.parse(data) : null;
         } catch (error) {
             throw new AppError(
                 httpCodes.INTERNAL_SERVER_ERROR.message,
@@ -210,18 +215,29 @@ class UserService {
      * and clears the OTP code and its expiration.
      *
      * @param {string} email - The email address to mark as verified.
-     * @returns {Promise<Object | null>} The updated user object deep-frozen if found.
+     * @returns {Promise<Readonly<Object | null>>} The updated user object deep-frozen if found.
      * @throws {AppError} If an error occurs during the update.
      */
-    async markEmailAsVerified(email) {
+    async verifyEmail(email) {
+        const key = `user:unverified:${email}`;
         try {
-            return await this.#userRepository.findByEmailAndUpdate(email, {
-                isVerified: true,
-                verifiedAt: new Date(),
-                otpCode: null,
-                otpCodeExpiresAt: null
-            });
+            const userData = await this.findUnverifiedEmail(email);
+            if (!userData) return null;
+
+            delete userData.otpCode;
+
+            const newUser = await this.#userRepository.createLocalUser(userData);
+            await this.#cacheService.delete(key);
+            return newUser;
         } catch (error) {
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                throw new AppError(
+                    statusMessages.USER_ALREADY_EXISTS,
+                    httpCodes.CONFLICT.code,
+                    httpCodes.CONFLICT.name
+                );
+            }
+
             throw new AppError(
                 httpCodes.INTERNAL_SERVER_ERROR.message,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
@@ -234,7 +250,7 @@ class UserService {
      * Finds a user by their unique identifier.
      *
      * @param {string} userId - The unique ID of the user.
-     * @returns {Promise<Object| null>} The deep-frozen user object if found.
+     * @returns {Promise<Readonly<Object| null>>} The deep-frozen user object if found.
      * @throws {AppError} If an error occurs during retrieval.
      */
     async findById(userId) {
@@ -253,12 +269,12 @@ class UserService {
      * Finds a verified user by their email address.
      *
      * @param {string} email - The email address of the user.
-     * @returns {Promise<Object | null>} The user object deep-frozen if found and verified if found.
+     * @returns {Promise<Readonly<Object| null>>} The user object deep-frozen if found and verified if found.
      * @throws {AppError} If an error occurs during retrieval.
      */
     async findByEmail(email) {
         try {
-            return await this.#userRepository.findOne({email, isVerified: true});
+            return await this.#userRepository.findOne({email});
         } catch (error) {
             throw new AppError(
                 httpCodes.INTERNAL_SERVER_ERROR.message,
@@ -309,4 +325,4 @@ class UserService {
     }
 }
 
-module.exports = new UserService(new userValidationService(), new PasswordHasherService(), userRepository, fileRepository);
+module.exports = new UserService(new userValidationService(), new PasswordHasherService(), userRepository, fileRepository, cacheService);

@@ -58,32 +58,16 @@ class UserRepository {
      * @param {string} userData.lastname - The user's last name.
      * @param {string} userData.email - The user's email address.
      * @param {string} userData.password - The user's hashed password.
-     * @param {string} [userData.otpCode] - The one-time password (OTP) for email verification.
-     * @param {Date} [userData.otpCodeExpiresAt] - The expiration time of the OTP code.
-     * @param {boolean} [userData.isVerified] - The user's verification status (default is false).
      *
-     * @returns {Promise<Object>} The created or updated user document, deep-frozen.
+     * @returns {Promise<Readonly<Object>>} The created or updated user document, deep-frozen.
      * @throws {Error} If a duplicate key error occurs (indicating a conflict, e.g., a verified user already exists),
      * or if any other error occurs during the operation.
      */
     async createLocalUser(userData = {}) {
         try {
-            const {email, ...otherData} = userData; // Remove email from userData for $set
-
-            const user = await this.#userModel.findOneAndUpdate(
-                {
-                    email: email,
-                    isVerified: false,
-                    otpCodeExpiresAt: {$lt: new Date()}
-                },
-                {
-                    $set: otherData,                 // Only update other fields
-                    $setOnInsert: {email: email}     // Set email only when inserting a new document
-                },
-                {new: true, upsert: true, runValidators: true}
-            ).lean();
-
-            return deepFreeze(sanitizeMongoObject(user));
+            const newUser = new this.#userModel(userData);
+            await newUser.save();
+            return deepFreeze(sanitizeMongoObject(newUser.toObject()));
         } catch (error) {
             // Check for duplicate key error (E11000) which indicates a conflict (e.g., verified user exists)
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
@@ -138,7 +122,7 @@ class UserRepository {
      * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
      * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
      *
-     * @returns {Promise<Object>} The created or existing user document, deep-frozen.
+     * @returns {Promise<Readonly<Object>>} The created or existing user document, deep-frozen.
      *
      * @throws {Error} Throws an error if:
      * - A **duplicate key conflict** occurs (`DUPLICATE_KEY`),
@@ -210,14 +194,13 @@ class UserRepository {
         if (!isValidObjectId(userId)) return null;
 
         try {
-            const user = await this.#userModel.findOne({
-                _id: convertToObjectId(userId),
-                isVerified: true
-            }).populate({
-                path: 'authProvider',
-                select: 'providerId avatarUrl -_id -userId',
-                options: {lean: true}
-            }).lean();
+            const user = await this.#userModel
+                .findById(convertToObjectId(userId))
+                .populate({
+                    path: 'authProvider',
+                    select: 'providerId avatarUrl -_id -userId',
+                    options: {lean: true}
+                }).lean();
 
             if (!user) return null;
             return deepFreeze(sanitizeMongoObject(user));
@@ -242,8 +225,8 @@ class UserRepository {
 
         try {
             // Only update if the user is verified
-            const updatedUser = await this.#userModel.findOneAndUpdate(
-                {_id: convertToObjectId(userId), isVerified: true},
+            const updatedUser = await this.#userModel.findByIdAndUpdate(
+                convertToObjectId(userId),
                 {$set: updates},
                 {new: true, runValidators: true}
             ).lean();

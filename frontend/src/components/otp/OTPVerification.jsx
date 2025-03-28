@@ -82,7 +82,7 @@ const OTPVerification = memo(({email, length = 6}) => {
                     navigate(RoutesPaths.HOME);
                 }, 3000);
             } catch (err) {
-                setError(`OTP verification failed. ${err.message}.`);
+                setError(`OTP verification failed. ${err.message}`);
                 setAnimationState("error");
                 setTimeout(() => {
                     setAnimationState("idle");
@@ -133,7 +133,6 @@ const OTPVerification = memo(({email, length = 6}) => {
                 <OTPInput
                     length={length}
                     onChange={handleOTPChange}
-                    onComplete={handleOTPChange}
                     setError={setError}
                     disabled={disabledInput}
                     animationState={animationState}

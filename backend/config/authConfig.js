@@ -9,7 +9,6 @@ const authConfig = {
     accessTokenExpiry: parseString(process.env.ACCESS_TOKEN_EXPIRY, '1h'), // one hour
     refreshTokenSecret: parseString(process.env.REFRESH_TOKEN_SECRET, 'your-refresh-token-secret'),
     refreshTokenExpiry: parseString(process.env.REFRESH_TOKEN_EXPIRY, '7d'), // one week
-    otpTokenExpiry: parseNumber(process.env.OTP_TOKEN_EXPIRY, time({[timeUnit.MINUTE]: 15}, timeUnit.MINUTE)),
     cookiesName: parseString(process.env.REFRESH_TOKEN_COOKIE_NAME, 'refresh_token'),
     cookiesMaxAge: parseNumber(process.env.REFRESH_TOKEN_COOKIE_MAX_AGE, time({[timeUnit.DAY]: 7})),
     getCookieOptions() {

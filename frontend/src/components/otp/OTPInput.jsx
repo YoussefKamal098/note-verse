@@ -29,7 +29,6 @@ const specialKeys = [
  * @param {object} props - Component properties.
  * @param {number} props.length - Number of OTP boxes to render.
  * @param {function} props.onChange - Callback fired when the OTP value changes.
- * @param {function} props.onComplete - Callback fired when the OTP input reaches the specified length.
  * @param {function} props.setError - Function to set an error message.
  * @param {boolean} [props.disabled=false] - Flag to disable the input.
  * @param {"idle"|"success"|"error"} [props.animationState="idle"] - Current animation state.
@@ -39,7 +38,6 @@ const specialKeys = [
 const OTPInput = memo(({
                            length,
                            onChange,
-                           onComplete,
                            setError,
                            disabled = false,
                            animationState = "idle",
@@ -101,13 +99,11 @@ const OTPInput = memo(({
 
             setOtp(newOtp);
             onChange?.(newOtp);
-
-            if (newOtp.length === length) onComplete?.(newOtp);
         } else if (otp.length < length) {
             setError("Only alphanumeric characters are allowed.");
             e.preventDefault();
         }
-    }, [disabled, otp, length, onChange, onComplete, setError, internalDisabled]);
+    }, [disabled, otp, length, onChange, setError, internalDisabled]);
 
     /**
      * Global paste handler to support pasting the OTP.
@@ -137,13 +133,10 @@ const OTPInput = memo(({
 
         setOtp(validOtp);
         onChange && onChange(validOtp);
-        if (validOtp.length === length && onComplete) {
-            onComplete(validOtp);
-        }
         if (foundInvalid) {
             setError("Only alphanumeric characters are allowed.");
         }
-    }, [disabled, length, onChange, onComplete, setError]);
+    }, [disabled, length, onChange, setError]);
 
     // Attach global event listeners.
     useEffect(() => {

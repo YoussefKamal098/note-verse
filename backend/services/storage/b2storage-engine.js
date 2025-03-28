@@ -332,7 +332,7 @@ class B2StorageEngine {
      * @private
      * @param {UploadContext} context
      * @param {string} filename
-     * @returns {Promise<{filename: string, size: number, fileId: string, fileUrl: string}>}
+     * @returns {Promise<{filename: string, hash: string, size: number, uploadTimestamp: number, fileId: string, fileUrl: string}>}
      */
     async #finalizeUpload(context, filename) {
         if (context.cancelled) {
@@ -348,7 +348,7 @@ class B2StorageEngine {
      * @private
      * @param {UploadContext} context
      * @param {string} filename
-     * @returns {Promise<{filename: string, size: number, fileId: string, fileUrl: string}>}
+     * @returns {Promise<{filename: string, hash: string, size: number, uploadTimestamp: number, fileId: string, fileUrl: string}>}
      */
     async #finalizeLargeFile(context, filename) {
         if (context.buffer.length > 0) {
@@ -373,7 +373,7 @@ class B2StorageEngine {
      * @private
      * @param {UploadContext} context
      * @param {string} filename
-     * @returns {Promise<{filename: string, size: number, fileId: string, fileUrl: string}>}
+     * @returns {Promise<{filename: string, hash: string, size: number, uploadTimestamp: number, fileId: string, fileUrl: string}>}
      */
     async #finalizeRegularUpload(context, filename) {
         await this.#cancelLargeFile(context.fileId);
@@ -407,7 +407,7 @@ class B2StorageEngine {
      * @private
      * @param {Object} fileData
      * @param {string} filename
-     * @returns {{filename: string, hash: string, size: number, fileId: string, fileUrl: string}}
+     * @returns {{filename: string, hash: string, size: number, uploadTimestamp: number, fileId: string, fileUrl: string}}
      */
     #createFileResponse(fileData, filename) {
         return {
