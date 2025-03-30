@@ -39,9 +39,11 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
 
     useEffect(() => {
         const loadData = async () => {
-            setLoading(true);
             try {
+                setLoading(true);
                 const fetchedNote = await fetchNoteData();
+                if (!fetchedNote) return; // Aborted request
+
                 const unsavedChanges = await CacheService.get(id);
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);

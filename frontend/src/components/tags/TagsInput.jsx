@@ -27,6 +27,7 @@ const TagInputStyled = styled.input`
     font-size: 1em;
     font-weight: 600;
     transition: 0.3s ease;
+    caret-color: var(--color-accent);
 
     ${({animate}) => animate && css`
         animation: ${EnterAnimation} 0.3s ease-out;
@@ -75,7 +76,7 @@ const TagsInput = ({tags, setTags}) => {
     return (
         <TagInputStyled
             type="text"
-            placeholder="🏷️ Add Tag for your note! 🌟📌"
+            placeholder="Add Tag for your note! 🌟📌"
             onKeyDown={onTagChange}
             animate={animate ? "true" : undefined}
         />

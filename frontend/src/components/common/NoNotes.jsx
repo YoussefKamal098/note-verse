@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
-import {GiPencilRuler} from "react-icons/gi";
 import {FadeInAnimation} from "../animations/ContainerAnimation";
+import {FcSearch} from "react-icons/fc";
 
 const NoNotesStyled = styled.div`
     display: flex;
@@ -19,7 +19,7 @@ const NoNotes = ({children}) => {
     return (
         <FadeInAnimation keyProp="no-notes">
             <NoNotesStyled>
-                <GiPencilRuler size={100}/>
+                <FcSearch size={150}/>
                 {children}
             </NoNotesStyled>
         </FadeInAnimation>

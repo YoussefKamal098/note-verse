@@ -32,7 +32,6 @@ const SearchBarContainerStyled = styled.div`
     align-items: center;
     padding: 0 1em;
     background-color: var(--color-background-secondary);
-    border: var(--border-width) solid var(--color-border);
     border-radius: var(--border-radius);
     transition: 0.3s ease;
     overflow: hidden;
@@ -50,6 +49,7 @@ const InputStyled = styled.input`
     font-weight: 600;
     background: transparent;
     padding: 0.6rem 0.5em 0.6rem 0;
+    caret-color: var(--color-text);
 
     &::placeholder {
         color: var(--color-placeholder);

@@ -41,6 +41,7 @@ const TitleInputStyled = styled.textarea`
     color: var(--color-text);
     text-align: center;
     background: transparent;
+    caret-color: var(--color-accent);
 
     &::placeholder {
         color: var(--color-placeholder);

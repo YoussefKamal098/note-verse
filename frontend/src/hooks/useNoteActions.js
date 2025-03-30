@@ -34,7 +34,6 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
             notify.success(`Note updated successfully.`);
             return note;
         } catch (error) {
-            console.log(error)
             throw new Error(`Failed to update note: ${error.message}`);
         }
     };

@@ -146,7 +146,7 @@ const Note = ({
     }
 
     const onNoteUnSave = async () => {
-        setTitle("");
+        setTitle(origTitle);
         setContent(origContent);
         setTags(origTags);
         setIsPinned(origIsPinned);
@@ -158,7 +158,7 @@ const Note = ({
         <NoteContainerStyled>
             <HeaderContainerStyled>
                 <BackHomeButton/>
-                
+
                 <Suspense fallback={<Loader/>}>
                     <NoteMenu
                         onNoteDelete={onNoteDelete}
