@@ -1,22 +1,30 @@
 import axios from 'axios';
 import {HttpStatusMessages} from '../constants/httpStatus';
 import httpHeaders from '../constants/httpHeaders';
-import {isServerErrorStatus, isSuccessfulStatus} from 'shared-utils/http.utils';
+import {isServerErrorStatus} from 'shared-utils/http.utils';
 import {time, timeUnit} from 'shared-utils/date.utils';
 import AppConfig from '../config/config';
 import RoutesPaths from '../constants/RoutesPaths';
 import CacheInterceptor from './interceptors/cacheInterceptor';
 import CsrfInterceptor from './interceptors/csrfInterceptor';
 
-const AXIOS_ERROR_CODE = {
+const AXIOS_ERROR_CODES = Object.freeze({
+    ERR_BAD_REQUEST: "ERR_BAD_REQUEST",
+    ERR_BAD_RESPONSE: "ERR_BAD_RESPONSE",
     ERR_NETWORK: "ERR_NETWORK",
+    ERR_TIMEOUT: "ERR_TIMEOUT",
+    ERR_CANCELED: "ERR_CANCELED",
     ECONNABORTED: "ECONNABORTED"
-};
+});
 
-const AXIOS_ERROR_MESSAGES = {
-    ERR_NETWORK: "Network Error - Unable to reach the server. Please check your network connection.",
-    ECONNABORTED: "Connection Aborted - The connection was aborted due to timeout or server issues."
-};
+const AXIOS_ERROR_MESSAGES = Object.freeze({
+    [AXIOS_ERROR_CODES.ERR_BAD_REQUEST]: "Bad Request",
+    [AXIOS_ERROR_CODES.ERR_BAD_RESPONSE]: "Bad Response",
+    [AXIOS_ERROR_CODES.ERR_NETWORK]: "Network Error",
+    [AXIOS_ERROR_CODES.ERR_TIMEOUT]: "Request timed out",
+    [AXIOS_ERROR_CODES.ERR_CANCELED]: "Request was aborted",
+    [AXIOS_ERROR_CODES.ECONNABORTED]: "Connection aborted",
+});
 
 /**
  * API client class for handling HTTP requests with Axios.
@@ -110,21 +118,17 @@ class ApiClient {
      * @returns {Promise<never>} A rejected promise with an error object.
      */
     handleError(error) {
-        const statusCode = error.response?.status || AXIOS_ERROR_CODE[error.code];
-        const backendMessage = error.response?.data?.message ||
-            HttpStatusMessages[statusCode] ||
-            AXIOS_ERROR_MESSAGES[error.code] ||
-            "An unexpected error occurred. Please try again later.";
+        const status = error.response?.status || AXIOS_ERROR_CODES[error.code]
+        const message = error.response?.data?.message || HttpStatusMessages[status] ||
+            AXIOS_ERROR_MESSAGES[error.code] || "An unexpected error occurred. Please try again later.";
 
-        if (!isSuccessfulStatus(statusCode)) {
-            console.error("API Error:", {statusCode, backendMessage});
-        }
+        console.error("API Error:", {message, status});
 
-        if (isServerErrorStatus(statusCode) || AXIOS_ERROR_CODE[statusCode]) {
+        if (isServerErrorStatus(status)) {
             window.location = RoutesPaths.ERROR;
         }
 
-        return Promise.reject({...error, message: backendMessage, statusCode});
+        return Promise.reject({...error, message});
     }
 
     /**
@@ -175,4 +179,5 @@ class ApiClient {
  * @type {ApiClient}
  */
 const apiClient = new ApiClient({baseURL: AppConfig.API_BASE_URL});
+export {AXIOS_ERROR_MESSAGES as API_CLIENT_ERROR_MESSAGES, AXIOS_ERROR_CODES as API_CLIENT_ERROR_CODES};
 export default apiClient;

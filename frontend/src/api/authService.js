@@ -138,35 +138,54 @@ class AuthService {
     }
 
     /**
+     * Handles successful login by storing the access token, fetching user details,
+     * and emitting the login event.
+     *
+     * @private
+     * @param {string} accessToken - The new access token.
+     * @param {import('axios').AxiosRequestConfig} config - Axios request configuration.
+     * @returns {Promise<Object>} The user data object.
+     */
+    async #handleLoginSuccess(accessToken, config) {
+        // Store the new access token
+        this.#tokenStorageService.setAccessToken(accessToken);
+
+        // Fetch user details
+        const user = await this.#userService.getUser("me", config);
+        const {id, email, firstname, lastname} = user.data;
+
+        // Emit the login event with user details
+        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+
+        return user;
+    }
+
+    /**
      * Logs in a user by posting the credentials to the login endpoint and storing the access token.
      * @param {Object} credentials - The user credentials.
      * @param {string} credentials.email - The user's email.
      * @param {string} credentials.password - The user's password.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If login fails.
      */
-    async login({email, password}) {
-        const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password});
+    async login({email, password}, config = {}) {
+        const response = await this.#apiClient.post(ENDPOINTS.LOGIN, {email, password}, config);
         const {accessToken} = response.data;
 
-        this.#tokenStorageService.setAccessToken(accessToken);
-
-        const user = await this.#userService.getUser("me");
-        const {id, firstname, lastname} = user.data;
-
-        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
-
+        await this.#handleLoginSuccess(accessToken, config);
         return response;
     }
 
     /**
      * Initiates Google OAuth 2.0 authentication flow.
      * @async
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response containing authorization URL and state
      * @throws {Error} If the initiation request fails
      */
-    async initiateGoogleAuth() {
-        return await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH);
+    async initiateGoogleAuth(config = {}) {
+        return await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH, config);
     }
 
     /**
@@ -175,34 +194,27 @@ class AuthService {
      * @param {Object} params - Callback parameters from Google
      * @param {string} params.code - Authorization code from Google (required)
      * @param {string} [params.state] - State parameter for CSRF validation (optional)
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Authentication result with user data and tokens
      * @throws {Error} If code is missing or token exchange fails
      */
-    async handleGoogleCallback({code, state} = {}) {
-        const response = await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH_CALLBACK, {code, state});
-
+    async handleGoogleCallback({code, state} = {}, config = {}) {
+        const response = await this.#apiClient.post(ENDPOINTS.GOOGLE_AUTH_CALLBACK, {code, state}, config);
         const {accessToken} = response.data;
 
-        // Store the new access token
-        this.#tokenStorageService.setAccessToken(accessToken);
-
-        // Fetch and emit user details
-        const user = await this.#userService.getUser("me");
-        const {id, email, firstname, lastname} = user.data;
-
-        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
-
+        await this.#handleLoginSuccess(accessToken, config);
         return response;
     }
 
     /**
      * Logs out the current user by calling the logout endpoint and clearing the stored token.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and a message.
      * @throws {Error} If logout fails.
      */
-    async logout() {
+    async logout(config = {}) {
         try {
-            const response = await this.#apiClient.post(ENDPOINTS.LOGOUT);
+            const response = await this.#apiClient.post(ENDPOINTS.LOGOUT, config);
             this.#handleLogout();
             return {...response, message: 'Logged out successfully'};
         } catch (error) {
@@ -226,16 +238,17 @@ class AuthService {
      * @param {string} userData.password - The password for the new user.
      * @param {string} userData.firstname - The first name of the new user.
      * @param {string} userData.lastname - The last name of the new user.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} The API response from the register endpoint.
      * @throws {Error} If the registration process fails.
      */
-    async register({email, password, firstname, lastname}) {
+    async register({email, password, firstname, lastname}, config = {}) {
         return await this.#apiClient.post(ENDPOINTS.REGISTER, {
             email,
             password,
             firstname,
             lastname,
-        });
+        }, config);
     }
 
     /**
@@ -251,19 +264,15 @@ class AuthService {
      * @param {Object} params - The parameters for email verification.
      * @param {string} params.email - The email address to verify.
      * @param {string} params.otpCode - The one-time password (OTP) sent to the user's email.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} The API response from the verify-email endpoint.
      * @throws {Error} If the email verification process fails.
      */
-    async verifyEmail({email, otpCode}) {
+    async verifyEmail({email, otpCode}, config = {}) {
         const response = await this.#apiClient.post(ENDPOINTS.VERIFY_EMAIL, {email, otpCode});
-
         const {accessToken} = response.data;
-        this.#tokenStorageService.setAccessToken(accessToken);
 
-        const user = await this.#userService.getUser("me");
-        const {id, firstname, lastname} = user.data;
-
-        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+        await this.#handleLoginSuccess(accessToken, config);
         return response;
     }
 

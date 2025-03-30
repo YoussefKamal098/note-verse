@@ -3,10 +3,11 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 import {FcGoogle} from "react-icons/fc";
 import {MoonLoader} from 'react-spinners';
-import useSingleExecution from '../hooks/useSingleExecution';
+import useRequestManager from '../hooks/useRequestManager';
 import Navbar from "../components/navbar/Navbar";
 import authService from '../api/authService';
 import RoutesPaths from "../constants/RoutesPaths";
+import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const Container = styled.div`
     font-size: 1em;
@@ -39,7 +40,7 @@ const IconContainer = styled.span`
 const GoogleCallbackAuthPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const {executeOnce} = useSingleExecution();
+    const {createAbortController} = useRequestManager();
 
     const handleGoogleCallback = async () => {
         // Extract the authorization code and any error parameter from the callback URL
@@ -72,24 +73,28 @@ const GoogleCallbackAuthPage = () => {
             return;
         }
 
+        const controller = createAbortController();
+
         try {
-            await authService.handleGoogleCallback({code});
+            await authService.handleGoogleCallback({code}, {signal: controller.signal});
             // Redirect to the home page after one second.
             setTimeout(() => {
                 navigate(RoutesPaths.HOME);
             }, 1000);
         } catch (err) {
-            navigate(RoutesPaths.ERROR, {
-                state: {
-                    title: "Google Authentication Failed",
-                    message: `Google authentication encountered an error: ${err.message}`
-                }
-            });
+            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                navigate(RoutesPaths.ERROR, {
+                    state: {
+                        title: "Google Authentication Failed",
+                        message: `Google authentication encountered an error: ${err.message}`
+                    }
+                });
+            }
         }
     }
 
     useEffect(() => {
-        executeOnce(handleGoogleCallback);
+        handleGoogleCallback();
     }, [location, navigate]);
 
 

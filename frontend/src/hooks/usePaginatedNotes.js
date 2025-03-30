@@ -1,10 +1,13 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import RoutesPaths from "../constants/RoutesPaths";
+import useRequestManager from "./useRequestManager";
 import {useNavigate} from "react-router-dom";
 import noteService from "../api/noteService";
+import {API_CLIENT_ERROR_CODES} from "../api/apiClient"
 
 const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
     const navigate = useNavigate();
+    const {createAbortController} = useRequestManager();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(initPage);
@@ -12,6 +15,8 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
     const totalNotes = useRef(0);
 
     const fetchPageNotes = useCallback(async (page, search) => {
+        const controller = createAbortController();
+
         try {
             const queryParams = {
                 searchText: search,
@@ -20,11 +25,15 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
                 sort: {isPinned: -1, updatedAt: -1, title: 1, createdAt: -1},
             };
 
-            const result = await noteService.getUserNotes("me", queryParams);
+            const result = await noteService.getUserNotes("me", queryParams, {
+                signal: controller.signal
+            });
 
             return result.data;
         } catch (error) {
-            throw new Error(error.message);
+            if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                throw new Error(error.message);
+            }
         }
     }, [notesPerPage]);
 
@@ -32,27 +41,29 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
         try {
             setLoading(true);
             let result = await fetchPageNotes(page, search);
+
+            if (!result) return; // Aborted request
+
             if (result.data.length === 0 && result.totalPages > 0) {
                 result = await fetchPageNotes(result.totalPages - 1, search);
+                if (!result) return; // Aborted request
                 setCurrentPage(result.totalPages - 1);
             }
 
             const {data, totalPages: total, totalItems} = result;
-
             totalNotes.current = totalItems;
             setTotalPages(total);
             setNotes(data);
+            setLoading(false);
         } catch (error) {
             navigate(RoutesPaths.ERROR, {
                 state: {
-                    message: "An error occurred while retrieving your page notes. " +
-                        "there was an issue processing your request. Please try again later."
+                    message: "An error occurred while retrieving your notes. " +
+                        "Please try again later."
                 }
             });
-        } finally {
-            setLoading(false);
         }
-    }, [fetchPageNotes]);
+    }, [fetchPageNotes, navigate]);
 
     useEffect(() => {
         loadNotes(currentPage, searchText);

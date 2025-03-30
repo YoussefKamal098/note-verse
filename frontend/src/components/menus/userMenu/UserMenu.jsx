@@ -9,6 +9,7 @@ import {FaArrowRightFromBracket} from "react-icons/fa6";
 import {TiTickOutline} from "react-icons/ti";
 import Overlay from "../../common/Overlay";
 import Spinner from "../../buttons/LoadingSpinnerButton";
+import useRequestManager from "../../../hooks/useRequestManager";
 import {useAuth} from "../../../contexts/AuthContext";
 import {useTheme} from "../../../contexts/ThemeContext";
 import useIsMobile from "../../../hooks/useIsMobile";
@@ -19,6 +20,7 @@ import Avatar from '../../common/Avatar';
 import RoutesPaths from "../../../constants/RoutesPaths";
 import authService from "../../../api/authService";
 import userService from "../../../api/userService";
+import {API_CLIENT_ERROR_CODES} from "../../../api/apiClient"
 
 import {
     ArrowStyled,
@@ -45,6 +47,7 @@ import {
 
 const UserMenu = () => {
     const mobileSize = 768;
+    const {createAbortController} = useRequestManager();
     const navigate = useNavigate();
     const {user} = useAuth();
     const {theme, setTheme} = useTheme();
@@ -72,7 +75,8 @@ const UserMenu = () => {
 
     const fetchUserData = useCallback(async () => {
         try {
-            const response = await userService.getUser("me");
+            const controller = createAbortController();
+            const response = await userService.getUser("me", {signal: controller.signal});
 
             // Update only if data actually changes
             setUserData(prev => {
@@ -86,7 +90,9 @@ const UserMenu = () => {
                 return isEqual(prev, newData) ? prev : newData;
             });
         } catch (error) {
-            notify.error("Failed to fetch user details");
+            if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                throw new Error(error.message);
+            }
         }
     }, [notify]);
 

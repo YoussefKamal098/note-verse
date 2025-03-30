@@ -27,27 +27,30 @@ class NoteService {
      * @param {string} params.content - Content of the note.
      * @param {string[]} [params.tags] - Tags associated with the note.
      * @param {boolean} [params.isPinned=false] - Whether the note is pinned.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note creation fails.
      */
-    async create(userId, {title, content, tags, isPinned}) {
+    async create(userId, {title, content, tags, isPinned}, config = {}) {
         return await this.#apiClient.post(ENDPOINTS.CREATE(userId), {
             title,
             content,
             tags,
             isPinned,
-        });
+        }, config);
     }
 
     /**
      * Get notes of the authenticated user.
      * @param {string} userId - The ID of the user.
      * @param {Object} [queryParams={}] - Query parameters for filtering notes.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If fetching notes fails.
      */
-    async getUserNotes(userId, queryParams = {}) {
+    async getUserNotes(userId, queryParams = {}, config = {}) {
         return await this.#apiClient.get(ENDPOINTS.GET_USER_NOTES(userId), {
+            ...config,
             params: {...queryParams},
         });
     }
@@ -56,11 +59,12 @@ class NoteService {
      * Get a specific note by ID.
      * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If fetching the note fails.
      */
-    async getUserNoteById(userId, noteId) {
-        return await this.#apiClient.get(ENDPOINTS.GET_USER_NOTE_BY_ID(userId, noteId));
+    async getUserNoteById(userId, noteId, config = {}) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER_NOTE_BY_ID(userId, noteId), config);
     }
 
     /**
@@ -72,13 +76,15 @@ class NoteService {
      * @param {string} [params.content] - Updated content of the note.
      * @param {string[]} [params.tags] - Updated tags for the note.
      * @param {boolean} [params.isPinned] - Updated pin status of the note.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note update fails.
      */
-    async updateUserNoteById(userId, noteId, {title, content, tags, isPinned} = {}) {
+    async updateUserNoteById(userId, noteId, {title, content, tags, isPinned} = {}, config = {}) {
         return await this.#apiClient.put(
             ENDPOINTS.UPDATE_USER_NOTE_BY_ID(userId, noteId),
-            {title, content, tags, isPinned}
+            {title, content, tags, isPinned},
+            config
         );
     }
 
@@ -86,11 +92,12 @@ class NoteService {
      * Delete a specific note by ID.
      * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note deletion fails.
      */
-    async deleteUserNoteById(userId, noteId) {
-        return await this.#apiClient.delete(ENDPOINTS.DELETE_USER_NOTE_BY_ID(userId, noteId));
+    async deleteUserNoteById(userId, noteId, config = {}) {
+        return await this.#apiClient.delete(ENDPOINTS.DELETE_USER_NOTE_BY_ID(userId, noteId), config);
     }
 }
 

@@ -23,17 +23,19 @@ class UserService {
     /**
      * Fetches the specified user's information from the server.
      * @param {string} userId - The ID of the user to fetch.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} The response object containing status code and user data.
      * @throws {Error} If the request fails or there is an error.
      */
-    async getUser(userId) {
-        return await this.#apiClient.get(ENDPOINTS.GET_USER(userId));
+    async getUser(userId, config = {}) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER(userId), config);
     }
 
     /**
      * Uploads a user avatar using native File object metadata
      * @param {string} userId - ID of the user to upload avatar for
      * @param {File} file - Image File object to upload
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} API response with upload result
      * @throws {Error} For invalid files or upload failures
      *
@@ -44,7 +46,7 @@ class UserService {
      *   .then(console.log)
      *   .catch(console.error);
      */
-    async uploadAvatar(userId, file) {
+    async uploadAvatar(userId, file, config = {}) {
         const formData = new FormData();
 
         // Extract metadata from File object
@@ -61,6 +63,7 @@ class UserService {
         return this.#apiClient.post(
             ENDPOINTS.AVATAR_UPLOAD(userId),
             formData, {
+                ...config,
                 headers: {
                     [httpHeaders.CONTENT_TYPE]: 'multipart/form-data'
                 }

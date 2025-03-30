@@ -1,13 +1,16 @@
 import {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import useRequestManager from '../hooks/useRequestManager';
 import RoutesPaths from "../constants/RoutesPaths";
 import noteService from "../api/noteService";
 import CacheService from "../services/cacheService";
+import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
     const [unSavedChanges, setUnSavedChanges] = useState(null);
+    const {createAbortController} = useRequestManager();
 
     const fetchNoteData = useCallback(async () => {
         if (id === "new") {
@@ -22,11 +25,15 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
             };
         }
 
+        const controller = createAbortController();
+
         try {
-            const result = await noteService.getUserNoteById("me", id);
+            const result = await noteService.getUserNoteById("me", id, {signal: controller.signal});
             return result.data;
         } catch (error) {
-            throw new Error(error.message);
+            if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                throw new Error(error.message);
+            }
         }
     }, [id]);
 
@@ -38,6 +45,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                 const unsavedChanges = await CacheService.get(id);
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);
+                setLoading(false);
             } catch (error) {
                 navigate(RoutesPaths.ERROR, {
                     state: {
@@ -47,8 +55,6 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                             "or there was an issue processing your request. Please try again later."
                     }
                 });
-            } finally {
-                setLoading(false);
             }
         };
 
