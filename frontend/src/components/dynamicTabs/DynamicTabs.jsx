@@ -8,18 +8,16 @@ import 'react-tabs/style/react-tabs.css';
 
 function DynamicTabs({
                          tabs = [],
-                         initialTabIndex = 0,
                          onTabChange = (tab) => (tab)
                      }) {
     const {theme} = useTheme();
-    const [tabIndex, setTabIndex] = useState(initialTabIndex !== 0 ? initialTabIndex - 1 : initialTabIndex + 1);
+    const [tabIndex, setTabIndex] = useState(0);
     const [tabsCount, setTabsCount] = useState(tabs.length);
     const tabRef = useRef(null);
 
     useEffect(() => {
         setTabsCount(tabs.length);
-        setTabIndex(initialTabIndex);
-    }, [tabs, initialTabIndex]);
+    }, [tabs]);
 
     const handleTabChange = useCallback((index) => {
         setTabIndex(index);

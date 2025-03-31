@@ -35,7 +35,7 @@ const TabToolbar = ({className, tabRef}) => {
     // Toolbar element rendering
     const renderToolbar = useCallback(() => (
         <ToolbarStyled
-            className={`${className} ${fullScreen ? "full-screen" : ""}`}
+            className={`${className} ${fullScreen ? "full-screen" : ""} ${isFixed ? "fixed" : ""}`}
             ref={toolbarRef}
             style={isFixed ? getFixedStyle() : {}}
         >

@@ -103,6 +103,9 @@ const TitleWrapperStyled = styled.div`
 `
 
 const TabBodyStyled = styled.div`
+    max-height: 100vh;
+    overflow-y: auto;
+
     & > * {
         background-color: var(--color-background-primary);
         border-radius: calc(var(--border-radius) / 2);
@@ -153,7 +156,6 @@ const ToolbarStyled = styled.div`
     border-bottom-left-radius: 0;
     box-shadow: var(--box-shadow);
     padding: 0.2em 0.3em;
-    margin-bottom: 0.5em;
     gap: 0.5em;
 
     &.full-screen {

@@ -28,7 +28,6 @@ const EditorStyled = styled(MarkdownEditor)`
 `;
 
 const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onContentChange}) {
-    const initialTabIndex = Number(localStorage.getItem("NoteMarkdownTabsCurrentTab")) || 0;
     const [value, setValue] = useState(content);
     const [internalUpdateTrigger, setInternalUpdateTrigger] = useState("");
     const isValueFromInSite = useRef(false);
@@ -42,10 +41,6 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
     useEffect(() => {
         isValueFromInSite.current = false;
     }, [internalUpdateTrigger]);
-
-    const onTabChange = (tab) => {
-        localStorage.setItem("NoteMarkdownTabsCurrentTab", tab);
-    }
 
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
@@ -62,7 +57,7 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
     };
 
     const handleOnKeyUp = () => {
-        debounceChange(value)
+        debounceChange(value);
     };
 
     const memoizedContent = useMemo(() => value, [value]);
@@ -88,7 +83,7 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
 
     return (
         <NoteMarkdownTabsWrapperStyled>
-            <DynamicTabs tabs={tabs} initialTabIndex={initialTabIndex} onTabChange={onTabChange}/>
+            <DynamicTabs tabs={tabs}/>
         </NoteMarkdownTabsWrapperStyled>
     );
 });

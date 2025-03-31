@@ -8,7 +8,8 @@
 
 .md-editor .cm-line::selection,
 .md-editor .cm-line *::selection {
-    color: var(--color-accent);
+    color: var(--color-primary);
+    background: var(--color-background-secondary) !important;
 }
 
 .md-editor .cm-editor,
@@ -20,4 +21,41 @@
 
 .md-editor .cm-editor {
     padding-right: 0.75em;
+}
+
+.md-editor-content-editor {
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+.wmde-markdown pre .copied {
+    color: var(--color-text-dark) !important;
+    background-color: var(--color-primary) !important;
+}
+
+.wmde-markdown pre:hover .copied:hover {
+    color: var(--color-text-dark) !important;
+    background-color: var(--color-primary-hover) !important;
+}
+
+.wmde-markdown pre .octicon-copy {
+
+}
+
+.wmde-markdown hr {
+    background-color: transparent !important;
+    border-bottom: none;
+    position: relative;
+}
+
+.wmde-markdown hr::after {
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    transform: translateY(-50%);
+    background-color: var(--color-border);
+    border-radius: 25px;
 }
