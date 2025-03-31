@@ -152,10 +152,10 @@ class AuthService {
 
         // Fetch user details
         const user = await this.#userService.getUser("me", config);
-        const {id, email, firstname, lastname} = user.data;
+        const {id, email, firstname, lastname, avatarUrl} = user.data;
 
         // Emit the login event with user details
-        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname}});
+        this.#eventEmitter.emit(AUTH_EVENTS.LOGIN, {user: {id, email, firstname, lastname, avatarUrl}});
 
         return user;
     }

@@ -121,7 +121,7 @@ const ProfileImageUploader = ({
 
             // Pass only the File to parent
             const savedUrl = await onSaveImage({file});
-            setSavedImageUrl(savedUrl);
+            setSavedImageUrl(savedUrl || "");
         } catch (error) {
             notify.error(error.message);
         } finally {

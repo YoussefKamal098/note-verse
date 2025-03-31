@@ -1,5 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import isEqual from "react-fast-compare";
+import React, {useEffect, useRef, useState} from "react";
 import {CSSTransition} from "react-transition-group";
 import {useNavigate} from "react-router-dom";
 import {MdKeyboardArrowRight, MdKeyboardArrowUp, MdNoteAlt} from "react-icons/md";
@@ -9,7 +8,6 @@ import {FaArrowRightFromBracket} from "react-icons/fa6";
 import {TiTickOutline} from "react-icons/ti";
 import Overlay from "../../common/Overlay";
 import Spinner from "../../buttons/LoadingSpinnerButton";
-import useRequestManager from "../../../hooks/useRequestManager";
 import {useAuth} from "../../../contexts/AuthContext";
 import {useTheme} from "../../../contexts/ThemeContext";
 import useIsMobile from "../../../hooks/useIsMobile";
@@ -19,8 +17,6 @@ import {useToastNotification} from "../../../contexts/ToastNotificationsContext"
 import Avatar from '../../common/Avatar';
 import RoutesPaths from "../../../constants/RoutesPaths";
 import authService from "../../../api/authService";
-import userService from "../../../api/userService";
-import {API_CLIENT_ERROR_CODES} from "../../../api/apiClient"
 
 import {
     ArrowStyled,
@@ -47,7 +43,6 @@ import {
 
 const UserMenu = () => {
     const mobileSize = 768;
-    const {createAbortController} = useRequestManager();
     const navigate = useNavigate();
     const {user} = useAuth();
     const {theme, setTheme} = useTheme();
@@ -56,12 +51,6 @@ const UserMenu = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [appearanceMenuOpen, setAppearanceMenuOpen] = useState(false);
-
-    const [userData, setUserData] = useState(() => ({
-        firstname: "",
-        lastname: "",
-        avatarUrl: ""
-    }));
 
     const [closeButtonStyle, setCloseButtonStyle] = useState({});
     const wrapperRef = useRef(null);
@@ -72,44 +61,6 @@ const UserMenu = () => {
     const {width} = useResize();
     // Determine if mobile using our reusable hook.
     const isMobile = useIsMobile(mobileSize);
-
-    const fetchUserData = useCallback(async () => {
-        try {
-            const controller = createAbortController();
-            const response = await userService.getUser("me", {signal: controller.signal});
-
-            // Update only if data actually changes
-            setUserData(prev => {
-                const newData = {
-                    firstname: response.data.firstname,
-                    lastname: response.data.lastname,
-                    avatarUrl: response.data.avatarUrl
-                };
-
-                // Deep comparison to prevent unnecessary updates
-                return isEqual(prev, newData) ? prev : newData;
-            });
-        } catch (error) {
-            if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                throw new Error(error.message);
-            }
-        }
-    }, [notify]);
-
-    // Fetch user details on component mount
-    useEffect(() => {
-        if (user) {
-            const fetchData = async () => {
-                try {
-                    await fetchUserData();
-                } catch (error) {
-                    notify.error(`Failed to fetch user details, ${error.message}`);
-                }
-            };
-
-            fetchData();
-        }
-    }, [user, fetchUserData, notify]);
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev);
@@ -163,7 +114,7 @@ const UserMenu = () => {
                     </BarsContainerStyled>
                 ) : (
                     <AvatarStyled onClick={toggleMenu}>
-                        <Avatar avatarUrl={userData.avatarUrl}/>
+                        <Avatar avatarUrl={user.avatarUrl}/>
                     </AvatarStyled>
                 )}
 
@@ -177,10 +128,10 @@ const UserMenu = () => {
 
                         <HeaderStyled>
                             <UserMenuAvatarStyled onClick={handleRouteOptionCLick(RoutesPaths.HOME)}>
-                                <Avatar avatarUrl={userData.avatarUrl}/>
+                                <Avatar avatarUrl={user.avatarUrl}/>
                             </UserMenuAvatarStyled>
                             <FullNameStyled>
-                                {userData.firstname} {userData.lastname}
+                                {user.firstname} {user.lastname}
                             </FullNameStyled>
                         </HeaderStyled>
 
