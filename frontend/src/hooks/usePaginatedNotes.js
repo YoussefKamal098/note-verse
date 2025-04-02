@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-dom";
 import noteService from "../api/noteService";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient"
 
-const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
+const usePaginatedNotes = (userId, initPage, searchText, notesPerPage) => {
     const navigate = useNavigate();
     const {createAbortController} = useRequestManager();
     const [notes, setNotes] = useState([]);
@@ -25,7 +25,7 @@ const usePaginatedNotes = (initPage, searchText, notesPerPage) => {
                 sort: {isPinned: -1, updatedAt: -1, title: 1, createdAt: -1},
             };
 
-            const result = await noteService.getUserNotes("me", queryParams, {
+            const result = await noteService.getUserNotes(userId, queryParams, {
                 signal: controller.signal
             });
 

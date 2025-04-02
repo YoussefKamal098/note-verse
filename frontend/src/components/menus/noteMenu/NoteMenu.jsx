@@ -64,7 +64,6 @@ const NoteMenu = ({
         }
     };
 
-
     const handleUnSave = () => {
         if (!disableUnSave && onNoteUnSave) {
             onNoteUnSave();
@@ -113,26 +112,34 @@ const NoteMenu = ({
                                 </OptionStyled>
                             </OptionWrapperStyled>
 
-                            <OptionWrapperStyled>
-                                <OptionStyled onClick={handleSave} disabled={disableSave}>
-                                    <OptionIconStyled>
-                                        <BsDatabaseFillDown/>
-                                    </OptionIconStyled>
-                                    <OptionTextStyled>Save Note Changes</OptionTextStyled>
-                                </OptionStyled>
-                            </OptionWrapperStyled>
+                            {!disableSave && (
+                                <OptionWrapperStyled>
+                                    <OptionStyled onClick={handleSave}>
+                                        <OptionIconStyled>
+                                            <BsDatabaseFillDown/>
+                                        </OptionIconStyled>
+                                        <OptionTextStyled>
+                                            Commit Changes
+                                        </OptionTextStyled>
+                                    </OptionStyled>
+                                </OptionWrapperStyled>
+                            )}
+
+                            {!disableUnSave && (
+                                <OptionWrapperStyled>
+                                    <OptionStyled onClick={handleUnSave} danger={"true"}>
+                                        <OptionIconStyled>
+                                            <BsDatabaseFillSlash/>
+                                        </OptionIconStyled>
+                                        <OptionTextStyled>
+                                            Discard Changes
+                                        </OptionTextStyled>
+                                    </OptionStyled>
+                                </OptionWrapperStyled>
+                            )}
 
                             <OptionWrapperStyled>
-                                <OptionStyled onClick={handleUnSave} disabled={disableUnSave}>
-                                    <OptionIconStyled>
-                                        <BsDatabaseFillSlash/>
-                                    </OptionIconStyled>
-                                    <OptionTextStyled>UnSave Note Changes</OptionTextStyled>
-                                </OptionStyled>
-                            </OptionWrapperStyled>
-
-                            <OptionWrapperStyled>
-                                <OptionStyled onClick={handleDelete} disabled={disableDelete}>
+                                <OptionStyled onClick={handleDelete} disabled={disableDelete} danger={"true"}>
                                     <OptionIconStyled>
                                         <MdDeleteForever/>
                                     </OptionIconStyled>

@@ -6,12 +6,14 @@ import Navbar from "../components/navbar/Navbar";
 import NoNotes from "../components/common/NoNotes";
 import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config/config";
+import {useAuth} from "../contexts/AuthContext";
 
 const HOME_SEARCH_TEXT_STORED_KEY = "homeSearchText";
 const HOME_CURRENT_PAGE_STORED_KEY = "homeCurrentPage";
 
 const HomePage = () => {
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
+    const {user} = useAuth();
     const [searchText, setSearchText] = useState(localStorage.getItem(HOME_SEARCH_TEXT_STORED_KEY) || "");
     const replacedNoteIndexFromAdjacentPage = useRef(0);
     const pageSectionRef = useRef(null);
@@ -26,7 +28,7 @@ const HomePage = () => {
         setCurrentPage,
         fetchPageNotes,
         totalNotes
-    } = usePaginatedNotes(Number(localStorage.getItem(HOME_CURRENT_PAGE_STORED_KEY)) || 0, searchText, notesPerPage);
+    } = usePaginatedNotes(user?.id, Number(localStorage.getItem(HOME_CURRENT_PAGE_STORED_KEY)) || 0, searchText, notesPerPage);
 
     const fetchReplacedNote = async () => {
         try {

@@ -1,5 +1,6 @@
 .md-editor {
-    overflow: hidden;
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .md-editor .md-editor-toolbar-mode {
@@ -23,11 +24,6 @@
     padding-right: 0.75em;
 }
 
-.md-editor-content-editor {
-    max-height: 100vh;
-    overflow-y: auto;
-}
-
 .wmde-markdown pre .copied {
     color: var(--color-text-dark) !important;
     background-color: var(--color-primary) !important;
@@ -36,10 +32,6 @@
 .wmde-markdown pre:hover .copied:hover {
     color: var(--color-text-dark) !important;
     background-color: var(--color-primary-hover) !important;
-}
-
-.wmde-markdown pre .octicon-copy {
-
 }
 
 .wmde-markdown hr {

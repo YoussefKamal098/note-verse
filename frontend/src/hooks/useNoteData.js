@@ -6,14 +6,14 @@ import noteService from "../api/noteService";
 import CacheService from "../services/cacheService";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
-const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
+const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
     const [unSavedChanges, setUnSavedChanges] = useState(null);
     const {createAbortController} = useRequestManager();
 
     const fetchNoteData = useCallback(async () => {
-        if (id === "new") {
+        if (noteId === "new") {
             return {
                 id: "new",
                 title: "",
@@ -28,14 +28,15 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
         const controller = createAbortController();
 
         try {
-            const result = await noteService.getUserNoteById("me", id, {signal: controller.signal});
+            const result = await noteService.getUserNoteById(userId, noteId, {signal: controller.signal});
+            console.log(result);
             return result.data;
         } catch (error) {
             if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 throw new Error(error.message);
             }
         }
-    }, [id]);
+    }, [noteId]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -44,7 +45,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
                 const fetchedNote = await fetchNoteData();
                 if (!fetchedNote) return; // Aborted request
 
-                const unsavedChanges = await CacheService.get(id);
+                const unsavedChanges = await CacheService.get(noteId);
                 setNote(fetchedNote);
                 setUnSavedChanges(unsavedChanges);
                 setLoading(false);
@@ -61,7 +62,7 @@ const useNoteData = (id = "", setLoading = (prev) => (!prev)) => {
         };
 
         loadData();
-    }, [fetchNoteData, id, setLoading]);
+    }, [fetchNoteData, userId, noteId, setLoading]);
 
     return {note, setNote, unSavedChanges};
 };

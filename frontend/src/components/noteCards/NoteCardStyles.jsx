@@ -95,7 +95,7 @@ const TagStyled = styled.div`
     align-items: center;
     align-self: flex-start;
     gap: 0.25em;
-    font-size: 0.7em;
+    font-size: 0.8em;
     font-weight: 600;
     color: var(--color-placeholder);
     padding: 0.2em 0.6em;

@@ -1,9 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import TagsInput from "./TagsInput";
-import EditableTagsList from "./EditableTagsList";
+import {AnimatedListHeightChildrenFade} from "../animations/ContainerAnimation";
+import {TagsContainerStyled, TagStyled} from "./TagsStyles";
+import TagEditorPopup from "./TagEditorPopup";
+import Tooltip from "../tooltip/Tooltip";
+import {TbEditCircle} from "react-icons/tb";
 
-const TagsContainerStyled = styled.div`
+const ContainerStyled = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -11,13 +14,31 @@ const TagsContainerStyled = styled.div`
     gap: 1em;
 `;
 
-function EditableTags({ tags, setTags }){
+function EditableTags({tags, onSave = (tags) => ({tags})}) {
     return (
-        <TagsContainerStyled>
-            <TagsInput tags={tags} setTags={setTags} />
-            <EditableTagsList tags={tags} setTags={setTags}/>
-        </TagsContainerStyled>
+        <ContainerStyled>
+            <TagsContainerStyled>
+                <AnimatedListHeightChildrenFade>
+                    {tags.map((tag, index) => (
+                        <TagStyled key={`tag-${index}`}>
+                            <span>#</span> {tag}
+                        </TagStyled>
+                    ))}
+                </AnimatedListHeightChildrenFade>
+
+                <TagEditorPopup
+                    tags={tags}
+                    onSave={onSave}
+                >
+                    <Tooltip title="Edit tags">
+                        <TagStyled style={{fontSize: "1em", cursor: "pointer"}}>
+                            <TbEditCircle/>
+                        </TagStyled>
+                    </Tooltip>
+                </TagEditorPopup>
+            </TagsContainerStyled>
+        </ContainerStyled>
     )
 }
 
-export default EditableTags
+export default React.memo(EditableTags);

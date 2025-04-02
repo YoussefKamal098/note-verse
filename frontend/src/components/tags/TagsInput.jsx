@@ -20,9 +20,8 @@ const EnterAnimation = css`
 const TagInputStyled = styled.input`
     width: 100%;
     padding: 0.7em 1em;
-    background: var(--color-background-primary);
+    background: var(--color-background-secondary);
     border-radius: var(--border-radius);
-    border: var(--border-width) solid var(--color-border);
     color: var(--color-text);
     font-size: 1em;
     font-weight: 600;
@@ -76,7 +75,7 @@ const TagsInput = ({tags, setTags}) => {
     return (
         <TagInputStyled
             type="text"
-            placeholder="Add Tag for your note! 🌟📌"
+            placeholder="Add Tag for your note!📌"
             onKeyDown={onTagChange}
             animate={animate ? "true" : undefined}
         />

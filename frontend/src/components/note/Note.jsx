@@ -1,20 +1,23 @@
 import React, {Suspense, useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
 import 'react-toastify/dist/ReactToastify.css';
-import NoteMarkdownTabs from "./NoteMarkdownTabs";
+import {deepEqual} from "shared-utils/obj.utils";
+import {PuffLoader} from 'react-spinners';
 import EditableTags from "../tags/EditableTags";
-import NoteTitleInputField from "./NoteTitleInputField";
-import NoteDate from "./NoteDate";
+import EditableTitle from "../title/EditableTitle";
 import BackHomeButton from "../buttons/BackHomeButton";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {useAuth} from "../../contexts/AuthContext";
 import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import noteValidationSchema from "../../validations/noteValidtion";
 import cacheService from "../../services/cacheService"
-import {deepEqual} from "shared-utils/obj.utils";
 import Loader from "../common/Loader";
+import Tooltip from "../tooltip/Tooltip";
+import NoteHeader from "./NoteHeader";
 
 const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
+const NoteMarkdownTabs = React.lazy(() => import("../NoteMarkdownTabs/NoteMarkdownTabs"));
 
 const NoteContainerStyled = styled.div`
     position: relative;
@@ -40,7 +43,6 @@ const HeaderContainerStyled = styled.div`
 const Note = ({
                   id = "",
                   origCreateAt = null,
-                  origUpdatedAt = null,
                   origTitle = '',
                   origContent = '# Content',
                   origIsPinned = false,
@@ -50,6 +52,7 @@ const Note = ({
                   unSavedChanges = {}
               } = {}) => {
     const {notify} = useToastNotification();
+    const {user} = useAuth();
     const [content, setContent] = useState(origContent || '');
     const [tags, setTags] = useState(origTags || []);
     const [title, setTitle] = useState(origTitle || '');
@@ -61,6 +64,25 @@ const Note = ({
         if (id) setUnSavedChanges();
     }, [id, origTitle, origContent, origTags, origIsPinned]);
 
+    useEffect(() => {
+        setTitle(origTitle);
+    }, [origTitle]);
+
+    useEffect(() => {
+        setTags(origTags);
+    }, [origTags]);
+
+    useEffect(() => {
+        setIsPinned(origIsPinned)
+    }, [origIsPinned]);
+
+    useEffect(() => {
+        setContent(origContent);
+    }, [origContent]);
+
+    useEffect(() => {
+        setUnSavedChanges();
+    }, [unSavedChanges]);
 
     useEffect(() => {
         if (hasChanges && id) saveUnsavedChanges();
@@ -73,7 +95,6 @@ const Note = ({
             isPinned !== origIsPinned;
     }, [title, content, tags, isPinned]);
 
-
     useEffect(() => {
         setHasChanges(checkChanges());
     }, [checkChanges]);
@@ -81,7 +102,6 @@ const Note = ({
     useEffect(() => {
         setHasChanges(checkChanges());
     }, [title, content, tags, isPinned, checkChanges]);
-
 
     const setUnSavedChanges = async () => {
         if (unSavedChanges) {
@@ -94,7 +114,18 @@ const Note = ({
 
     const saveUnsavedChanges = async () => {
         try {
-            await cacheService.save(id, {title, content, tags, isPinned});
+            const changes = {
+                title: origTitle !== title ? title : undefined,
+                content: origContent !== content ? content : undefined,
+                isPinned: origIsPinned !== isPinned ? isPinned : undefined,
+                tags: origTags !== tags ? tags : undefined,
+            }
+
+            if (Object.values(changes).filter((value) => value !== undefined).length > 0) {
+                await cacheService.save(id, changes);
+            } else {
+                await cacheService.delete(id).catch(() => ({}));
+            }
         } catch (error) {
             notify.error(`Failed to save unsaved changes: ${error.message}.`);
         }
@@ -127,7 +158,7 @@ const Note = ({
         if (!deepEqual(origTags, tags)) changes.tags = tags;
         if (isPinned !== origIsPinned) changes.isPinned = isPinned;
 
-        if (Object.keys(changes).length > 0) {
+        if (onSave && Object.keys(changes).length > 0) {
             onSave({id, ...changes});
         }
     }, [content, tags, title, isPinned]);
@@ -145,25 +176,59 @@ const Note = ({
         if (id && id !== "new") onSave({id, isPinned: !isPinned});
     }
 
+    const onNoteTags = (tags) => {
+        setTags(tags);
+        if (id && id !== "new" && onSave) onSave({id, tags});
+    }
+
+    const onNoteTitle = (title) => {
+        setTitle(title);
+        if (id && id !== "new" && onSave) onSave({id, title});
+    }
+
     const onNoteUnSave = async () => {
         setTitle(origTitle);
         setContent(origContent);
         setTags(origTags);
         setIsPinned(origIsPinned);
+    }
 
-        await cacheService.delete(id);
+    const onNoteDiscardChanges = () => {
+        showConfirmation({
+            type: POPUP_TYPE.DANGER,
+            confirmationMessage: "Are you sure you want to discard this changes?",
+            onConfirm: () => onNoteUnSave(),
+        });
     }
 
     return (
         <NoteContainerStyled>
             <HeaderContainerStyled>
-                <BackHomeButton/>
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25em"
+                }}>
+                    <BackHomeButton/>
+                    <NoteHeader
+                        fullName={`${user.firstname} ${user.lastname}`}
+                        createdAt={origCreateAt}
+                        avatarUrl={user.avatarUrl}
+                    />
+                    {hasChanges &&
+                        <Tooltip title={"Save Your Changes – Click to finalize your commit!"}>
+                            <div style={{cursor: "pointer"}} onClick={onNoteSave}>
+                                <PuffLoader color={"var(--color-accent)"} size={25}/>
+                            </div>
+                        </Tooltip>
+                    }
+                </div>
 
                 <Suspense fallback={<Loader/>}>
                     <NoteMenu
                         onNoteDelete={onNoteDelete}
                         onNoteSave={onNoteSave}
-                        onNoteUnSave={onNoteUnSave}
+                        onNoteUnSave={onNoteDiscardChanges}
                         onNotePin={onNotePin}
                         isPinned={isPinned}
                         disableSave={!hasChanges}
@@ -173,13 +238,12 @@ const Note = ({
                 </Suspense>
             </HeaderContainerStyled>
 
-            <NoteTitleInputField title={title} setTitle={setTitle}/>
+            <EditableTitle title={title} onSave={onNoteTitle}/>
+            <EditableTags tags={tags} onSave={onNoteTags}/>
 
-            {id && id !== "new" && <NoteDate createdAt={origCreateAt} updatedAt={origUpdatedAt}/>}
-
-            <EditableTags tags={tags} setTags={setTags}/>
-
-            <NoteMarkdownTabs content={content} onContentChange={setContent}/>
+            <Suspense fallback={<Loader/>}>
+                <NoteMarkdownTabs content={content} onContentChange={setContent}/>
+            </Suspense>
         </NoteContainerStyled>
     );
 }

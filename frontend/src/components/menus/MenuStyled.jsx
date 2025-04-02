@@ -85,7 +85,8 @@ const OptionStyled = styled.div`
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
 
     &:hover {
-        background-color: var(--color-background-secondary);
+        background-color: ${(props) => (props.danger ? "var(--color-danger)" : "var(--color-background-secondary)")};
+        color: ${(props) => (props.danger ? "var(--color-background-light)" : "var(--color-placeholder)")};
         opacity: ${(props) => (props.disabled ? 0.7 : 1)};
     }
 `;

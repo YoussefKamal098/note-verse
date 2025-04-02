@@ -16,7 +16,7 @@ const TabsListWrapperStyled = styled.div`
         display: inline-block;
         padding: 0.6em 0.9em;
         font-size: 0.9em;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--color-text);
         background: var(--color-background);
         border: var(--border-width) solid var(--color-border-secondary);
@@ -128,19 +128,25 @@ const TabStyled = styled.div`
         z-index: 1000;
     }
 
-    &.full-screen .tab-body > * {
-        min-height: 100vh;
-    }
-
     &.full-screen .tab-body {
         margin-top: 2rem;
     }
 
+    &.full-screen .tab-body > * {
+        min-height: calc(100vh - 2rem);
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+    }
+
     // This is especially for markdown editor tab
+
+    &.full-screen .tab-body .md-editor {
+        max-height: calc(100vh - 2rem);
+    }
 
     &.full-screen .tab-body .cm-editor,
     &.full-screen .tab-body .cm-content {
-        min-height: 100vh;
+        min-height: calc(100vh - 2rem - 29px); // 29px is the editor toolbar height
     }
 `
 

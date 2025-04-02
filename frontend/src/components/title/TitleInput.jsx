@@ -1,13 +1,13 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import styled from "styled-components";
-import {debounce} from 'lodash';
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {debounce} from "lodash";
 import noteValidationSchema from "../../validations/noteValidtion";
+import styled from "styled-components";
 
 const InputWrapperStyled = styled.div`
     position: relative;
     width: 90%;
-    margin: 0 auto 2em;
+    margin: 0 auto;
 
     &::before {
         content: '';
@@ -49,21 +49,21 @@ const TitleInputStyled = styled.textarea`
 
 `;
 
-const NoteTitleInputField = ({title, setTitle}) => {
+const TitleInput = ({title, setTitle, disabled = false}) => {
     const {notify} = useToastNotification();
     const [value, setValue] = useState(title);
     const [internalUpdateTrigger, setInternalUpdateTrigger] = useState("");
     const textAreaRef = useRef(null);
-    const isValueFromInSite = useRef(false);
+    const isValueFromInside = useRef(false);
 
     useEffect(() => {
-        if (!isValueFromInSite.current) {
+        if (!isValueFromInside.current) {
             setValue(title);
         }
     }, [title]);
 
     useEffect(() => {
-        isValueFromInSite.current = false;
+        isValueFromInside.current = false;
     }, [internalUpdateTrigger]);
 
     useEffect(() => {
@@ -81,12 +81,16 @@ const NoteTitleInputField = ({title, setTitle}) => {
     };
 
     const debouncedTitle = useMemo(() => debounce((newValue = "") => {
-        isValueFromInSite.current = true;
+        isValueFromInside.current = true;
         setTitle(() => {
             setInternalUpdateTrigger(newValue);
             return newValue;
         });
     }, 300), [setTitle]);
+
+    useEffect(() => {
+        return () => debouncedTitle.cancel();
+    }, [debouncedTitle]);
 
     const onTitleChange = (e) => {
         const value = e.target.value;
@@ -114,10 +118,11 @@ const NoteTitleInputField = ({title, setTitle}) => {
                 value={value}
                 onChange={onTitleChange}
                 onKeyUp={onKeyUpUp}
-                placeholder="📝✨ Title your note!"
+                placeholder="📝 Title your note!"
+                disabled={disabled}
             />
         </InputWrapperStyled>
     );
 }
 
-export default NoteTitleInputField;
+export default TitleInput;

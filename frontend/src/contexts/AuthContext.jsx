@@ -17,36 +17,26 @@ const AuthProvider = ({children}) => {
     const {showConfirmation} = useConfirmation();
     const {createAbortController} = useRequestManager();
     const {notify} = useToastNotification();
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY) || null));
 
-    const loadUser = async ({id}) => {
-        if (!id) {
-            setLoading(false);
+    const loadUser = async () => {
+        if (!user || !user.id) {
             return;
         }
 
         try {
             const controller = createAbortController();
-            const response = await userService.getUser(id, {signal: controller.signal});
+            const response = await userService.getUser(user.id, {signal: controller.signal});
             setUser(response.data);
         } catch (error) {
             if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 notify.error(error.message);
             }
         }
-
-        setLoading(false);
     };
 
     useEffect(() => {
-        const authUser = JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY));
-        if (authUser) {
-            setUser(authUser);
-            loadUser({id: authUser.id});
-        }
-
-        setLoading(false);
+        loadUser();
 
         authService.on(AUTH_EVENTS.LOGIN, handleLogin);
         authService.on(AUTH_EVENTS.LOGOUT, handleLogout);
@@ -81,8 +71,6 @@ const AuthProvider = ({children}) => {
             onConfirm: handleLogout
         });
     };
-
-    if (loading) return null;
 
     return (
         <AuthContext.Provider value={{user}}>

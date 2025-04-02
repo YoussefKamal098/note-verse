@@ -15,7 +15,7 @@ const NoteMarkdownTabsWrapperStyled = styled.div`
 
 const PreviewStyled = styled(MarkdownPreview)`
     text-align: left;
-    padding: 1em 2em;
+    padding: 1em 2em 3em;
     font-size: 1em !important;
     font-family: "Poppins", sans-serif !important;
     font-weight: 700 !important;
@@ -27,24 +27,24 @@ const EditorStyled = styled(MarkdownEditor)`
     font-weight: 700 !important;
 `;
 
-const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onContentChange}) {
+const NoteMarkdownTabs = ({content, onContentChange, edit = true}) => {
     const [value, setValue] = useState(content);
     const [internalUpdateTrigger, setInternalUpdateTrigger] = useState("");
-    const isValueFromInSite = useRef(false);
+    const isValueFromInside = useRef(false);
 
     useEffect(() => {
-        if (!isValueFromInSite.current) {
+        if (!isValueFromInside.current) {
             handleOnChange(content);
         }
     }, [content]);
 
     useEffect(() => {
-        isValueFromInSite.current = false;
+        isValueFromInside.current = false;
     }, [internalUpdateTrigger]);
 
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
-            isValueFromInSite.current = true;
+            isValueFromInside.current = true;
             onContentChange(() => {
                 setInternalUpdateTrigger(newContent);
                 return newContent;
@@ -81,11 +81,19 @@ const NoteMarkdownTabs = React.memo(function MarkdownTabs({content = "", onConte
         }
     ], [value]);
 
+    if (!edit) {
+        return (
+            <NoteMarkdownTabsWrapperStyled>
+                <PreviewStyled source={memoizedContent}/>
+            </NoteMarkdownTabsWrapperStyled>
+        );
+    }
+
     return (
         <NoteMarkdownTabsWrapperStyled>
             <DynamicTabs tabs={tabs}/>
         </NoteMarkdownTabsWrapperStyled>
     );
-});
+};
 
-export default NoteMarkdownTabs;
+export default React.memo(NoteMarkdownTabs);
