@@ -12,10 +12,10 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         if (!id) return;
 
         try {
-            const {data: note} = await noteService.create(note.userId, {isPinned, tags, title, content});
+            const {data: newNote} = await noteService.create(note.userId, {isPinned, tags, title, content});
             notify.success(`New note created successfully.`);
-            navigate(RoutesPaths.NOTE(note.id), {replace: true});
-            return note;
+            navigate(RoutesPaths.NOTE(newNote.id), {replace: true});
+            return newNote;
         } catch (error) {
             throw new Error(`Failed to create note: ${error.message}`);
         }
@@ -25,14 +25,14 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         if (!id) return;
 
         try {
-            const {data: note} = await noteService.updateUserNoteById(note.userId, id, {
+            const {data: updatedNote} = await noteService.updateUserNoteById(note.userId, id, {
                 isPinned,
                 tags,
                 title,
                 content
             });
             notify.success(`Note updated successfully.`);
-            return note;
+            return updatedNote;
         } catch (error) {
             throw new Error(`Failed to update note: ${error.message}`);
         }
