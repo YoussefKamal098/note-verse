@@ -211,7 +211,7 @@ const Note = ({
                 }}>
                     <BackHomeButton/>
                     <NoteHeader
-                        fullName={`${user.firstname} ${user.lastname}`}
+                        fullName={`${user.firstname || ""} ${user.lastname || ""}`}
                         createdAt={origCreateAt}
                         avatarUrl={user.avatarUrl}
                     />

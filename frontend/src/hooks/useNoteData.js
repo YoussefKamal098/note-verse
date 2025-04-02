@@ -29,7 +29,6 @@ const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
 
         try {
             const result = await noteService.getUserNoteById(userId, noteId, {signal: controller.signal});
-            console.log(result);
             return result.data;
         } catch (error) {
             if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
