@@ -17,7 +17,7 @@ import Tooltip from "../tooltip/Tooltip";
 import NoteHeader from "./NoteHeader";
 
 const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
-const NoteMarkdownTabs = React.lazy(() => import("../NoteMarkdownTabs/NoteMarkdownTabs"));
+const NoteMarkdownTabs = React.lazy(() => import("../noteMarkdownTabs/NoteMarkdownTabs"));
 
 const NoteContainerStyled = styled.div`
     position: relative;

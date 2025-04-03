@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const B2 = require('backblaze-b2');
 const {PassThrough} = require('stream');
 const {ReadStream} = require('fs');
@@ -107,6 +108,17 @@ class B2StorageEngine {
             writeStream: context.passThrough,
             promise: this.#handleUploadCompletion(context, filename)
         };
+    }
+
+    /**
+     * @private
+     * @param {string[]} partSha1Array
+     * @returns {string}
+     */
+    #computeCombinedSha1(partSha1Array) {
+        const combinedHash = crypto.createHash('sha1');
+        combinedHash.update(partSha1Array.join(''), 'hex');
+        return combinedHash.digest('hex');
     }
 
     /**
@@ -366,7 +378,10 @@ class B2StorageEngine {
             partSha1Array: context.partSha1Array
         });
 
-        return this.#createFileResponse(response.data, filename);
+        return this.#createFileResponse({
+            ...response.data,
+            contentSha1: this.#computeCombinedSha1(context.partSha1Array)
+        }, filename);
     }
 
     /**

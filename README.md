@@ -305,18 +305,22 @@ notes_app/
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
 │   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)
 │   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
+│   │   │   ├── editPopUp/         # Component for rendering dynamic editor popUp (e.g., for tags and title)
 │   │   │   ├── errors/            # Contains components for handling and displaying errors.
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
 │   │   │   ├── menus/             # Menu components (e.g. UserMenu, NoteMenu, etc.)
 │   │   │   ├── navbar/            # Navigation bar components
 │   │   │   ├── note/              # Components related to note display and creation
 │   │   │   ├── noteCards/         # Components for displaying notes
+│   │   │   ├── noteMarkdownTabs/  # Components for displaying note markdown editor
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
+│   │   │   ├── pagination/        # Pagination component module.
 │   │   │   ├── profileImageUploader/           # This folder contains React components for profile image uploading and editing.
 │   │   │   ├── progressiveImage/               # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── tags/              # Components for managing tags on notes
+│   │   │   ├── title/              # Components for managing title on notes
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
 │   │   ├── config/                # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.

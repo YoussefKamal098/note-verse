@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import Loader from "../components/common/Loader";
-import Pagination from "../components/common/Pagination";
+import Pagination from "../components/pagination/Pagination";
 import NotesCard from "../components/noteCards/NoteCards";
 import Navbar from "../components/navbar/Navbar";
-import NoNotes from "../components/common/NoNotes";
+import NoNotes from "../components/note/NoNotes";
 import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config/config";
 import {useAuth} from "../contexts/AuthContext";
