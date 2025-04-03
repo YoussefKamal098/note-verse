@@ -45,7 +45,6 @@ class FileRepository {
      *
      * @param {Object} fileData
      * @param {string} fileData.name - Unique file name identifier
-     * @param {string} fileData.ext - File extension
      * @param {string} fileData.hash - SHA-1 hash of the file content
      * @param {string} fileData.mimetype - MIME type
      * @param {number} fileData.size - File size in bytes

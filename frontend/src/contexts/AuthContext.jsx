@@ -17,7 +17,7 @@ const AuthProvider = ({children}) => {
     const {showConfirmation} = useConfirmation();
     const {createAbortController} = useRequestManager();
     const {notify} = useToastNotification();
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY) || null));
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY || null)));
 
     const loadUser = async () => {
         if (!user || !user.id) {

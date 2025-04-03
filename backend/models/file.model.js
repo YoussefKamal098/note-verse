@@ -8,10 +8,6 @@ const fileSchema = new Schema({
         unique: true,
         required: true,
     },
-    ext: {
-        type: String,
-        required: true, // File extension (e.g., "png")
-    },
     mimetype: {
         type: String,
         required: true, // MIME type (e.g., "image/png")

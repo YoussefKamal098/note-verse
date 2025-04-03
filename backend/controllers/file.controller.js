@@ -1,3 +1,4 @@
+const mime = require('mime-types');
 const {time, timeUnit} = require("shared-utils/date.utils");
 const httpCodes = require("../constants/httpCodes");
 const httpHeaders = require("../constants/httpHeaders");
@@ -51,7 +52,7 @@ class FileController {
         res.setHeader(httpHeaders.CACHE_CONTROL, cacheControl);
         res.setHeader(httpHeaders.ETAG, etag);
         res.setHeader(httpHeaders.LAST_MODIFIED, metadata.lastModified.toUTCString());
-        res.setHeader(httpHeaders.CONTENT_DISPOSITION, `attachment; filename=${fileId}.${metadata.ext}`);
+        res.setHeader(httpHeaders.CONTENT_DISPOSITION, `attachment; filename=${fileId}.${mime.extension(metadata.mimetype)}`);
         res.setHeader(httpHeaders.CONTENT_TYPE, metadata.mimetype ? metadata.mimetype : 'application/octet-stream');
         res.setHeader(httpHeaders.CONTENT_LENGTH, metadata.size);
 

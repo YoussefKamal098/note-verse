@@ -8,10 +8,10 @@ const Styled = styled.div`
     width: 100vw;
     height: 100vh;
     background-color: transparent;
-    z-index: 1000
+    z-index: 10000;
 `;
 
-const Overlay = ({ isVisible }) => {
+const Overlay = ({isVisible}) => {
     if (!isVisible) return null;
 
     return (

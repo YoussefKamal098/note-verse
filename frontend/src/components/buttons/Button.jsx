@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
+import LoadingEffect from "../common/LoadingEffect";
 
 const BUTTON_TYPE = Object.freeze({
     SUCCESS: "success",
@@ -29,7 +30,7 @@ const ButtonStyled = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.2em;
+    gap: 0.4em;
     padding: 0.5em;
     border-radius: calc(var(--border-radius) / 1.5);
     opacity: ${(props) => props.disabled ? 0.5 : 1};
@@ -58,13 +59,14 @@ const Button = ({
                     type = BUTTON_TYPE.SUCCESS,
                     disabled = false,
                     onClick = () => ({}),
-                    icon: Icon = null,
-                    children = ""
+                    Icon = null,
+                    children = "",
+                    loading = false
                 }) => {
     return (
-        <ButtonStyled type={type} disabled={disabled} onClick={onClick}>
+        <ButtonStyled type={type} disabled={disabled || loading} onClick={onClick}>
             {Icon && <Icon/>}
-            {children}
+            {children} <LoadingEffect loading={loading}/>
         </ButtonStyled>
     );
 };

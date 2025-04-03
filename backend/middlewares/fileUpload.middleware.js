@@ -75,7 +75,6 @@ class StorageServiceAdapter {
                     try {
                         storagePromise = this.#storageService.upload(uploadStream, {
                             mimetype: fileType.mime,
-                            ext: fileType.ext,
                             userId: req.params.userId
                         }).then(storageInfo => ({
                             storageInfo,
@@ -107,7 +106,6 @@ class StorageServiceAdapter {
                             originalname: originalName,
                             fileId: storageInfo.id,
                             filename: storageInfo.name,
-                            ext: fileType?.ext || parsed.ext.slice(1),
                             mimetype: fileType?.mime,
                             size: storageInfo.size,
                             userId: req.params.userId
@@ -161,7 +159,6 @@ class StorageServiceAdapter {
  *     name: 'document',
  *     fileId: '90a7a4f3-dbe1-4cbf-aec5-63996a370fb8',
  *     filename: "9c65ad55-6237-4248-90c1-f02b8ea65faf-1743099241907",
- *     ext: 'pdf',
  *     size: 437239,
  *     userId: '67b5ffd859ffe5016346c1c9'
  *   }

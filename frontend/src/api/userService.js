@@ -49,16 +49,7 @@ class UserService {
     async uploadAvatar(userId, file, config = {}) {
         const formData = new FormData();
 
-        // Extract metadata from File object
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-        const mimeType = file.type || 'image/png';
-
-        // Create formatted File with consistent naming
-        const formattedFile = new File([file], `avatar.${ext}`, {
-            type: mimeType
-        });
-
-        formData.append('file', formattedFile);
+        formData.append('file', file);
 
         return this.#apiClient.post(
             ENDPOINTS.AVATAR_UPLOAD(userId),

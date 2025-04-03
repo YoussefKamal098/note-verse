@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import {useAuth} from "../contexts/AuthContext";
-import {useToastNotification} from "../contexts/ToastNotificationsContext";
 import Navbar from "../components/navbar/Navbar";
 import ProfileImageUploader from "../components/profileImageUploader/ProfileImageUploader";
 import userService from "../api/userService";
@@ -24,12 +23,11 @@ const ProfileHeader = styled.div`
 
 const ProfilePage = () => {
     const {user} = useAuth();
-    const {notify} = useToastNotification();
-    const [userImageUrl, setUserImageUrl] = useState("");
+    const [userImageUrl, setUserImageUrl] = useState(user?.avatarUrl || "");
 
     useEffect(() => {
         setUserImageUrl(user?.avatarUrl || "");
-    }, [user, notify]);
+    }, [user]);
 
     const onSaveImage = async ({file}) => {
         if (!user || !user.id) {

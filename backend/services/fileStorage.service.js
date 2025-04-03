@@ -46,11 +46,10 @@ class FileStorageService {
      * @param {ReadStream} stream - File content stream
      * @param {Object} fileInfo
      * @param {string} fileInfo.mimetype - Detected MIME type
-     * @param {string} fileInfo.ext - extension of a file
      * @param {string} fileInfo.userId - User ID of a file owner
-     * @returns {Promise<{fileId: string, size: number, mimetype: string, ext: string, userId: string}>}
+     * @returns {Promise<{fileId: string, size: number, mimetype: string, userId: string}>}
      */
-    async upload(stream, {mimetype, ext, userId}) {
+    async upload(stream, {mimetype, userId}) {
         const filename = this.#generateFilename();
 
         const {writeStream, promise} = await this.#storageEngine.uploadStream(filename);
@@ -76,8 +75,7 @@ class FileStorageService {
                     size: size,
                     mimetype,
                     userId,
-                    hash,
-                    ext
+                    hash
                 };
 
                 try {
@@ -88,7 +86,6 @@ class FileStorageService {
                         name: fileDoc.name,
                         mimetype: fileDoc.mimetype,
                         size: fileDoc.size,
-                        ext: fileDoc.ext,
                         userId: fileDoc.userId
                     });
                 } catch (err) {
@@ -118,7 +115,7 @@ class FileStorageService {
      * @param {string} fileId - Unique file name identifier
      * @returns {Promise<{stream: ReadStream, metadata: {
      * hash: string, lastModified: Date, size: number,
-     * mimetype:string, ext: string, userId: string
+     * mimetype:string, userId: string
      * }}>} - The file stream.
      */
     async download(fileId) {
@@ -140,7 +137,6 @@ class FileStorageService {
                     lastModified: fileDoc.createdAt,
                     size: fileDoc.size,
                     mimetype: fileDoc.mimetype,
-                    ext: fileDoc.ext,
                     userId: fileDoc.userId
                 }
             };
@@ -160,7 +156,7 @@ class FileStorageService {
      * @param {string} fileId - Unique file name identifier
      * @param {string} userId - Owner user ID
      * @param {boolean} [silent=true] - Suppress errors
-     * @returns {Promise<{size: number, mimetype: string, ext: string, userId: string} | null>}
+     * @returns {Promise<{size: number, mimetype: string, userId: string} | null>}
      */
     async delete(fileId, userId, silent = true) {
         try {
@@ -182,7 +178,6 @@ class FileStorageService {
             return {
                 size: fileDoc.size,
                 mimetype: fileDoc.mimetype,
-                ext: fileDoc.ext,
                 userId: fileDoc.userId
             };
         } catch (error) {
