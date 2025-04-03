@@ -53,6 +53,7 @@ class FileController {
         res.setHeader(httpHeaders.LAST_MODIFIED, metadata.lastModified.toUTCString());
         res.setHeader(httpHeaders.CONTENT_DISPOSITION, `attachment; filename=${fileId}.${metadata.ext}`);
         res.setHeader(httpHeaders.CONTENT_TYPE, metadata.mimetype ? metadata.mimetype : 'application/octet-stream');
+        res.setHeader(httpHeaders.CONTENT_LENGTH, metadata.size);
 
         stream.pipe(res);
     }

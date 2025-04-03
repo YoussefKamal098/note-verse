@@ -34,8 +34,8 @@ const NoteMenu = ({
     const isMobile = useIsMobile(mobileSize);
 
     // Setup mobile drag functionality using our custom hook.
-    const {mobileDragStyle, handlePointerDown, handlePointerMove, handlePointerUp} =
-        useMobileDrag(isMobile, 100, () => setMenuOpen(false));
+    const {dragOffset, handlePointerDown, handlePointerMove, handlePointerUp} =
+        useMobileDrag(isMobile, () => setMenuOpen(false));
 
     // Close the menu when clicking outside the wrapper or on additional targets.
     useOutsideClick(
@@ -83,17 +83,17 @@ const NoteMenu = ({
             <NoteMenuTriggerButton onClick={toggleMenu}>
                 <BsThreeDots/>
             </NoteMenuTriggerButton>
-
+            
             <NoteMenuWrapperStyled
                 mobile_size={mobileSize}
                 ref={menuWrapperRef}
                 menu_open={menuOpen ? "true" : undefined}
             >
-                <CSSTransition in={menuOpen} timeout={300} classNames="menu" unmountOnExit nodeRef={menuRef}>
+                <CSSTransition in={menuOpen} timeout={3000} classNames="menu" unmountOnExit nodeRef={menuRef}>
                     <NoteMenuContainerStyled
-                        mobile_size={mobileSize}
                         ref={menuRef}
-                        style={mobileDragStyle}
+                        mobile_size={mobileSize}
+                        style={isMobile ? {translate: `0 ${dragOffset}px`} : {}}
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}

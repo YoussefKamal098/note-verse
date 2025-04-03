@@ -241,10 +241,12 @@ class AuthController {
 
             res.sendStatus(httpCodes.NO_CONTENT.code);
         } catch (error) {
+            if (!(error instanceof AppError) || error.httpCode !== httpCodes.UNAUTHORIZED.code) {
+                throw error;
+            }
+
             const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
             res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-
-            throw error;
         }
     }
 
@@ -271,10 +273,12 @@ class AuthController {
             const {accessToken} = await this.#jwtAuthService.refreshToken(refreshToken);
             res.json({accessToken});
         } catch (error) {
+            if (!(error instanceof AppError) || error.httpCode !== httpCodes.UNAUTHORIZED.code) {
+                throw error;
+            }
+
             const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
             res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-
-            throw error;
         }
     }
 

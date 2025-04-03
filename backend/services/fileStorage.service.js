@@ -70,7 +70,7 @@ class FileStorageService {
                 reject(new Error(`Upload file Write stream error ${err}`));
             });
 
-            promise.then(async ({filename, hash, uploadTimestamp, size}) => {
+            promise.then(async ({filename, hash, size}) => {
                 const fileData = {
                     name: filename,
                     size: size,
@@ -160,7 +160,7 @@ class FileStorageService {
      * @param {string} fileId - Unique file name identifier
      * @param {string} userId - Owner user ID
      * @param {boolean} [silent=true] - Suppress errors
-     * @returns {Promise<{size: number, mimetype: string, ext: string, owner: string} | null>}
+     * @returns {Promise<{size: number, mimetype: string, ext: string, userId: string} | null>}
      */
     async delete(fileId, userId, silent = true) {
         try {

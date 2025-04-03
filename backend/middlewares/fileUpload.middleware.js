@@ -55,10 +55,16 @@ class StorageServiceAdapter {
     createMulterStorage() {
         return {
             _handleFile: (req, file, cb) => {
-                const validationStream = new BufferedValidationStream(
-                    this.#config.allowedMimeTypes,
-                    this.#config.maxBufferSize
-                );
+                let validationStream;
+
+                try {
+                    validationStream = new BufferedValidationStream(
+                        this.#config.allowedMimeTypes,
+                        this.#config.maxBufferSize
+                    );
+                } catch (err) {
+                    return cb(err);
+                }
 
                 const uploadStream = new PassThrough();
                 let storagePromise;
@@ -95,7 +101,7 @@ class StorageServiceAdapter {
                     try {
                         const {storageInfo, fileType, originalName} = await storagePromise;
                         const parsed = path.parse(originalName);
-                      
+
                         cb(null, {
                             name: parsed.name,
                             originalname: originalName,

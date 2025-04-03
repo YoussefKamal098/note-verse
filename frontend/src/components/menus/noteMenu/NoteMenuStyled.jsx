@@ -1,28 +1,19 @@
-import styled, {keyframes} from "styled-components";
+import styled from "styled-components";
 import {MenuContainerStyled} from "../MenuStyled";
-
-const NoteMenuAppearKeyframesMobile = keyframes`
-    from {
-        opacity: 0;
-        translate: 0 100%;
-    }
-    to {
-        opacity: 1;
-        translate: 0 0;
-    }
-`;
 
 const NoteMenuWrapperStyled = styled.div`
     @media (max-width: ${props => props.mobile_size}px) {
         position: fixed;
         bottom: 0;
         left: 0;
-        width: ${(props) => (props.menu_open ? "100vw" : "0")};
-        height: 100vh;
+        width: 100vw;
+        height: ${(props) => (props.menu_open ? "100vh" : "0")};
+        opacity: ${(props) => (props.menu_open ? "1" : "0")};
+        transition: opacity 300ms;
         background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(0.1em);
-
         z-index: 1500;
+        overflow: visible;
     }
 `
 
@@ -61,17 +52,17 @@ const NoteMenuContainerStyled = styled(MenuContainerStyled)`
         translate: 0 0;
         border-radius: 25px 25px 0 0;
         padding: 0 0 2em;
-        animation: ${NoteMenuAppearKeyframesMobile} 300ms ease-out;
         overflow-y: auto;
+        transition: opacit, translate 300ms ease;
 
         &.menu-exit {
             opacity: 1;
-            transform: translateY(0);
+            translate: 0 0 !important;
         }
 
         &.menu-exit-active {
-            opacity: 0;
-            transform: translateY(100%);
+            opacity: 1;
+            translate: 0 100% !important;
         }
     }
 `;

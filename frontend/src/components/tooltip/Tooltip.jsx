@@ -54,7 +54,7 @@ const Tooltip = ({title, children, position = "bottom", targetRect}) => {
                         left: `${tooltipPosition.left}px`,
                         top: `${tooltipPosition.top}px`
                     }}>
-                    {title}
+                    {show && title}
                     <StyledArrow position={position}/>
                 </StyledTooltipWrapper>, appRef.current
             )}

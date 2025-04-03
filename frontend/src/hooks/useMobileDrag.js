@@ -1,9 +1,16 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 
-const useMobileDrag = (isMobile, threshold = 100, onDragEnd) => {
+const useMobileDrag = (isMobile, onDragEnd, threshold = 100) => {
     const [dragOffset, setDragOffset] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const pointerStartYRef = useRef(0);
+    const windowHeight = window.innerHeight;
+
+    useEffect(() => {
+        if (!isMobile) {
+            setDragOffset(0);
+        }
+    }, [isMobile]);
 
     const handlePointerDown = (e) => {
         if (isMobile) {
@@ -23,20 +30,18 @@ const useMobileDrag = (isMobile, threshold = 100, onDragEnd) => {
 
     const handlePointerUp = () => {
         if (isMobile && isDragging) {
-            if (dragOffset > threshold && onDragEnd) {
+            const remainingFromBottom = windowHeight - pointerStartYRef.current - dragOffset;
+
+            if (remainingFromBottom < threshold && onDragEnd) {
                 onDragEnd();
             }
+
             setDragOffset(0);
             setIsDragging(false);
         }
     };
 
-    const mobileDragStyle = isMobile ? {
-        transform: `translateY(${dragOffset}px)`,
-        transition: dragOffset === 0 ? "transform 300ms ease-out" : "none",
-    } : {};
-
-    return {mobileDragStyle, handlePointerDown, handlePointerMove, handlePointerUp};
+    return {dragOffset, handlePointerDown, handlePointerMove, handlePointerUp};
 };
 
 export default useMobileDrag;
