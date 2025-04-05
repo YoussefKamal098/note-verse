@@ -80,10 +80,10 @@ const NoteMenu = ({
 
     return (
         <div ref={wrapperRef} style={{position: "relative"}}>
-            <NoteMenuTriggerButton onClick={toggleMenu}>
+            <NoteMenuTriggerButton onClick={toggleMenu} menu_open={menuOpen ? "true" : undefined}>
                 <BsThreeDots/>
             </NoteMenuTriggerButton>
-            
+
             <NoteMenuWrapperStyled
                 mobile_size={mobileSize}
                 ref={menuWrapperRef}
@@ -127,7 +127,7 @@ const NoteMenu = ({
 
                             {!disableUnSave && (
                                 <OptionWrapperStyled>
-                                    <OptionStyled onClick={handleUnSave} danger={"true"}>
+                                    <OptionStyled onClick={handleUnSave} danger>
                                         <OptionIconStyled>
                                             <BsDatabaseFillSlash/>
                                         </OptionIconStyled>
@@ -138,14 +138,15 @@ const NoteMenu = ({
                                 </OptionWrapperStyled>
                             )}
 
-                            <OptionWrapperStyled>
-                                <OptionStyled onClick={handleDelete} disabled={disableDelete} danger={"true"}>
-                                    <OptionIconStyled>
-                                        <MdDeleteForever/>
-                                    </OptionIconStyled>
-                                    <OptionTextStyled>Delete Note</OptionTextStyled>
-                                </OptionStyled>
-                            </OptionWrapperStyled>
+                            {!disableDelete && (<OptionWrapperStyled>
+                                    <OptionStyled onClick={handleDelete} danger>
+                                        <OptionIconStyled>
+                                            <MdDeleteForever/>
+                                        </OptionIconStyled>
+                                        <OptionTextStyled>Delete Note</OptionTextStyled>
+                                    </OptionStyled>
+                                </OptionWrapperStyled>
+                            )}
                         </OptionsStyled>
                     </NoteMenuContainerStyled>
                 </CSSTransition>

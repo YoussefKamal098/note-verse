@@ -11,11 +11,9 @@ const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 const {generateTokenAsync} = require('../utils/crypto.utils');
 const authProvider = require("../enums/auth.enum");
 
-
 /**
- * Service handling Google OAuth 2.0 authentication flows with security best practices
- * @class
- * @classdesc Provides complete Google authentication integration including
+ * Service handling Google OAuth 2.0 authentication flows with security best practices.
+ * Provides complete Google authentication integration including:
  * - State token generation/validation for CSRF protection
  * - Authorization code exchange with Google's APIs
  * - ID token verification and payload validation
@@ -25,25 +23,19 @@ const authProvider = require("../enums/auth.enum");
 class GoogleAuthService {
     /** @private @type {OAuth2Client} Google OAuth2 client instance */
     #oauthClient;
-    /** @private
-     * @type {import('../services/user.service')} User service instance
-     * */
+    /** @private @type {import('../services/user.service')} User service instance */
     #userService;
-    /** @private
-     * @type {import('../services/jwtAuth.service')} JWT authentication service
-     * */
+    /** @private @type {import('../services/jwtAuth.service')} JWT authentication service */
     #jwtAuthService;
-    /** @private
-     * @type {GoogleAuthConfig} Immutable configuration object
-     * */
+    /** @private @type {GoogleAuthConfig} Immutable configuration object */
     #config;
 
     /**
-     * Constructs JWT authentication service
-     * @param {UserService} userService - User operations service
-     * @param {SessionService} sessionService - Session state service
-     * @param {JwtAuthService} jwtAuthService - JWT authentication service
-     * @param {GoogleAuthConfig} config - Deep frozen configuration object
+     * Constructs the GoogleAuthService.
+     * @param {UserService} userService - Service for user operations.
+     * @param {SessionService} sessionService - Service for session state management.
+     * @param {JwtAuthService} jwtAuthService - Service for JWT authentication.
+     * @param {GoogleAuthConfig} config - Deep frozen configuration object.
      */
     constructor(userService, sessionService, jwtAuthService, config) {
         this.#oauthClient = new OAuth2Client({
@@ -51,60 +43,51 @@ class GoogleAuthService {
             clientSecret: config.clientSecret,
             redirectUri: config.redirectUri,
         });
-
         this.#userService = userService;
         this.#jwtAuthService = jwtAuthService;
         this.#config = deepFreeze(deepClone(config));
     }
 
     /**
-     * Immutable authentication configuration
-     * @type {GoogleAuthConfig}
-     * @readonly
+     * Gets the immutable authentication configuration.
+     * @returns {GoogleAuthConfig} The configuration object.
      */
     get config() {
         return this.#config;
     }
 
     /**
-     * Generates a state token for CSRF protection with security parameters
+     * Generates a state token for CSRF protection.
      * @async
-     * @param {SessionInfo} sessionInfo - Client session information
-     * @returns {Promise<string>} JWT state token containing:
-     * - nonce: Cryptographic random value (32 bytes)
-     * - ip: Client IP address
-     * - userAgent: Client user agent
-     * - iss: Client ID for issuer validation
-     * @throws {Error} If token generation fails
+     * @param {SessionInfo} sessionInfo - Client session information.
+     * @returns {Promise<string>} JWT state token containing nonce, ip, userAgent, and issuer.
+     * @throws {Error} If token generation fails.
      */
     async generateStateToken(sessionInfo) {
         const statePayload = {
-            nonce: await generateTokenAsync({size: 32}), // Cryptographic nonce
-            ip: sessionInfo.ip,                           // Client IP
-            userAgent: sessionInfo.userAgent,             // Client user agent
-            iss: this.#config.clientId                    // Issuer validation to ensure token origin authenticity
+            nonce: await generateTokenAsync({size: 32}),
+            ip: sessionInfo.ip,
+            userAgent: sessionInfo.userAgent,
+            iss: this.#config.clientId
         };
 
         return await this.#jwtAuthService.generateToken(
             statePayload,
             this.#config.stateTokenSecret,
             this.#config.stateTokenExpiry
-        )
+        );
     }
 
     /**
-     * Validates state token against session information
+     * Validates the provided state token against session information.
      * @async
-     * @param {string} token - State token to validate
-     * @param {SessionInfo} sessionInfo - Current session information
-     * @returns {Promise<Object>} Decoded token payload
-     * @throws {AppError} When validation fails:
-     * - 400: Invalid token signature/structure
-     * - 400: IP/userAgent mismatch or invalid issuer
+     * @param {string} token - State token to validate.
+     * @param {SessionInfo} sessionInfo - Current session information.
+     * @returns {Promise<Object>} Decoded token payload.
+     * @throws {AppError} When token validation fails or session mismatch occurs.
      */
     async validateStateToken(token, sessionInfo) {
         let statePayload = {};
-
         try {
             statePayload = await this.#jwtAuthService.verifyToken(token, this.#config.stateTokenSecret);
         } catch (error) {
@@ -115,7 +98,8 @@ class GoogleAuthService {
             );
         }
 
-        if (statePayload.ip !== sessionInfo.ip ||
+        if (
+            statePayload.ip !== sessionInfo.ip ||
             statePayload.userAgent !== sessionInfo.userAgent ||
             statePayload.iss !== this.#config.clientId
         ) {
@@ -130,81 +114,107 @@ class GoogleAuthService {
     }
 
     /**
-     * Handles Google OAuth callback with full security validation flow
+     * Handles the Google OAuth callback with full security validation flow.
      * @async
-     * @param {string} code - Authorization code from Google
-     * @param {string} stateToken - State token for CSRF protection
-     * @param {SessionInfo} sessionInfo - Client session information
-     * @returns {Promise<{accessToken: string, refreshToken: string}>} Session tokens
-     * @throws {AppError} When any validation step fails:
-     * - 400: Invalid state token
-     * - 400: Invalid authorization code (invalid_grant)
-     * - 401: Invalid Google ID token
-     * @see {@link https://developers.google.com/identity/protocols/oauth2/web-server#handlingresponse|Google OAuth Flow}
+     * @param {string} code - Authorization code from Google.
+     * @param {string} stateToken - State token for CSRF protection.
+     * @param {SessionInfo} sessionInfo - Client session information.
+     * @returns {Promise<{accessToken: string, refreshToken: string}>} Session tokens.
+     * @throws {AppError} When validation or token exchange fails.
      */
     async handleGoogleCallback(code, stateToken, sessionInfo) {
+        // Validate state token
         await this.validateStateToken(stateToken, sessionInfo);
 
-        let tokens;
-        try {
-            // Exchange the authorization code for tokens
-            tokens = (await this.#oauthClient.getToken({code})).tokens;
-        } catch (error) {
-            if (!error.response || !error.response.data) {
-                throw error;
-            }
+        // Exchange authorization code for tokens
+        const tokens = await this.exchangeAuthorizationCode(code);
 
-            // Check if error is coming from Google's API (using gaxios error structure)
-            if (error.response.data.error === 'invalid_grant') {
-                throw new AppError(
-                    statusMessages.INVALID_GOOGLE_TOKEN,
-                    httpCodes.BAD_REQUEST.code,
-                    httpCodes.BAD_REQUEST.name
-                );
-            } else {
-                // Use Google's error_description if available, otherwise a default message
-                const message = error.response.data.error_description || 'Google authentication failed due to an unknown error.';
-                throw new AppError(message, httpCodes.BAD_REQUEST.code, httpCodes.BAD_REQUEST.name);
-            }
-        }
+        // Verify and validate the Google ID token
+        const payload = await this.verifyAndValidateGoogleToken(tokens);
 
-        // Verify the ID token from Google
-        const ticket = await this.#oauthClient.verifyIdToken({
-            idToken: tokens.id_token,
-            audience: this.#config.clientId,
-        });
-        const payload = ticket.getPayload();
-
-        // Validate token payload properties
-        if (!payload?.email_verified || !payload.sub || payload.aud !== this.#config.clientId ||
-            compareDates(time({[timeUnit.SECOND]: payload.exp}, timeUnit.MILLISECOND), Date.now()) <= 0
-        ) {
-            throw new AppError(
-                statusMessages.INVALID_GOOGLE_TOKEN,
-                httpCodes.UNAUTHORIZED.code,
-                httpCodes.UNAUTHORIZED.name
-            );
-        }
-
-        // Create or update the Google user in your system
-        const user = await this.#userService.createAuthProviderUser({
-            email: payload.email,
-            providerId: payload.sub,
-            firstname: payload.given_name,
-            lastname: payload.family_name,
-            avatarUrl: payload.picture
-        }, authProvider.GOOGLE);
+        // Synchronize the user with the local database
+        const user = await this.syncUser(payload);
 
         // Generate session tokens for the authenticated user
         return this.#jwtAuthService.generateSessionTokens(user.id, sessionInfo);
     }
 
     /**
-     * Generates Google OAuth 2.0 authorization URL with security parameters
-     * @returns {string} Google authorization URL with:
-     * - access_type=offline (refresh tokens)
-     * - profile+email scopes
-     * - prompt=consent (forces fresh authentication)
+     * Exchanges an authorization code for tokens using Google's API.
+     * @async
+     * @param {string} code - Authorization code received from Google.
+     * @returns {Promise<Object>} Tokens received from Google.
+     * @throws {AppError} When the exchange fails or returns an invalid grant.
+     */
+    async exchangeAuthorizationCode(code) {
+        try {
+            const {tokens} = await this.#oauthClient.getToken({code});
+            return tokens;
+        } catch (error) {
+            if (!error.response || !error.response.data) {
+                throw error;
+            }
+            if (error.response.data.error === 'invalid_grant') {
+                throw new AppError(
+                    statusMessages.INVALID_GOOGLE_TOKEN,
+                    httpCodes.BAD_REQUEST.code,
+                    httpCodes.BAD_REQUEST.name
+                );
+            }
+            const message = error.response.data.error_description ||
+                'Google authentication failed due to an unknown error.';
+            throw new AppError(message, httpCodes.BAD_REQUEST.code, httpCodes.BAD_REQUEST.name);
+        }
+    }
+
+    /**
+     * Verifies the Google ID token and validates its payload.
+     * @async
+     * @param {Object} tokens - Tokens object containing the Google ID token.
+     * @returns {Promise<Object>} Decoded token payload.
+     * @throws {AppError} When the token is invalid or expired.
+     */
+    async verifyAndValidateGoogleToken(tokens) {
+        const ticket = await this.#oauthClient.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: this.#config.clientId,
+        });
+        const payload = ticket.getPayload();
+
+        const tokenExpired = compareDates(
+            time({[timeUnit.SECOND]: payload.exp}, timeUnit.MILLISECOND),
+            Date.now()
+        ) <= 0;
+
+        if (!payload?.email_verified || !payload.sub || payload.aud !== this.#config.clientId || tokenExpired) {
+            throw new AppError(
+                statusMessages.INVALID_GOOGLE_TOKEN,
+                httpCodes.UNAUTHORIZED.code,
+                httpCodes.UNAUTHORIZED.name
+            );
+        }
+        return payload;
+    }
+
+    /**
+     * Synchronizes the Google user profile with the local database.
+     * @async
+     * @param {Object} payload - Decoded Google token payload containing user details.
+     * @returns {Promise<Object>} The user object from the local system.
+     */
+    async syncUser(payload) {
+        return await this.#userService.createAuthProviderUser({
+            email: payload.email,
+            providerId: payload.sub,
+            firstname: payload.given_name,
+            lastname: payload.family_name,
+            avatarUrl: payload.picture
+        }, authProvider.GOOGLE);
+    }
+
+    /**
+     * Generates the Google OAuth 2.0 authorization URL.
+     * @returns {string} The URL used to initiate the Google OAuth 2.0 flow.
      */
     getAuthorizationUrl() {
         return this.#oauthClient.generateAuthUrl({

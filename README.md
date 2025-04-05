@@ -358,83 +358,47 @@ notes_app/
 - Implement **service workers** and **IndexedDB** for **offline access**. This will allow users to access their notes
   even without an internet connection. The app could sync changes to the backend once the internet is available.
 
-### 3. **Profile Image Upload**
-
-- Allow users to upload and update their **profile image**. This will make user profiles more personalized and visually
-  appealing.
-
-### 4. **N-gram Search Optimization**
-
-- Implement an **n-gram-based search** to optimize full-text searches for faster and more accurate results, especially
-  for large datasets.
-
-### 5. **Pagination**
-
-- Implement **cursor-based pagination** for better performance when displaying large sets of data (such as long note
-  lists or user activity logs).
-
-### 6. **Email and Password Change**
+### 3. **Email and Password Change**
 
 - Allow users to **update their email** and **password** securely. Adding `multi-factor` authentication (MFA) can also
   improve security during these changes.
 
-### 7. **Delete Account**
+### 4. **Delete Account**
 
 - Provide users with the option to **delete their account**. Ensure that the data is wiped securely from both the
   backend and frontend storage.
 
-### 8. **Compression for Large Markdown Content (Frontend & Backend)**
+### 5. **Compression for Large Markdown Content (Frontend & Backend)**
 
 - Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
   backend) to reduce the amount of data transmitted over the network.
 
-### 9. **Archive and Collection Notes**
+### 6. **Archive and Collection Notes**
 
 - Enable users to **archive or group their notes** into different **collections**. This will help with better
   organization and easier access to notes.
 
-### 10. **User Settings Section**
+### 7. **User Settings Section**
 
 - Create a **user settings page** where users can:
     - Update their email and password.
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
 
-### 11. **Real-time Collaboration**
-
-- Implement **real-time collaboration** for note editing, similar to Google Docs. This would allow multiple users to
-  edit a note simultaneously with changes synced in real-time.
-
-### 12. **Version History / Note History**
+### 8. **Version History / Note History**
 
 - Implement a **note history/version control** feature to track changes over time. Users can view past versions of a
   note and restore them if needed. This feature can be especially useful for collaborative environments.
 
-### 13. **Data Encryption (Security)**
+### 9. **Data Encryption (Security)**
 
 - Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
   This will help improve the app's security and protect user privacy.
 
-### 14. **Notification System**
+### 10. **Notification System**
 
 - Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
   their notes or account.
-
-### 15. **Analytics & Reporting**
-
-- Integrate **analytics** to track user interactions and gather insights on how users are engaging with the app. You can
-  use this data to improve the user experience and prioritize new features.
-
-### 16. **Push Notification**
-
-- Integrated push notification service to notify users of key actions:
-    - Login activity.
-    - Password changes.
-    - Email updates.
-    - Other critical notifications.
-- Added frontend support for handling and displaying push notifications.
-- Updated backend to send notification payloads using a secure and efficient push notification protocol.
-- Enhanced user settings to allow toggling notification preferences.
 
 ---
 

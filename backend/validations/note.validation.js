@@ -5,7 +5,6 @@ const AppError = require('../errors/app.error');
 
 class NoteValidationService {
     constructor() {
-        // I will sanitize the strings in title and tags and content later
         this.titleSchema = Joi.string()
             .required()
             .max(100)

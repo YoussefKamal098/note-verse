@@ -14,11 +14,7 @@ class NoteQueryValidationService {
                 isPinned: Joi.number().valid(-1, 1).default(-1),
                 tags: Joi.number().valid(-1, 1).default(1),
             }).default({
-                createdAt: -1,
-                updatedAt: -1,
-                title: 1,
-                isPinned: -1,
-                tags: 1
+                isPinned: -1, updatedAt: -1, createdAt: -1
             }),
             searchText: Joi.string().optional().allow('').trim().empty(''),
         });

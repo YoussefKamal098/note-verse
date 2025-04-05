@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {Link} from "react-router-dom";
+import {FaLink} from "react-icons/fa";
 import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
@@ -71,7 +72,7 @@ const NoteCard = React.memo(({
             <CardContainerStyled loading={loading ? "true" : undefined} index={index}>
                 <div className="left">
                     <Link style={{textDecoration: "none"}} to={RoutesPaths.NOTE(note.id)}>
-                        <TitleStyled>{note.title}</TitleStyled>
+                        <TitleStyled> {note.title} <FaLink className={"icon"}/> </TitleStyled>
                     </Link>
                     <CreatedAt>{formatDate(note.createdAt)}</CreatedAt>
                 </div>

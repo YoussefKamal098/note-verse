@@ -4,9 +4,6 @@ const AppError = require('../errors/app.error');
 const NoteValidationService = require("../validations/note.validation");
 const noteRepository = require("../repositories/note.repository");
 const userService = require('../services/user.service');
-const {convertToObjectId} = require('../utils/obj.utils');
-
-const DEFAULT_NOTE_PAGINATION_OPTIONS = {page: 0, perPage: 10, sort: {isPinned: -1, createdAt: -1}};
 
 /**
  * Service for managing user notes.
@@ -241,39 +238,27 @@ class NoteService {
      *
      * @param {string} userId - The ID of the user.
      * @param {Object} [params={}] - Parameters for fetching notes.
-     * @param {string} [params.searchText=""] - Text to search for within notes.
-     * @param {Object} [params.query={}] - Additional query filters.
-     * @param {Object} [params.options=DEFAULT_NOTE_PAGINATION_OPTIONS] - Pagination and sorting options.
+     * @param {string} [params.searchText] - Text to search for within notes.
+     * @param {number} [options.page=1] - The page number to retrieve (1-based).
+     * @param {number} [options.perPage=10] - Number of results per page.
+     * @param {Object} [options.sort={isPinned: 1, createdAt: -1, updatedAt: -1}] - Sort criteria.
      * @returns {Promise<Readonly<Object>>} An array of note objects.
      * @throws {AppError} If note retrieval fails.
      */
     async findUserNotes(userId, {
-        searchText = "",
-        query = {},
-        options = DEFAULT_NOTE_PAGINATION_OPTIONS
+        searchText,
+        options = {}
     } = {}) {
         await this.#userService.ensureUserExists(userId);
 
         try {
             const {
-                page = DEFAULT_NOTE_PAGINATION_OPTIONS.page,
-                perPage = DEFAULT_NOTE_PAGINATION_OPTIONS.perPage,
-                sort = DEFAULT_NOTE_PAGINATION_OPTIONS.sort
+                page,
+                perPage,
+                sort
             } = options;
 
-            if (searchText) {
-                return await this.#noteRepository.findWithSearchText(searchText, {
-                    ...query,
-                    userId: convertToObjectId(userId)
-                }, {page, perPage, sort});
-
-            } else {
-                return await this.#noteRepository.find({
-                    ...query,
-                    userId: convertToObjectId(userId)
-                }, {page, perPage, sort});
-            }
-
+            return await this.#noteRepository.find({searchText, query: {userId}, options: {page, perPage, sort}});
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTES_FETCH_FAILED,

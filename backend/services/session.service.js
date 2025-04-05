@@ -136,14 +136,15 @@ class SessionService {
         }
         const {info} = parsedUA;
         try {
-            return this.#sessionRepository.findActiveSessionByKeys({
+            const session = this.#sessionRepository.findSessionByKeys({
                 userId,
                 ip: parsedIp,
                 browserName: info.browser.name,
                 osName: info.os.name,
-                deviceType: info.device.type,
-                currentTime: new Date(),
+                deviceType: info.device.type
             });
+
+            return session && session.expiredAt >= Date.now() ? session : null;
         } catch (error) {
             throw new AppError(
                 httpCodes.INTERNAL_SERVER_ERROR.message,

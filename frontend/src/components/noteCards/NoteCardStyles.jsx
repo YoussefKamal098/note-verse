@@ -17,6 +17,7 @@ const NoteCardsContainerStyled = styled.div`
 const CardContainerStyled = styled.div`
     position: relative;
     display: flex;
+    align-items: flex-start;
     justify-content: space-between;
     background-color: ${({index}) => index % 2 === 0 ? "var(--color-background)" : "var(--color-background-primary)"};
     padding: 1em 1em 0.5em 1em;
@@ -67,6 +68,9 @@ const CardContainerStyled = styled.div`
 `;
 
 const TitleStyled = styled.h2`
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
     font-size: 0.95em;
     font-weight: 600;
     overflow: hidden;
@@ -77,8 +81,20 @@ const TitleStyled = styled.h2`
     transition: 0.3s ease;
     cursor: pointer;
 
+    .icon {
+        font-size: 1.2em;
+        scale: 0;
+        opacity: 0;
+        transition: 0.3s;
+    }
+
     &:hover {
         color: var(--color-accent);
+    }
+
+    &:hover .icon {
+        scale: 1;
+        opacity: 1;
     }
 `;
 

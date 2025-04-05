@@ -68,6 +68,8 @@ const NoteMenuContainerStyled = styled(MenuContainerStyled)`
 `;
 
 const NoteMenuTriggerButton = styled.button`
+    aspect-ratio: 1/1;
+    border-radius: 50%;
     background: transparent;
     color: var(--color-placeholder);
     border: none;
@@ -76,6 +78,17 @@ const NoteMenuTriggerButton = styled.button`
     display: flex;
     align-items: center;
     font-size: 1.5em;
+    transition: 300ms ease;
+
+    &:hover {
+        background-color: var(--color-background-secondary);
+        rotate: 180deg;
+    }
+    
+    ${(props) => (props.menu_open ? `
+        background-color: var(--color-background-secondary);
+        rotate: 180deg;
+    ` : ``)};
 `;
 
 export {

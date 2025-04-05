@@ -1,7 +1,9 @@
-import Avatar from "../common/Avatar";
 import React from "react";
 import styled from "styled-components";
 import {differenceInDays, format, formatDistanceToNow, isSameYear} from "date-fns";
+import Skeleton, {SkeletonTheme} from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
+import Avatar from "../common/Avatar";
 
 const ContainerStyled = styled.div`
     display: flex;
@@ -12,6 +14,9 @@ const ContainerStyled = styled.div`
 `;
 
 const AvatarWrapperStyled = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 40px;
     height: 40px;
     font-size: 1em;
@@ -70,19 +75,28 @@ const formatSocialDate = (date) => {
     }
 };
 
-const NoteHeader = ({fullName, createdAt, avatarUrl}) => {
+const NoteHeader = ({fullName, createdAt, avatarUrl, loading = false}) => {
     return (
-        <ContainerStyled>
-            <AvatarWrapperStyled>
-                <Avatar avatarUrl={avatarUrl}/>
-            </AvatarWrapperStyled>
-            <UserInfoStyled>
-                <FullNameStyled>{fullName}</FullNameStyled>
-                <DateStyled>
-                    {formatSocialDate(createdAt)}
-                </DateStyled>
-            </UserInfoStyled>
-        </ContainerStyled>
+        <SkeletonTheme baseColor="var(--color-background-skeletonbase)"
+                       highlightColor="var(--color-background-skeletonhighlight)">
+            <ContainerStyled>
+                <AvatarWrapperStyled>
+                    {loading ? (
+                        <Skeleton circle width={45} height={45}/>
+                    ) : (
+                        <Avatar avatarUrl={avatarUrl}/>
+                    )}
+                </AvatarWrapperStyled>
+                <UserInfoStyled>
+                    <FullNameStyled>
+                        {loading ? <Skeleton width={150}/> : fullName}
+                    </FullNameStyled>
+                    <DateStyled>
+                        {loading ? <Skeleton width={100}/> : formatSocialDate(createdAt)}
+                    </DateStyled>
+                </UserInfoStyled>
+            </ContainerStyled>
+        </SkeletonTheme>
     );
 };
 

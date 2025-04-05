@@ -114,38 +114,6 @@ class SessionRepository {
     }
 
     /**
-     * Finds an active session document using domain-specific keys and a current timestamp.
-     * A session is considered active if its expiration time (expiredAt) is later than the current time.
-     *
-     * @param {Object} keys - An object containing:
-     * @param {string} keys.userId - The identifier of the user associated with the session.
-     * @param {string} keys.ip - The normalized IP address for the session.
-     * @param {string} keys.browserName - The browser name for the session.
-     * @param {string} keys.osName - The operating system for the session.
-     * @param {string} keys.deviceType - The type of device (e.g., "Desktop", "Mobile") used in the session.
-     * @param {Date} keys.currentTime - The current timestamp to check session validity.
-     * @returns {Promise<Object|null>} The active session document if found; otherwise, null.
-     * @throws {Error} If an error occurs during the query.
-     */
-    async findActiveSessionByKeys({userId, ip, browserName, osName, deviceType, currentTime}) {
-        const query = {
-            userId,
-            ip,
-            browserName,
-            osName,
-            deviceType,
-            expiredAt: {$gt: currentTime},
-        };
-        try {
-            const sessionDoc = await this.#model.findOne(query).lean();
-            return sessionDoc ? deepFreeze(sanitizeMongoObject(sessionDoc)) : null;
-        } catch (error) {
-            console.error('Error finding active session:', error);
-            throw new Error('Error finding active session');
-        }
-    }
-
-    /**
      * Updates a session document by its unique identifier.
      *
      * @param {string} sessionId - The unique identifier of the session to update.
@@ -161,8 +129,7 @@ class SessionRepository {
                     convertToObjectId(sessionId),
                     {$set: updates},
                     {new: true, runValidators: true}
-                )
-                .lean();
+                ).lean();
             return updatedSession ? deepFreeze(sanitizeMongoObject(updatedSession)) : null;
         } catch (error) {
             console.error('Error updating session:', error);

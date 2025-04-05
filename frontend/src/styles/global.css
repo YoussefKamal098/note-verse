@@ -38,6 +38,12 @@
 
     --border-radius: 0.525em;
     --border-width: 0.125em;
+
+    --color-background-skeletonbase-dark: #181a1b;
+    --color-background-skeletonhighlight-dark: #3c2c2c;
+
+    --color-background-skeletonbase-light: #ffffff;
+    --color-background-skeletonhighlight-light: #ece7e7;
 }
 
 /* Light Mode */
@@ -58,6 +64,8 @@
     --color-border-secondary: var(--color-border-secondary-light);
     --color-placeholder: var(--color-placeholder-light);
     --color-warning: var(--color-warning-light);
+    --color-background-skeletonbase: var(--color-background-skeletonbase-light);
+    --color-background-skeletonhighlight: var(--color-background-skeletonhighlight-light);
 }
 
 /* Dark Mode */
@@ -78,6 +86,8 @@
     --color-border-secondary: var(--color-border-secondary-dark);
     --color-placeholder: var(--color-placeholder-dark);
     --color-warning: var(--color-warning-dark);
+    --color-background-skeletonbase: var(--color-background-skeletonbase-dark);
+    --color-background-skeletonhighlight: var(--color-background-skeletonhighlight-dark);
 }
 
 /* Reset */

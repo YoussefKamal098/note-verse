@@ -1,6 +1,5 @@
-const PaginatorService = require("../services/paginator.service");
+const NotePaginatorService = require("../services/notePaginatorService");
 const Note = require("../models/note.model");
-const {sanitizeString} = require('shared-utils/string.utils');
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
 
@@ -22,7 +21,7 @@ class NoteRepository {
     #model;
     /**
      * @private
-     * @type {PaginatorService}
+     * @type {NotePaginatorService}
      * @description Service instance for handling pagination of note results.
      */
     #paginator;
@@ -34,7 +33,7 @@ class NoteRepository {
      */
     constructor(model) {
         this.#model = model;
-        this.#paginator = new PaginatorService(model, {});
+        this.#paginator = new NotePaginatorService(model);
     }
 
     /**
@@ -154,66 +153,67 @@ class NoteRepository {
     }
 
     /**
-     * Retrieves notes with pagination and sorting.
+     * Retrieves notes using MongoDB Atlas Search with optional full-text matching, filters, and pagination.
      *
-     * @param {Object} [query={}] - The MongoDB query to filter notes.
+     * Constructs a `$search` query with compound filtering using Atlas Search's `compound.must` operator.
+     * Supports full-text matching on "title" and "tags", along with equality filters like `userId`.
+     *
+     * @param {string} [searchText] - Text to match in the note fields (title, tags).
+     * @param {Object} [query={}] - Object containing equality filters (e.g., { userId }).
      * @param {Object} [options={}] - Pagination and sorting options.
-     * @param {number} [options.page=1] - The current page number (1-indexed).
-     * @param {number} [options.perPage=10] - The number of notes per page.
-     * @param {Object} [options.sort={ createdAt: -1 }] - Sorting criteria.
-     * @returns {Promise<Readonly<Object>>} An object containing paginated note data and metadata.
+     * @param {number} [options.page=1] - The page number to retrieve (1-based).
+     * @param {number} [options.perPage=10] - Number of results per page.
+     * @param {Object} [options.sort={isPinned: -1, updatedAt: -1, createdAt: -1}]
+     *         - Sort criteria.
+     * @returns {Promise<Readonly<Object>>} An object containing paginated search results.
      * @throws {Error} If an error occurs while fetching notes.
      */
-    async find(query = {}, options = {}) {
-        const {page = 1, perPage = 10, sort = {createdAt: -1}} = options;
+    async find({searchText, query = {}, options = {}} = {}) {
+        const mustConditions = [];
 
-        this.#paginator.page = page;
-        this.#paginator.perPage = perPage;
-        this.#paginator.sort = sort;
-
-        try {
-            const result = await this.#paginator.getPagination(query);
-            result.data = result.data.map(this.#sanitizeNoteMongoObject);
-            return deepFreeze(result);
-        } catch (error) {
-            console.error("Error fetching notes:", error);
-            throw new Error("Error fetching notes");
+        if (searchText && searchText.trim()) {
+            mustConditions.push({
+                text: {
+                    query: searchText,
+                    path: ['title', 'tags']
+                }
+            });
         }
+
+        if (query.userId) {
+            mustConditions.push({
+                equals: {
+                    path: "userId",
+                    value: convertToObjectId(query.userId)
+                }
+            });
+        }
+
+        return this.#fetchNotes(mustConditions, options);
     }
 
     /**
-     * Retrieves notes matching a search text with additional query filters and pagination.
+     * Private helper method to execute the Atlas Search query with pagination.
+     * It also ensures the sort object follows the compound index order:
+     * { userId, isPinned, createdAt, updatedAt, title, tags }.
+     * If a key in the order is undefined, the process stops, preserving index order.
      *
-     * The search is performed on the title and tags fields using a case-insensitive regular expression.
-     *
-     * @param {string} [searchText=""] - The text to search for.
-     * @param {Object} [query={}] - Additional MongoDB query filters.
-     * @param {Object} [options={}] - Pagination and sorting options.
-     * @param {number} [options.page=1] - The current page number (1-indexed).
-     * @param {number} [options.perPage=10] - The number of notes per page.
-     * @param {Object} [options.sort={ createdAt: -1 }] - Sorting criteria.
-     * @returns {Promise<Readonly<Object>>} An object containing the paginated search results and metadata.
+     * @private
+     * @param {Array<Object>} mustConditions - Conditions for the `$search.compound.must` clause.
+     * @param {Object} options - Pagination and sorting options.
+     * @returns {Promise<Readonly<Object>>} An object containing the paginated results.
      * @throws {Error} If an error occurs while fetching notes.
      */
-    async findWithSearchText(searchText = "", query = {}, options = {}) {
-        const {page = 1, perPage = 10, sort = {createdAt: -1}} = options;
-
-        let baseQuery = {...query};
-
-        if (searchText.trim()) {
-            // Escape the substring to prevent regex injection
-            const sanitizedSearchText = sanitizeString(searchText);
-
-            // Using MongoDB Full-Text Search for efficient lookup
-            baseQuery.$text = {$search: sanitizedSearchText};
-        }
-
-        this.#paginator.page = page;
-        this.#paginator.perPage = perPage;
-        this.#paginator.sort = sort;
+    async #fetchNotes(mustConditions, options) {
+        // Set default pagination and sort options
+        const {
+            page = 1,
+            perPage = 10,
+            sort = {isPinned: -1, updatedAt: -1, createdAt: -1}
+        } = options;
 
         try {
-            const result = await this.#paginator.getPagination(baseQuery);
+            const result = await this.#paginator.getPagination(mustConditions, {page, perPage, sort});
             result.data = result.data.map(this.#sanitizeNoteMongoObject);
             return deepFreeze(result);
         } catch (error) {
