@@ -3,7 +3,7 @@ import styled from "styled-components";
 import {FadeInAnimation} from "../animations/ContainerAnimation";
 import {FcSearch} from "react-icons/fc";
 
-const NoNotesStyled = styled.div`
+const ContainerStyled = styled.div`
     display: flex;
     font-size: 1.5em;
     font-weight: bold;
@@ -15,15 +15,15 @@ const NoNotesStyled = styled.div`
     align-items: center;
 `;
 
-const NoNotes = ({children}) => {
+const EmptyNotesList = ({children}) => {
     return (
         <FadeInAnimation keyProp="no-notes">
-            <NoNotesStyled>
-                <FcSearch size={150}/>
+            < ContainerStyled>
+                <FcSearch size={150}/> No notes available!
                 {children}
-            </NoNotesStyled>
+            </ ContainerStyled>
         </FadeInAnimation>
     );
 };
 
-export default NoNotes;
+export default EmptyNotesList;

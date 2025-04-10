@@ -6,7 +6,7 @@ import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
-import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NoteCardStyles";
+import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NotesListStyles";
 import RoutesPaths from "../../constants/RoutesPaths";
 import noteService from "../../api/noteService";
 import {formatDate} from "shared-utils/date.utils";

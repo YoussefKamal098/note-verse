@@ -5,10 +5,9 @@ import {POPUP_TYPE} from "../components/confirmationPopup/ConfirmationPopup";
 import cacheService from "../services/cacheService";
 import authService, {AUTH_EVENTS} from '../api/authService';
 import userService from '../api/userService';
-import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 import {useToastNotification} from "./ToastNotificationsContext";
-
-const AUTH_USER_STORED_KEY = "auth_user";
+import usePersistedState, {clearAllPersistedData} from "../hooks/usePersistedState";
+import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const AuthContext = createContext({user: null});
 const useAuth = () => useContext(AuthContext);
@@ -17,10 +16,11 @@ const AuthProvider = ({children}) => {
     const {showConfirmation} = useConfirmation();
     const {createAbortController} = useRequestManager();
     const {notify} = useToastNotification();
-    const [user, setUser] = useState(JSON.parse(localStorage.getItem(AUTH_USER_STORED_KEY || null)));
+    const [authUser, setAuthUser] = usePersistedState("auth_user", null);
+    const [user, setUser] = useState(authUser);
 
     const loadUser = async () => {
-        if (!user || !user.id) {
+        if (!authUser || !authUser.id) {
             return;
         }
 
@@ -52,15 +52,15 @@ const AuthProvider = ({children}) => {
     const handleLogin = (data) => {
         const {user} = data;
         const {id} = user;
-        const authUser = {id};
 
         setUser(user);
-        localStorage.setItem(AUTH_USER_STORED_KEY, JSON.stringify(authUser));
+        setAuthUser({id});
     };
 
     const handleLogout = async () => {
+        setAuthUser(null);
         setUser(null);
-        localStorage.clear();
+        clearAllPersistedData();
         await cacheService.flushDB();
     };
 

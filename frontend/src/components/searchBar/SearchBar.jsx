@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {FaSearch} from "react-icons/fa";
 import {IoClose} from "react-icons/io5";
 import {debounce} from "lodash";
+import usePersistedState from "../../hooks/usePersistedState";
 import {WidthTransitionContainer} from "../animations/ContainerAnimation";
 
 import {
@@ -12,16 +13,12 @@ import {
     SearchBarWrapperStyled,
 } from "./SearchBarStyles";
 
-const SEARCH_BAR_SEARCH_TEXT_STORED_KEY = "searchBarSearchText";
-
 const SearchBar = ({onSearch = (value) => value}) => {
-    const storedSearchText = localStorage.getItem(SEARCH_BAR_SEARCH_TEXT_STORED_KEY) || "";
-    const [searchText, setSearchText] = useState(storedSearchText);
+    const [searchText, setSearchText] = usePersistedState("search_text", "");
     const [value, setValue] = useState(searchText);
 
     useEffect(() => {
         setSearchText(value.trim());
-        localStorage.setItem(SEARCH_BAR_SEARCH_TEXT_STORED_KEY, value);
     }, [value]);
 
     const debouncedSearch = useMemo(

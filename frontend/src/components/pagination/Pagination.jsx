@@ -4,6 +4,8 @@ import {IoIosArrowBack, IoIosArrowForward} from "react-icons/io";
 import {IoEllipsisHorizontalSharp} from "react-icons/io5";
 
 const Pagination = ({totalPages, currentPage, onPageChange, isDisabled}) => {
+    if (totalPages <= 0) return <></>
+
     return (
         <ReactPaginate
             pageCount={totalPages}

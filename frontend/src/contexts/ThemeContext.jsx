@@ -1,4 +1,5 @@
-import React, {createContext, useContext, useEffect, useState} from "react";
+import React, {createContext, useContext} from "react";
+import usePersistedState from "../hooks/usePersistedState";
 
 const ThemeContext = createContext({
     theme: "dark",
@@ -8,11 +9,7 @@ const ThemeContext = createContext({
 const useTheme = () => useContext(ThemeContext);
 
 const ThemeProvider = ({children}) => {
-    const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-
-    useEffect(() => {
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+    const [theme, setTheme] = usePersistedState("theme", "dark");
 
     return (
         <ThemeContext.Provider value={{theme, setTheme}}>

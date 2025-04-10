@@ -1,11 +1,16 @@
 import React from "react";
 import {AnimatedListTranslateChildrenFade} from "../animations/ContainerAnimation";
-import {NoteCardsContainerStyled} from "./NoteCardStyles";
+import {NotesListContainerStyled} from "./NotesListStyles";
+import EmptyList from "./EmptyNotesList";
 import NoteCard from "./NoteCard";
 
-const NoteCards = React.memo(({notes, onDelete, onTogglePin, fetchReplacedNote, loading = false}) => {
+const NotesList = React.memo(({notes, onDelete, onTogglePin, fetchReplacedNote, loading = false}) => {
+    if (notes.length === 0 && !loading) {
+        return <EmptyList/>
+    }
+
     return (
-        <NoteCardsContainerStyled loading={loading ? "true" : undefined}>
+        <NotesListContainerStyled loading={loading ? "true" : undefined}>
             <AnimatedListTranslateChildrenFade>
                 {notes.map((note, index) => (
                     <NoteCard
@@ -18,8 +23,8 @@ const NoteCards = React.memo(({notes, onDelete, onTogglePin, fetchReplacedNote, 
                     />
                 ))}
             </AnimatedListTranslateChildrenFade>
-        </NoteCardsContainerStyled>
+        </NotesListContainerStyled>
     );
 });
 
-export default NoteCards;
+export default NotesList;

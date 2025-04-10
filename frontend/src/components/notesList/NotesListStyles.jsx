@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const NoteCardsContainerStyled = styled.div`
+const NotesListContainerStyled = styled.div`
     display: flex;
     font-size: 0.9em;
     flex-direction: column;
@@ -132,7 +132,7 @@ const CreatedAt = styled.span`
 `;
 
 export {
-    NoteCardsContainerStyled,
+    NotesListContainerStyled,
     CardContainerStyled,
     TitleStyled,
     TagsContainerStyled,

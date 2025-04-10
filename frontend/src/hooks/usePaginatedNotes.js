@@ -1,16 +1,17 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import RoutesPaths from "../constants/RoutesPaths";
+import usePersistedState from "./usePersistedState";
 import useRequestManager from "./useRequestManager";
 import {useNavigate} from "react-router-dom";
 import noteService from "../api/noteService";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient"
 
-const usePaginatedNotes = (userId, initPage, searchText, notesPerPage) => {
+const usePaginatedNotes = (userId, searchText, notesPerPage,) => {
     const navigate = useNavigate();
     const {createAbortController} = useRequestManager();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(initPage);
+    const [currentPage, setCurrentPage] = usePersistedState("notes_current_page", 0);
     const [totalPages, setTotalPages] = useState(0);
     const totalNotes = useRef(0);
 
