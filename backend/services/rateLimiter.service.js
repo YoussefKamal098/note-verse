@@ -7,37 +7,45 @@ const httpHeaders = require('../constants/httpHeaders');
 const AppError = require('../errors/app.error');
 
 /**
- * RateLimiterService class for handling rate limiting and blocking of requests.
- * Uses sliding window algorithm with configurable window size and request thresholds.
+ * @typedef {Object} RateLimiterOptions
+ * @property {number} [windowSize] Time window in seconds for rate limiting
+ * @property {number} [maxRequests] Maximum allowed requests per window
+ * @property {number} [blockTime] Time in seconds to block after exceeding limits
+ * @property {function} [generateLimitKey] Custom rate limit key generator
+ * @property {function} [generateBlockKey] Custom block key generator
+ * @property {Object} [message] Custom error message configuration
+ */
+
+/**
+ * Unified rate limiting and blocking service using sliding window algorithm.
+ * @class
  */
 class RateLimiterService {
     #cacheService;
-    #blockerService;
     #windowSize;
     #maxRequests;
+    #blockTime;
     #generateLimitKey;
     #generateBlockKey;
     #message;
 
     /**
-     * Creates an instance of RateLimiterService.
-     *
-     * @param {CacheService} cacheService - Cache service instance with increment/expire methods
-     * @param {BlockerService} blockerService - Blocker service with block checking/creation
+     * Create RateLimiterService instance
+     * @param {CacheService} cacheService - Cache service with get/set/incr/expire
      * @param {RateLimiterOptions} [options={}] - Configuration options
      */
-    constructor(cacheService, blockerService, {
+    constructor(cacheService, {
         windowSize = time({[timeUnit.SECOND]: 60}, timeUnit.SECOND),
         maxRequests = 60,
+        blockTime = time({[timeUnit.MINUTE]: 15}, timeUnit.SECOND),
         generateLimitKey,
         generateBlockKey,
         message = {}
     } = {}) {
         this.#cacheService = cacheService;
-        this.#blockerService = blockerService;
         this.#windowSize = windowSize;
         this.#maxRequests = maxRequests;
-
+        this.#blockTime = blockTime;
         this.#generateLimitKey = generateLimitKey || this.#defaultGenerateLimitKey;
         this.#generateBlockKey = generateBlockKey || this.#defaultGenerateBlockKey;
         this.#message = {
@@ -48,57 +56,89 @@ class RateLimiterService {
     }
 
     /**
-     * Generates a default rate limit key combining IP, user agent, user ID, and normalized URL
-     *
-     * @param {RateLimiterRequestObject} req - Incoming request object
-     * @returns {string} - Key format: rate-limited:<ip>:<user-agent>:<user-id>:<normalized-url>
-     * @example
-     * // Returns `rate-limited:127.0.0.1:Chrome 119:user123:/api/v1/data`
+     * Default rate limit key generator (IP + UA + normalized path)
+     * @private
+     * @param {Request} req - Express request object
+     * @returns {string} Rate limit cache key
      */
     #defaultGenerateLimitKey(req) {
-        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, originalUrl, userId = 'anonymous'} = req;
+        const {ip, headers, originalUrl} = req;
         const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
-        const normalizedUrl = normalizeUrl(originalUrl, baseUrl);
-        const parsedIp = parseIp(ip);
-        return `rate-limited:${parsedIp.ip ? parsedIp.ip : "Unknown IP"}:${parseUserAgent(userAgent).readable}:${userId}:${normalizedUrl}`;
+        const path = originalUrl.split('?')[0];
+        return this.#generateKeyComponents(ip, headers[httpHeaders.USER_AGENT], path, baseUrl, 'rate-limited');
     }
 
     /**
-     * Generates a default block key combining IP, user agent, and user ID
-     *
-     * @param {RateLimiterRequestObject} req - Incoming request object
-     * @returns {string} - Key format: blocked:<ip>:<user-agent>:<user-id>
-     * @example
-     * // Returns `blocked:127.0.0.1:Chrome 119:user123`
+     * Default block key generator (IP + UA + normalized path)
+     * @private
+     * @param {Request} req - Express request object
+     * @returns {string} Block cache key
      */
     #defaultGenerateBlockKey(req) {
-        const {ip, headers: {[httpHeaders.USER_AGENT]: userAgent}, userId = 'anonymous'} = req;
-        const parsedIp = parseIp(ip);
-        return `blocked:${parsedIp.ip ? parsedIp.ip : "Unknown IP"}:${parseUserAgent(userAgent).readable}:${userId}`;
+        const {ip, headers, originalUrl} = req;
+        const baseUrl = `${req.protocol}://${req.get(httpHeaders.HOST)}`;
+        const path = originalUrl.split('?')[0];
+        return this.#generateKeyComponents(ip, headers[httpHeaders.USER_AGENT], path, baseUrl, 'blocked');
     }
 
     /**
-     * Checks if request exceeds rate limits or is blocked
-     *
-     * @param {RateLimiterRequestObject} req - Incoming request to validate
-     * @returns {Promise<boolean>} - true if request should be blocked, false otherwise
-     * @throws {Error} - If cache operations fail
+     * Generate standardized key components
+     * @private
+     * @param {string} ip - Client IP address
+     * @param {string} userAgent - User-Agent header
+     * @param {string} path - URL path without query
+     * @param {string} baseUrl - Base URL for normalization
+     * @param {string} prefix - Key prefix
+     * @returns {string} Complete cache key
+     */
+    #generateKeyComponents(ip, userAgent, path, baseUrl, prefix) {
+        const normalizedUrl = normalizeUrl(path, baseUrl);
+        const parsedIp = parseIp(ip).ip || 'Unknown-IP';
+        const parsedUA = parseUserAgent(userAgent).readable || 'Unknown-UA';
+
+        return `${prefix}:${parsedIp}:${parsedUA}:${normalizedUrl}`;
+    }
+
+    /**
+     * Check if request should be blocked
+     * @private
+     * @param {string} blockKey - Generated block key
+     * @returns {Promise<boolean>} True if blocked
+     */
+    async #isBlocked(blockKey) {
+        return !!(await this.#cacheService.get(blockKey));
+    }
+
+    /**
+     * Block requests for configured duration
+     * @private
+     * @param {string} blockKey - Generated block key
+     */
+    async #blockUser(blockKey) {
+        await this.#cacheService.set(blockKey, 1, this.#blockTime);
+    }
+
+    /**
+     * Main rate limiting logic
+     * @async
+     * @param {Request} req - Express request object
+     * @returns {Promise<boolean>} True if request should be limited
      */
     async isRateLimited(req) {
         const limitKey = this.#generateLimitKey(req);
         const blockKey = this.#generateBlockKey(req);
 
-        if (await this.#blockerService.isBlocked(blockKey)) {
+        if (await this.#isBlocked(blockKey)) {
             return true;
         }
 
-        const requestCount = await this.#cacheService.increment(limitKey);
-        if (requestCount === 1) {
+        const count = await this.#cacheService.increment(limitKey);
+        if (count === 1) {
             await this.#cacheService.expire(limitKey, this.#windowSize);
         }
 
-        if (requestCount > this.#maxRequests) {
-            await this.#blockerService.blockUser(blockKey);
+        if (count > this.#maxRequests) {
+            await this.#blockUser(blockKey);
             return true;
         }
 
@@ -106,11 +146,10 @@ class RateLimiterService {
     }
 
     /**
-     * Enforces rate limiting by throwing an error when the request exceeds allowed limits.
-     *
-     * @param {RateLimiterRequestObject} req - Incoming request to validate.
-     * @throws {AppError} An error with the configured message when the request is rate limited.
-     * @returns {Promise<void>}
+     * Enforce rate limits or throw formatted error
+     * @async
+     * @param {Request} req - Express request object
+     * @throws {AppError} Rate limit exceeded error
      */
     async limitOrThrow(req) {
         if (await this.isRateLimited(req)) {

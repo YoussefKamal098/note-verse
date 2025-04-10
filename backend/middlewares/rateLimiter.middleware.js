@@ -1,4 +1,3 @@
-const BlockerService = require("../services/blocker.service");
 const RateLimiterService = require("../services/rateLimiter.service");
 const cacheService = require("../services/cache.service");
 
@@ -17,7 +16,6 @@ const createRateLimiterMiddleware = (options = {}) => {
     return rateLimiterMiddleware(
         new RateLimiterService(
             cacheService,
-            new BlockerService(cacheService),
             options
         )
     );
