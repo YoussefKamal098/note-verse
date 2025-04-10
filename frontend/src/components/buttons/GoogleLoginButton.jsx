@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import {FcGoogle} from "react-icons/fc";
 import {AnimatePresence, motion} from 'framer-motion';
 import AuthService from "../../api/authService";
-import {FcGoogle} from "react-icons/fc";
 import LoadingEffect from "../common/LoadingEffect";
 
 const ButtonContainer = styled.button`
@@ -13,6 +13,7 @@ const ButtonContainer = styled.button`
     justify-content: center;
     gap: 12px;
     width: 100%;
+    height: 45px;
     padding: 8px 24px;
     margin: 15px auto;
     background: var(--color-background-secondary);
@@ -116,36 +117,40 @@ const GoogleButton = (
             disabled={disabled || loading}
             aria-label="Sign in with Google"
         >
-            <IconContainer>
-                <FcGoogle/>
-            </IconContainer>
-
-            <TextContainer>
-                <AnimatePresence initial={false} mode='wait'>
-                    {!loading ? (
-                        <motion.span
-                            key="text"
-                            style={{display: 'inline-block'}}
+            <AnimatePresence initial={false}>
+                {!loading ?
+                    (<motion.div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "10px"
+                            }}
+                            key="google_login_text"
                             variants={textVariants}
                             initial="initial"
                             animate="animate"
                             exit="exit"
                         >
-                            {children || "Continue with Google"}
-                        </motion.span>
-                    ) : (
-                        <motion.div
-                            key="loader"
-                            variants={loaderVariants}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
-                        >
-                            <LoadingEffect color="var(--color-accent)" loading={loading} size={25}/>
+                            <IconContainer>
+                                <FcGoogle/>
+                            </IconContainer>
+
+                            <TextContainer>
+                                {children || "Continue with Google"}
+                            </TextContainer>
                         </motion.div>
-                    )}
-                </AnimatePresence>
-            </TextContainer>
+                    ) :
+                    (<motion.div
+                        key="google_login_loader"
+                        variants={loaderVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                    >
+                        <LoadingEffect color="var(--color-accent)" loading={loading} size={25}/>
+                    </motion.div>)}
+            </AnimatePresence>
         </ButtonContainer>
     );
 };

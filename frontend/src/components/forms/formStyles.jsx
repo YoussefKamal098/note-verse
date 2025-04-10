@@ -20,7 +20,7 @@ const ErrorMessageStyled = styled.div`
     color: var(--color-danger);
     margin: 1em auto;
     text-align: center;
-    font-weight: 500;
+    font-weight: 600;
     max-width: 100%;
 `;
 
