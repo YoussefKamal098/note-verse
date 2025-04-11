@@ -8,11 +8,11 @@ import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
 import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NotesListStyles";
 import RoutesPaths from "../../constants/RoutesPaths";
-import noteService from "../../api/noteService";
 import {formatDate} from "shared-utils/date.utils";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
+import useNoteActions from "../../hooks/useNoteActions";
 
-const NoteCard = React.memo(({
+const NoteItem = React.memo(({
                                  index = 0,
                                  note = {},
                                  togglePin = () => ({}),
@@ -24,6 +24,7 @@ const NoteCard = React.memo(({
     const [loading, setLoading] = useState(false);
     const [deleteButtonLoading, setDeleteButtonLoading] = useState(false);
     const [pinButtonLoading, setPinButtonLoading] = useState(false);
+    const {handleSave, handleDelete: handleNoteDelete} = useNoteActions(note);
     const {showConfirmation} = useConfirmation();
 
     const handleDelete = (noteId) => {
@@ -40,7 +41,7 @@ const NoteCard = React.memo(({
         try {
             setLoading(true);
             setPinButtonLoading(true);
-            await noteService.updateUserNoteById("me", noteId, {isPinned: !note.isPinned});
+            await handleSave({...note, isPinned: !note.isPinned})
             setIsPinned(!isPinned);
             togglePin(noteId);
         } catch (error) {
@@ -56,7 +57,7 @@ const NoteCard = React.memo(({
             setLoading(true);
             setDeleteButtonLoading(true);
             const replacedNote = await fetchReplacedNote();
-            await noteService.deleteUserNoteById("me", noteId);
+            await handleNoteDelete(note);
             onDelete(noteId, replacedNote);
         } catch (error) {
             notify.error(`Deleting note Error:  ${error.message}`);
@@ -83,12 +84,10 @@ const NoteCard = React.memo(({
                         ))}
                     </TagsContainerStyled>
                     <div className="controllers">
-                        <PinButton isPinned={isPinned} loading={pinButtonLoading} togglePin={() => {
-                            handleTogglePin(note.id)
-                        }}/>
-                        <DeleteButton loading={deleteButtonLoading} onClick={() => {
-                            handleDelete(note.id)
-                        }}/>
+                        <PinButton isPinned={isPinned} loading={pinButtonLoading}
+                                   togglePin={() => handleTogglePin(note.id)}
+                        />
+                        <DeleteButton loading={deleteButtonLoading} onClick={() => handleDelete(note.id)}/>
                     </div>
                 </div>
             </CardContainerStyled>
@@ -96,4 +95,4 @@ const NoteCard = React.memo(({
     );
 });
 
-export default NoteCard;
+export default NoteItem;
