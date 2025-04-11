@@ -9,7 +9,7 @@ import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
     const navigate = useNavigate();
     const [note, setNote] = useState(null);
-    const [unSavedChanges, setUnSavedChanges] = useState(null);
+    const [unsavedChanges, setUnsavedChanges] = useState(null);
     const {createAbortController} = useRequestManager();
 
     const fetchNoteData = useCallback(async () => {
@@ -46,7 +46,7 @@ const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
 
                 const unsavedChanges = await CacheService.get(noteId);
                 setNote(fetchedNote);
-                setUnSavedChanges(unsavedChanges);
+                setUnsavedChanges(unsavedChanges);
                 setLoading(false);
             } catch (error) {
                 navigate(RoutesPaths.ERROR, {
@@ -63,7 +63,7 @@ const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
         loadData();
     }, [fetchNoteData, userId, noteId, setLoading]);
 
-    return {note, setNote, unSavedChanges};
+    return {note, setNote, unsavedChanges};
 };
 
 export default useNoteData;

@@ -4,9 +4,8 @@ import {FaTimes} from 'react-icons/fa';
 import {AnimatedListHeightChildrenFade} from "../animations/ContainerAnimation";
 import TagsInput from './TagsInput';
 import EditPopUp from "../editPopUp/EditPopUp";
-import noteValidationSchema from "../../validations/noteValidtion";
-import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import {TagsContainerStyled, TagStyled} from "./TagsStyles";
+import useNoteValidation from "../../hooks/useNoteValidation";
 
 const DeleteTagButtonStyled = styled(FaTimes)`
     cursor: pointer;
@@ -20,15 +19,12 @@ const DeleteTagButtonStyled = styled(FaTimes)`
 `;
 
 const TagEditorPopup = ({tags, onSave, children}) => {
-    const {notify} = useToastNotification();
+    const {validateTags} = useNoteValidation();
     const [editTags, setEditTags] = useState([...tags]);
 
     const onPopupSave = () => {
-        try {
-            noteValidationSchema.tags.validateSync(editTags);
+        if (validateTags(editTags)) {
             onSave(editTags);
-        } catch (error) {
-            notify.warn(error.message);
         }
     };
 

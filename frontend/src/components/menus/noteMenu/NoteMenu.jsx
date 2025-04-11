@@ -15,14 +15,14 @@ import {
 } from "./NoteMenuStyled";
 
 const NoteMenu = ({
-                      onNoteDelete,
-                      onNoteSave,
-                      onNoteUnSave,
-                      onNotePin,
-                      disableSave,
-                      disableUnSave,
-                      disableDelete,
+                      onDelete,
+                      onSave,
+                      onDiscard,
+                      onTogglePin,
                       isPinned,
+                      disableSave,
+                      disableDiscard,
+                      disableDelete,
                   }) => {
     const mobileSize = 600;
     const [menuOpen, setMenuOpen] = useState(false);
@@ -53,27 +53,27 @@ const NoteMenu = ({
 
     // Option handlers.
     const handlePin = () => {
-        if (onNotePin) onNotePin();
+        if (onTogglePin) onTogglePin();
         setMenuOpen(false);
     };
 
     const handleSave = () => {
-        if (!disableSave && onNoteSave) {
-            onNoteSave();
+        if (!disableSave && onSave) {
+            onSave();
             setMenuOpen(false);
         }
     };
 
     const handleUnSave = () => {
-        if (!disableUnSave && onNoteUnSave) {
-            onNoteUnSave();
+        if (!disableDiscard && onDiscard) {
+            onDiscard();
             setMenuOpen(false);
         }
     };
 
     const handleDelete = () => {
-        if (!disableDelete && onNoteDelete) {
-            onNoteDelete();
+        if (!disableDelete && onDelete) {
+            onDelete();
             setMenuOpen(false);
         }
     };
@@ -125,7 +125,7 @@ const NoteMenu = ({
                                 </OptionWrapperStyled>
                             )}
 
-                            {!disableUnSave && (
+                            {!disableDiscard && (
                                 <OptionWrapperStyled>
                                     <OptionStyled onClick={handleUnSave} danger>
                                         <OptionIconStyled>

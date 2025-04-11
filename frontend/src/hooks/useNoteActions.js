@@ -8,9 +8,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
     const {notify} = useToastNotification();
     const navigate = useNavigate();
 
-    const createNote = async ({id, isPinned, tags, title, content}) => {
-        if (!id) return;
-
+    const createNote = async ({isPinned, tags, title, content}) => {
         try {
             const {data: newNote} = await noteService.create("me", {isPinned, tags, title, content});
             notify.success(`New note created successfully.`);
@@ -21,7 +19,7 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         }
     };
 
-    const saveNoteUpdates = async ({id, isPinned, tags, title, content}) => {
+    const saveNoteUpdates = async (id, {isPinned, tags, title, content}) => {
         if (!id) return;
 
         try {
@@ -38,14 +36,14 @@ const useNoteActions = (note = {}, setNote = (prev) => (prev), setLoading = (pre
         }
     };
 
-    const handleSave = async ({id, isPinned, tags, title, content}) => {
+    const handleSave = async (id, {isPinned, tags, title, content}) => {
         setLoading(true);
         let savedNote = null;
 
         try {
             savedNote = note.id === "new" ?
-                savedNote = await createNote({id, isPinned, tags, title, content}) :
-                savedNote = await saveNoteUpdates({id, isPinned, tags, title, content});
+                savedNote = await createNote({isPinned, tags, title, content}) :
+                savedNote = await saveNoteUpdates(id, {isPinned, tags, title, content});
 
             // Attempt to delete the note from the cache.
             // If this fails, the error is silently caught and ignored.

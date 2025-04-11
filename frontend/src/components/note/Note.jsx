@@ -1,33 +1,32 @@
-import React, {Suspense, useCallback, useEffect, useState} from 'react';
+import React, {Suspense, useCallback, useEffect} from 'react';
 import styled from 'styled-components';
-import 'react-toastify/dist/ReactToastify.css';
 import {deepEqual} from "shared-utils/obj.utils";
 import {PuffLoader} from 'react-spinners';
-import EditableTags from "../tags/EditableTags";
-import EditableTitle from "../title/EditableTitle";
-import BackHomeButton from "../buttons/BackHomeButton";
-import {useToastNotification} from "../../contexts/ToastNotificationsContext";
+import useNoteState from '../../hooks/useNoteState';
+import useNoteStateCache from '../../hooks/useNoteStateCache';
+import useNoteValidation from '../../hooks/useNoteValidation';
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {useAuth} from "../../contexts/AuthContext";
-import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
-import noteValidationSchema from "../../validations/noteValidtion";
-import cacheService from "../../services/cacheService"
+import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
 import Loader from "../common/Loader";
 import Tooltip from "../tooltip/Tooltip";
 import NoteHeader from "./NoteHeader";
+import EditableTags from "../tags/EditableTags";
+import EditableTitle from "../title/EditableTitle";
+import BackHomeButton from "../buttons/BackHomeButton";
 
 const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
 const NoteMarkdownTabs = React.lazy(() => import("../noteMarkdownTabs/NoteMarkdownTabs"));
 
-const NoteContainerStyled = styled.div`
+const ContainerStyled = styled.div`
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 1em;
     max-width: 55em;
     margin: 1em auto;
-    background-color: var(--color-background);
     padding: 1em 1.25em 2em;
+    background-color: var(--color-background);
     border-radius: var(--border-radius);
     overflow: hidden;
 `;
@@ -40,169 +39,80 @@ const HeaderContainerStyled = styled.div`
     margin-bottom: 2em;
 `
 
+const getChanges = (original, current) => ({
+    ...(original.title !== current.title && {title: current.title}),
+    ...(original.content !== current.content && {content: current.content}),
+    ...(!deepEqual(original.tags, current.tags) && {tags: current.tags}),
+    ...(original.isPinned !== current.isPinned && {isPinned: current.isPinned}),
+});
+
 const Note = ({
-                  id = "",
-                  origCreateAt = null,
-                  origTitle = '',
-                  origContent = '# Content',
-                  origIsPinned = false,
-                  origTags = ["Tag"],
-                  onSave = (noteData) => (noteData),
+                  origNote = {},
+                  onSave = (id, updates) => ({id, ...updates}),
                   onDelete = () => ({}),
-                  unSavedChanges = {}
-              } = {}) => {
-    const {notify} = useToastNotification();
+                  unsavedChanges = {}
+              }) => {
     const {user} = useAuth();
-    const [content, setContent] = useState(origContent || '');
-    const [tags, setTags] = useState(origTags || []);
-    const [title, setTitle] = useState(origTitle || '');
-    const [isPinned, setIsPinned] = useState(origIsPinned || false);
-    const [hasChanges, setHasChanges] = useState(false);
     const {showConfirmation} = useConfirmation();
 
-    useEffect(() => {
-        if (id) setUnSavedChanges();
-    }, [id, origTitle, origContent, origTags, origIsPinned]);
+    // Note state management
+    const {noteState, hasChanges, updateState} = useNoteState(origNote);
+    useNoteStateCache(origNote, noteState, hasChanges, unsavedChanges, updateState);
 
     useEffect(() => {
-        setTitle(origTitle);
-    }, [origTitle]);
+        updateState(origNote);
+    }, [origNote]);
 
-    useEffect(() => {
-        setTags(origTags);
-    }, [origTags]);
+    // Validation
+    const {validateNote} = useNoteValidation();
 
-    useEffect(() => {
-        setIsPinned(origIsPinned)
-    }, [origIsPinned]);
+    // Save handler
+    const handleSave = useCallback(() => {
+        if (!validateNote(noteState)) return;
 
-    useEffect(() => {
-        setContent(origContent);
-    }, [origContent]);
-
-    useEffect(() => {
-        setUnSavedChanges();
-    }, [unSavedChanges]);
-
-    useEffect(() => {
-        if (hasChanges && id) saveUnsavedChanges();
-    }, [hasChanges, id, title, content, tags, isPinned]);
-
-    const checkChanges = useCallback(() => {
-        return origTitle !== title ||
-            !deepEqual(origTags, tags) ||
-            origContent !== content ||
-            isPinned !== origIsPinned;
-    }, [title, content, tags, isPinned]);
-
-    useEffect(() => {
-        setHasChanges(checkChanges());
-    }, [checkChanges]);
-
-    useEffect(() => {
-        setHasChanges(checkChanges());
-    }, [title, content, tags, isPinned, checkChanges]);
-
-    const setUnSavedChanges = async () => {
-        if (unSavedChanges) {
-            setTitle(unSavedChanges.title !== undefined ? unSavedChanges.title : title);
-            setContent(unSavedChanges.content !== undefined ? unSavedChanges.content : content);
-            setTags(unSavedChanges.tags !== undefined ? unSavedChanges.tags : tags);
-            setIsPinned(unSavedChanges.isPinned !== undefined ? unSavedChanges.isPinned : isPinned);
+        if (!origNote.id || origNote.id === "new") {
+            onSave(origNote.id, noteState);
+        } else {
+            const changes = getChanges(origNote, noteState);
+            if (Object.keys(changes).length > 0) onSave(origNote.id, {...changes});
         }
-    };
+    }, [noteState, origNote, onSave]);
 
-    const saveUnsavedChanges = async () => {
-        try {
-            const changes = {
-                title: origTitle !== title ? title : undefined,
-                content: origContent !== content ? content : undefined,
-                isPinned: origIsPinned !== isPinned ? isPinned : undefined,
-                tags: origTags !== tags ? tags : undefined,
-            }
-
-            if (Object.values(changes).filter((value) => value !== undefined).length > 0) {
-                await cacheService.save(id, changes);
-            } else {
-                await cacheService.delete(id).catch(() => ({}));
-            }
-        } catch (error) {
-            notify.error(`Failed to save unsaved changes: ${error.message}.`);
-        }
-    };
-
-    const onNoteSave = useCallback(() => {
-        try {
-            noteValidationSchema.title.validateSync(title);
-            noteValidationSchema.tags.validateSync(tags);
-            noteValidationSchema.content.validateSync(content);
-        } catch (error) {
-            notify.warn(error.message);
-            return;
-        }
-
-        if (!id || id === "new") {
-            onSave({
-                id,
-                title,
-                content,
-                tags,
-                isPinned
-            });
-            return;
-        }
-
-        const changes = {};
-        if (title !== origTitle) changes.title = title;
-        if (content !== origContent) changes.content = content;
-        if (!deepEqual(origTags, tags)) changes.tags = tags;
-        if (isPinned !== origIsPinned) changes.isPinned = isPinned;
-
-        if (onSave && Object.keys(changes).length > 0) {
-            onSave({id, ...changes});
-        }
-    }, [content, tags, title, isPinned]);
-
-    const onNoteDelete = () => {
+    // Delete confirmation
+    const handleDelete = useCallback(() => {
         showConfirmation({
             type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Are you sure you want to delete this note?",
+            confirmationMessage: "Delete this note?",
             onConfirm: () => onDelete(),
         });
+    }, [onDelete]);
+
+    const onTogglePin = () => {
+        updateState({isPinned: !noteState.isPinned});
+        if (origNote.id && origNote.id !== "new") onSave(origNote.id, {isPinned: !origNote.isPinned});
     }
 
-    const onNotePin = () => {
-        setIsPinned(!isPinned);
-        if (id && id !== "new") onSave({id, isPinned: !isPinned});
+    const onTagsUpdate = (tags) => {
+        updateState({tags});
+        if (origNote.id && origNote.id !== "new" && onSave) onSave(origNote.id, {tags});
     }
 
-    const onNoteTags = (tags) => {
-        setTags(tags);
-        if (id && id !== "new" && onSave) onSave({id, tags});
+    const onTitleUpdate = (title) => {
+        updateState({title});
+        if (origNote.id && origNote.id !== "new" && onSave) onSave(origNote.id, {title});
     }
 
-    const onNoteTitle = (title) => {
-        setTitle(title);
-        if (id && id !== "new" && onSave) onSave({id, title});
-    }
-
-    const onNoteUnSave = async () => {
-        setTitle(origTitle);
-        setContent(origContent);
-        setTags(origTags);
-        setIsPinned(origIsPinned);
-    }
-
-    const onNoteDiscardChanges = () => {
+    // Discard changes
+    const handleDiscard = useCallback(() => {
         showConfirmation({
             type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Are you sure you want to discard this changes?",
-            onConfirm: () => onNoteUnSave(),
+            confirmationMessage: "Discard changes?",
+            onConfirm: () => updateState(origNote)
         });
-    }
+    }, [origNote, updateState]);
 
     return (
-        <NoteContainerStyled>
+        <ContainerStyled>
             <HeaderContainerStyled>
                 <div style={{
                     display: "flex",
@@ -212,12 +122,12 @@ const Note = ({
                     <BackHomeButton/>
                     <NoteHeader
                         fullName={`${user.firstname || ""} ${user.lastname || ""}`}
-                        createdAt={origCreateAt}
+                        createdAt={origNote.createdAt}
                         avatarUrl={user.avatarUrl}
                     />
                     {hasChanges &&
                         <Tooltip title={"Save Your Changes – Click to finalize your commit!"}>
-                            <div style={{cursor: "pointer"}} onClick={onNoteSave}>
+                            <div style={{cursor: "pointer"}} onClick={handleSave}>
                                 <PuffLoader color={"var(--color-accent)"} size={25}/>
                             </div>
                         </Tooltip>
@@ -226,25 +136,35 @@ const Note = ({
 
                 <Suspense fallback={<Loader/>}>
                     <NoteMenu
-                        onNoteDelete={onNoteDelete}
-                        onNoteSave={onNoteSave}
-                        onNoteUnSave={onNoteDiscardChanges}
-                        onNotePin={onNotePin}
-                        isPinned={isPinned}
+                        onDelete={handleDelete}
+                        onSave={handleSave}
+                        onDiscard={handleDiscard}
+                        onTogglePin={onTogglePin}
+                        isPinned={noteState.isPinned}
                         disableSave={!hasChanges}
-                        disableUnSave={!hasChanges}
-                        disableDelete={(!id || id === "new")}
+                        disableDiscard={!hasChanges}
+                        disableDelete={(!origNote.id || origNote.id === "new")}
                     />
                 </Suspense>
             </HeaderContainerStyled>
 
-            <EditableTitle title={title} onSave={onNoteTitle}/>
-            <EditableTags tags={tags} onSave={onNoteTags}/>
+            <EditableTitle
+                title={noteState.title}
+                onSave={onTitleUpdate}
+            />
+
+            <EditableTags
+                tags={noteState.tags}
+                onSave={onTagsUpdate}
+            />
 
             <Suspense fallback={<Loader/>}>
-                <NoteMarkdownTabs content={content} onContentChange={setContent}/>
+                <NoteMarkdownTabs
+                    content={noteState.content}
+                    onContentChange={content => updateState({content})}
+                />
             </Suspense>
-        </NoteContainerStyled>
+        </ContainerStyled>
     );
 }
 

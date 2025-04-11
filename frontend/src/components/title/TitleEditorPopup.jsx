@@ -1,19 +1,15 @@
-import {useToastNotification} from "../../contexts/ToastNotificationsContext";
 import React, {useEffect, useState} from "react";
-import noteValidationSchema from "../../validations/noteValidtion";
 import EditPopUp from "../editPopUp/EditPopUp";
+import useNoteValidation from "../../hooks/useNoteValidation";
 import TitleInput from "./TitleInput";
 
 const TitleEditorPopup = ({title, onSave, children}) => {
-    const {notify} = useToastNotification();
+    const {validateTitle} = useNoteValidation();
     const [editedTitle, setEditedTitle] = useState(title);
 
     const onPopupSave = () => {
-        try {
-            noteValidationSchema.title.validateSync(editedTitle);
+        if (validateTitle(editedTitle)) {
             onSave(editedTitle);
-        } catch (error) {
-            notify.warn(error.message);
         }
     };
 

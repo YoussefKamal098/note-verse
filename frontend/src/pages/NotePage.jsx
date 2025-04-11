@@ -13,7 +13,7 @@ const NotePage = () => {
     const [loading, setLoading] = useState(true);
 
     // Fetch note data
-    const {note, setNote, unSavedChanges} = useNoteData(user?.id, id, setLoading);
+    const {note, setNote, unsavedChanges} = useNoteData(user?.id, id, setLoading);
     // Actions
     const {handleSave, handleDelete} = useNoteActions(note, setNote, setLoading);
 
@@ -25,13 +25,8 @@ const NotePage = () => {
 
                 {note && (
                     <Note
-                        id={note.id}
-                        origCreateAt={note.createdAt}
-                        origTitle={note.title}
-                        origContent={note.content}
-                        origIsPinned={note.isPinned}
-                        origTags={note.tags}
-                        unSavedChanges={unSavedChanges}
+                        origNote={note}
+                        unsavedChanges={unsavedChanges}
                         onSave={handleSave}
                         onDelete={handleDelete}
                     />
