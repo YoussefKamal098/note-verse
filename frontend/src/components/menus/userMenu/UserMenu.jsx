@@ -88,7 +88,10 @@ const UserMenu = () => {
         }
     };
 
-    const handleRouteOptionCLick = (route) => () => navigate(route);
+    const handleRouteOptionCLick = (route) => () => {
+        navigate(route);
+        setMenuOpen(false);
+    };
 
     // Use our reusable hook to close the menu on outside clicks.
     useOutsideClick(wrapperRef, () => setMenuOpen(false));

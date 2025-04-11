@@ -115,6 +115,97 @@ const ArrowStyled = styled.div`
     }
 `;
 
+const DynamicMenuWrapperStyled = styled.div`
+    @media (max-width: ${props => props.mobile_size}px) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: ${(props) => (props.menu_open ? "100vh" : "0")};
+        opacity: ${(props) => (props.menu_open ? "1" : "0")};
+        transition: opacity 300ms;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(0.1em);
+        z-index: 1500;
+        overflow: visible;
+    }
+`
+
+const DynamicMenuHeaderStyled = styled.div`
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-background);
+    cursor: pointer;
+    z-index: 10;
+
+    &::after {
+        position: absolute;
+        content: '';
+        width: 35px;
+        height: 3px;
+        border-radius: 50px;
+        background-color: var(--color-placeholder);
+    }
+`
+
+const DynamicMenuContainerStyled = styled(MenuContainerStyled)`
+    @media (max-width: ${props => props.mobile_size}px) {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 75vh;
+        min-width: 100vw;
+        max-height: 100vh;
+        translate: 0 0;
+        border-radius: 25px 25px 0 0;
+        padding: 0 0 2em;
+        overflow-y: auto;
+        transition: opacit, translate 300ms ease;
+
+        &.menu-exit {
+            opacity: 1;
+            translate: 0 0 !important;
+        }
+
+        &.menu-exit-active {
+            opacity: 1;
+            translate: 0 100% !important;
+        }
+    }
+`;
+
+const DynamicMenuTriggerButton = styled.button`
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-placeholder);
+    border: none;
+    cursor: pointer;
+    padding: 0.25em;
+    display: flex;
+    align-items: center;
+    font-size: 1.5em;
+    transition: 300ms ease;
+
+    &:hover {
+        background-color: var(--color-background-secondary);
+        rotate: 180deg;
+    }
+
+    ${(props) => (props.menu_open ? `
+        background-color: var(--color-background-secondary);
+        rotate: 180deg;
+    ` : ``)};
+`;
+
+
 export {
     appearKeyframes,
     appearKeyframesMobile,
@@ -124,5 +215,9 @@ export {
     OptionStyled,
     OptionIconStyled,
     OptionTextStyled,
-    ArrowStyled
+    DynamicMenuWrapperStyled,
+    DynamicMenuHeaderStyled,
+    DynamicMenuContainerStyled,
+    DynamicMenuTriggerButton,
+    ArrowStyled,
 }
