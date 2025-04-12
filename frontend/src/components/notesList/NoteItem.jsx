@@ -1,12 +1,18 @@
 import React, {useState} from "react";
-import {Link} from "react-router-dom";
 import {FaLink} from "react-icons/fa";
 import PinButton from "../buttons/PinButton";
 import DeleteButton from "../buttons/DeleteButton";
 import Overlay from "../common/Overlay";
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {POPUP_TYPE} from "../confirmationPopup/ConfirmationPopup";
-import {CardContainerStyled, CreatedAt, TagsContainerStyled, TagStyled, TitleStyled} from "./NotesListStyles";
+import {
+    CreatedAt,
+    ItemContainerStyled,
+    TagsContainerStyled,
+    TagStyled,
+    TitleLinkStyled,
+    TitleStyled
+} from "./NotesListStyles";
 import RoutesPaths from "../../constants/RoutesPaths";
 import {formatDate} from "shared-utils/date.utils";
 import {useToastNotification} from "../../contexts/ToastNotificationsContext";
@@ -41,7 +47,7 @@ const NoteItem = React.memo(({
         try {
             setLoading(true);
             setPinButtonLoading(true);
-            await handleSave({...note, isPinned: !note.isPinned})
+            await handleSave(note.id, {isPinned: !note.isPinned})
             setIsPinned(!isPinned);
             togglePin(noteId);
         } catch (error) {
@@ -70,11 +76,12 @@ const NoteItem = React.memo(({
     return (
         <>
             <Overlay isVisible={loading}/>
-            <CardContainerStyled loading={loading ? "true" : undefined} index={index}>
+            <ItemContainerStyled loading={loading ? "true" : undefined} index={index}>
                 <div className="left">
-                    <Link style={{textDecoration: "none"}} to={RoutesPaths.NOTE(note.id)}>
-                        <TitleStyled> {note.title} <FaLink className={"icon"}/> </TitleStyled>
-                    </Link>
+                    <TitleLinkStyled to={RoutesPaths.NOTE(note.id)}>
+                        <TitleStyled> {note.title} </TitleStyled>
+                        <FaLink className="icon"/>
+                    </TitleLinkStyled>
                     <CreatedAt>{formatDate(note.createdAt)}</CreatedAt>
                 </div>
                 <div className="right">
@@ -90,7 +97,7 @@ const NoteItem = React.memo(({
                         <DeleteButton loading={deleteButtonLoading} onClick={() => handleDelete(note.id)}/>
                     </div>
                 </div>
-            </CardContainerStyled>
+            </ItemContainerStyled>
         </>
     );
 });

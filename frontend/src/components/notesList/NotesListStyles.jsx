@@ -1,3 +1,4 @@
+import {Link} from "react-router-dom";
 import styled from "styled-components";
 
 const NotesListContainerStyled = styled.div`
@@ -14,7 +15,7 @@ const NotesListContainerStyled = styled.div`
     `}
 `;
 
-const CardContainerStyled = styled.div`
+const ItemContainerStyled = styled.div`
     position: relative;
     display: flex;
     align-items: flex-start;
@@ -67,36 +68,42 @@ const CardContainerStyled = styled.div`
     `}
 `;
 
-const TitleStyled = styled.h2`
+const TitleStyled = styled.div`
+    display: block;
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+`;
+
+const TitleLinkStyled = styled(Link)`
+    text-decoration: none;
     display: flex;
     align-items: center;
     gap: 0.5em;
     font-size: 0.95em;
     font-weight: 600;
-    overflow: hidden;
-    text-wrap: nowrap;
-    text-overflow: ellipsis;
     color: var(--color-secondary);
     margin-bottom: 0.5em;
-    transition: 0.3s ease;
     cursor: pointer;
+    transition: 0.3s ease;
 
     .icon {
+        min-width: max-content;
         font-size: 1.2em;
         scale: 0;
         opacity: 0;
         transition: 0.3s;
     }
 
-    &:hover {
-        color: var(--color-accent);
-    }
-
     &:hover .icon {
         scale: 1;
         opacity: 1;
     }
-`;
+
+    &:hover {
+        color: var(--color-accent);
+    }
+`
 
 const TagsContainerStyled = styled.div`
     display: flex;
@@ -133,8 +140,9 @@ const CreatedAt = styled.span`
 
 export {
     NotesListContainerStyled,
-    CardContainerStyled,
+    ItemContainerStyled,
     TitleStyled,
+    TitleLinkStyled,
     TagsContainerStyled,
     TagStyled,
     CreatedAt

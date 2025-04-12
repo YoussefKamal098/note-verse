@@ -191,9 +191,9 @@ const UserMenu = () => {
                             </OptionWrapperStyled>
 
                             <OptionWrapperStyled>
-                                <OptionStyled onClick={logoutUser}>
+                                <OptionStyled onClick={logoutUser} danger={"true"}>
                                     <OptionIconStyled>
-                                        <Spinner loading={isLoggingOut} color="var(--color-accent)">
+                                        <Spinner loading={isLoggingOut} color="var(--color-danger)">
                                             <FaArrowRightFromBracket/>
                                         </Spinner>
                                     </OptionIconStyled>
