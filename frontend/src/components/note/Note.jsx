@@ -1,7 +1,6 @@
 import React, {Suspense, useCallback, useEffect} from 'react';
 import styled from 'styled-components';
 import {deepEqual} from "shared-utils/obj.utils";
-import {PuffLoader} from 'react-spinners';
 import useNoteState from '../../hooks/useNoteState';
 import useNoteStateCache from '../../hooks/useNoteStateCache';
 import useNoteValidation from '../../hooks/useNoteValidation';
@@ -9,13 +8,10 @@ import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {useAuth} from "../../contexts/AuthContext";
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
 import Loader from "../common/Loader";
-import Tooltip from "../tooltip/Tooltip";
-import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
-import BackHomeButton from "../buttons/BackHomeButton";
+import NoteHeader from "./NoteHeader"
 
-const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
 const NoteMarkdownTabs = React.lazy(() => import("../noteMarkdownTabs/NoteMarkdownTabs"));
 
 const ContainerStyled = styled.div`
@@ -30,14 +26,6 @@ const ContainerStyled = styled.div`
     border-radius: var(--border-radius);
     overflow: hidden;
 `;
-
-const HeaderContainerStyled = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 1em;
-    margin-bottom: 2em;
-`
 
 const getChanges = (original, current) => ({
     ...(original.title !== current.title && {title: current.title}),
@@ -111,42 +99,23 @@ const Note = ({
         });
     }, [origNote, updateState]);
 
+    const headerActions = {
+        onSave: handleSave,
+        onDelete: handleDelete,
+        onDiscard: handleDiscard,
+        onTogglePin: onTogglePin
+    };
+
     return (
         <ContainerStyled>
-            <HeaderContainerStyled>
-                <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25em"
-                }}>
-                    <BackHomeButton/>
-                    <AuthorInfoWithTimestamp
-                        fullName={`${user.firstname || ""} ${user.lastname || ""}`}
-                        createdAt={origNote.createdAt}
-                        avatarUrl={user.avatarUrl}
-                    />
-                    {hasChanges &&
-                        <Tooltip title={"Save Your Changes – Click to finalize your commit!"}>
-                            <div style={{cursor: "pointer"}} onClick={handleSave}>
-                                <PuffLoader color={"var(--color-accent)"} size={25}/>
-                            </div>
-                        </Tooltip>
-                    }
-                </div>
-
-                <Suspense fallback={<Loader/>}>
-                    <NoteMenu
-                        onDelete={handleDelete}
-                        onSave={handleSave}
-                        onDiscard={handleDiscard}
-                        onTogglePin={onTogglePin}
-                        isPinned={noteState.isPinned}
-                        disableSave={!hasChanges}
-                        disableDiscard={!hasChanges}
-                        disableDelete={(!origNote.id || origNote.id === "new")}
-                    />
-                </Suspense>
-            </HeaderContainerStyled>
+            <NoteHeader
+                user={user}
+                actions={headerActions}
+                noteState={{
+                    ...noteState,
+                    hasChanges
+                }}
+            />
 
             <EditableTitle
                 title={noteState.title}
