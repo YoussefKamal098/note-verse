@@ -17,11 +17,10 @@ const useNoteData = (userId, noteId, setLoading = (prev) => (!prev)) => {
             return {
                 id: "new",
                 title: "",
-                content: "# Content",
+                content: "",
                 isPinned: false,
-                tags: ["Tag"],
-                createdAt: null,
-                updatedAt: null
+                tags: [],
+                createdAt: null
             };
         }
 

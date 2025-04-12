@@ -20,6 +20,15 @@
     background-color: var(--color-background-primary);
 }
 
+.md-editor .cm-content {
+    min-height: 50vh;
+}
+
+.md-editor .cm-content .cm-placeholder {
+    color: var(--color-placeholder);
+    font-style: italic;
+}
+
 .md-editor .cm-editor {
     padding-right: 0.75em;
 }

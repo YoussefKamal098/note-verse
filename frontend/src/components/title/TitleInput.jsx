@@ -53,9 +53,13 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     const {notify} = useToastNotification();
     const [value, setValue] = useState(title);
     const textAreaRef = useRef(null);
+    const isValueFromInside = useRef(false);
 
     useEffect(() => {
+        if (isValueFromInside.current) return;
+
         setValue(title);
+        isValueFromInside.current = false;
     }, [title]);
 
     useEffect(() => {
@@ -73,6 +77,7 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     };
 
     const debouncedTitle = useMemo(() => debounce((newValue = "") => {
+        isValueFromInside.current = true;
         setTitle(newValue);
     }, 300), [setTitle]);
 

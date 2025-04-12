@@ -75,7 +75,7 @@ const formatSocialDate = (date) => {
     }
 };
 
-const NoteHeader = ({fullName, createdAt, avatarUrl, loading = false}) => {
+const AuthorInfoWithTimestamp = ({fullName, createdAt, avatarUrl, loading = false}) => {
     return (
         <SkeletonTheme baseColor="var(--color-background-skeletonbase)"
                        highlightColor="var(--color-background-skeletonhighlight)">
@@ -100,4 +100,4 @@ const NoteHeader = ({fullName, createdAt, avatarUrl, loading = false}) => {
     );
 };
 
-export default React.memo(NoteHeader);
+export default React.memo(AuthorInfoWithTimestamp);

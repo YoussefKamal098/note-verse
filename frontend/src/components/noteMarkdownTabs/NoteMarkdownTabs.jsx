@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import styled from "styled-components";
 import MarkdownEditor from "@uiw/react-markdown-editor";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -29,13 +29,18 @@ const EditorStyled = styled(MarkdownEditor)`
 
 const NoteMarkdownTabs = ({content, onContentChange, edit = true}) => {
     const [value, setValue] = useState(content);
+    const isValueFromInside = useRef(false);
 
     useEffect(() => {
+        if (isValueFromInside.current) return;
+
         handleOnChange(content);
+        isValueFromInside.current = false;
     }, [content]);
 
     const debounceChange = useMemo(
         () => debounce((newContent = "") => {
+            isValueFromInside.current = true;
             onContentChange(newContent);
         }, 300), [onContentChange]);
 
@@ -60,6 +65,7 @@ const NoteMarkdownTabs = ({content, onContentChange, edit = true}) => {
             icon: <HiOutlineWrenchScrewdriver/>,
             content: <EditorStyled
                 value={memoizedContent}
+                placeholder="Enter your markdown content here..."
                 onChange={handleOnChange}
                 onKeyUp={handleOnKeyUp}
                 onPaste={handleOnKeyUp}

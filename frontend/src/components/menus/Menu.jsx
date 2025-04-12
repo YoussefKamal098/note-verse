@@ -26,11 +26,7 @@ const Menu = ({options, triggerIcon, mobileSize = 600}) => {
     const {dragOffset, handlePointerDown, handlePointerMove, handlePointerUp} =
         useMobileDrag(isMobile, () => setMenuOpen(false));
 
-    useOutsideClick(
-        wrapperRef,
-        () => setMenuOpen(false),
-        [menuWrapperRef.current]
-    );
+    useOutsideClick(wrapperRef, () => setMenuOpen(false), [menuWrapperRef.current]);
 
     const toggleMenu = () => setMenuOpen((prev) => !prev);
 

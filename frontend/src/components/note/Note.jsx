@@ -10,7 +10,7 @@ import {useAuth} from "../../contexts/AuthContext";
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
 import Loader from "../common/Loader";
 import Tooltip from "../tooltip/Tooltip";
-import NoteHeader from "./NoteHeader";
+import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
 import BackHomeButton from "../buttons/BackHomeButton";
@@ -120,7 +120,7 @@ const Note = ({
                     gap: "0.25em"
                 }}>
                     <BackHomeButton/>
-                    <NoteHeader
+                    <AuthorInfoWithTimestamp
                         fullName={`${user.firstname || ""} ${user.lastname || ""}`}
                         createdAt={origNote.createdAt}
                         avatarUrl={user.avatarUrl}
