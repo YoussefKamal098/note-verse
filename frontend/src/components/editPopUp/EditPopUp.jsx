@@ -41,22 +41,21 @@ const PopupOverlayStyled = styled(motion.div)`
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.3);;
+    overflow-y: auto;
+    z-index: 2000;
 `;
 
 const PopupContentStyled = styled(motion.div)`
+    position: relative;
     background: var(--color-background-primary);
     padding: 2rem;
     border-radius: var(--border-radius);
     width: 90%;
     max-width: 500px;
-    position: relative;
+    margin: 2rem auto 1rem;
     box-shadow: var(--box-shadow);
-    transform-origin: center center;
+    overflow: hidden;
 `;
 
 const HeaderStyled = styled.div`

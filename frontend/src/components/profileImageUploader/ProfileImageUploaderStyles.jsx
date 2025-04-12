@@ -70,6 +70,8 @@ const EditorContainerStyled = styled.div`
 `;
 
 const AvatarEditorStyled = styled(AvatarEditor)`
+    width: 100% !important;
+    height: 100% !important;
     border: calc(var(--border-width) * 1.5) solid var(--color-border);
     border-radius: 50%;
     box-shadow: var(--box-shadow);
@@ -167,25 +169,24 @@ const ModalOverlayStyled = styled(motion.div)`
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    overflow-y: auto;
+    z-index: 2000;
 `;
 
 const ModalContentStyled = styled(motion.div)`
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     max-width: 500px;
-    width: 90vw;
-    aspect-ratio: 1/1;
+    width: 90%;
+    padding: 1rem;
+    margin: 2rem auto 1rem;
     background: var(--color-background);
     box-shadow: var(--box-shadow-hover);
-    padding: 1rem;
     border-radius: 8px;
-    position: relative;
+    overflow: hidden;
 `;
 
 const HeaderStyled = styled.div`
