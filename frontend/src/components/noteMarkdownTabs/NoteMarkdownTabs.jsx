@@ -1,86 +1,67 @@
-import React, {useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import styled from "styled-components";
-import MarkdownEditor from "@uiw/react-markdown-editor";
-import MarkdownPreview from "@uiw/react-markdown-preview";
-import '@uiw/react-markdown-editor/markdown-editor.css';
-import {debounce} from 'lodash';
 import {HiOutlineWrenchScrewdriver} from "react-icons/hi2";
 import {FaBookOpenReader} from "react-icons/fa6";
+import useDebounce from "../../hooks/useDebounce";
 import DynamicTabs from "../dynamicTabs/DynamicTabs";
+import PreviewTab from "./PreviewTab";
+import EditorTab from "./EditorTab";
 import '../../styles/customMarkdownEditor.css';
 
 const NoteMarkdownTabsWrapperStyled = styled.div`
     margin-top: 2em;
-`
-
-const PreviewStyled = styled(MarkdownPreview)`
-    text-align: left;
-    padding: 1em 2em 3em;
-    font-size: 1em !important;
-    font-family: "Poppins", sans-serif !important;
-    font-weight: 700 !important;
 `;
 
-const EditorStyled = styled(MarkdownEditor)`
-    font-size: 0.9em !important;
-    font-family: "Poppins", sans-serif !important;
-    font-weight: 700 !important;
-`;
-
-const NoteMarkdownTabs = ({content, onContentChange, edit = true}) => {
+const NoteMarkdownTabs = ({content, onContentChange}) => {
     const [value, setValue] = useState(content);
     const isValueFromInside = useRef(false);
 
-    useEffect(() => {
-        if (isValueFromInside.current) return;
+    // Debounced content update handler
+    const handleContentUpdate = useCallback((newContent) => {
+        isValueFromInside.current = true;
+        onContentChange(newContent);
+    }, [onContentChange]);
 
-        handleOnChange(content);
-        isValueFromInside.current = false;
+    const debouncedContentUpdate = useDebounce(handleContentUpdate, 300);
+
+    // Sync external content changes
+    useEffect(() => {
+        if (isValueFromInside.current) {
+            isValueFromInside.current = false;
+            return;
+        }
+
+        setValue(content);
     }, [content]);
 
-    const debounceChange = useMemo(
-        () => debounce((newContent = "") => {
-            isValueFromInside.current = true;
-            onContentChange(newContent);
-        }, 300), [onContentChange]);
-
-    const handleOnChange = (newValue = "") => {
+    // Editor change handlers
+    const handleOnChange = (newValue) => {
         setValue(newValue);
     };
 
     const handleOnKeyUp = () => {
-        debounceChange(value);
+        debouncedContentUpdate(value);
     };
 
+    // Memoized content and tabs configuration
     const memoizedContent = useMemo(() => value, [value]);
 
     const tabs = useMemo(() => [
         {
             title: 'Preview',
             icon: <FaBookOpenReader/>,
-            content: <PreviewStyled source={memoizedContent}/>
+            content: <PreviewTab content={memoizedContent}/>
         },
         {
             title: 'Editor',
             icon: <HiOutlineWrenchScrewdriver/>,
-            content: <EditorStyled
-                value={memoizedContent}
-                placeholder="Enter your markdown content here..."
+            content: <EditorTab
+                content={memoizedContent}
                 onChange={handleOnChange}
                 onKeyUp={handleOnKeyUp}
-                onPaste={handleOnKeyUp}
-                enablePreview={false}
             />
         }
-    ], [value]);
-
-    if (!edit) {
-        return (
-            <NoteMarkdownTabsWrapperStyled>
-                <PreviewStyled source={memoizedContent}/>
-            </NoteMarkdownTabsWrapperStyled>
-        );
-    }
+    ], [memoizedContent, handleOnChange, handleOnKeyUp]);
 
     return (
         <NoteMarkdownTabsWrapperStyled>

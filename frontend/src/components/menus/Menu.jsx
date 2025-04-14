@@ -32,6 +32,7 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
     const menuWrapperRef = useRef(null);
     const menuRef = useRef(null);
     const observersRef = useRef(new Set());
+    const triggerRef = useRef(null);
 
     const isMobile = useIsMobile(mobileSize);
 
@@ -111,6 +112,73 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
         observersRef.current.clear();
     }
 
+    // Accessible trigger button
+    const renderTrigger = () => (
+        triggerElement ?
+            React.cloneElement(triggerElement, {
+                ref: triggerRef,
+                role: "button",
+                'aria-haspopup': "menu",
+                'aria-expanded': menuOpen,
+                tabIndex: 0,
+                onClick: () => setMenuOpen(!menuOpen)
+            }) :
+            <DynamicMenuTriggerButton
+                ref={triggerRef}
+                onClick={() => setMenuOpen(!menuOpen)}
+                $isOpen={menuOpen}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="Open menu"
+                tabIndex={0}
+            >
+                {triggerIcon}
+            </DynamicMenuTriggerButton>
+    );
+
+    // Accessible menu items
+    const renderMenuItem = (option, index) => (
+        <OptionWrapperStyled key={option.text} role="none">
+            <OptionStyled
+                role={"menuitem"}
+                aria-haspopup={option.submenu ? "menu" : undefined}
+                aria-checked={option.selected ? "true" : undefined}
+                aria-disabled={option.disabled ? "true" : undefined}
+                tabIndex={index === 0 ? 0 : -1}
+                $danger={option.danger}
+                $disabled={option.disabled}
+                onClick={() => handleSelection(option)}
+            >
+                <OptionIconTextContainerStyled>
+                    <OptionIconStyled aria-hidden="true">
+                        {option.icon}
+                    </OptionIconStyled>
+                    <OptionTextStyled>{option.text}</OptionTextStyled>
+                </OptionIconTextContainerStyled>
+                <OptionIconsContainerStyled aria-hidden="true">
+                    {option.selected && <TiTickOutline/>}
+                    {option.submenu && <MdKeyboardArrowRight/>}
+                </OptionIconsContainerStyled>
+            </OptionStyled>
+        </OptionWrapperStyled>
+    );
+
+    // Accessible back button
+    const renderBackButton = () => (
+        <OptionWrapperStyled role="none">
+            <OptionStyled
+                role="menuitem"
+                tabIndex={0}
+                onClick={handleBack}
+            >
+                <OptionIconStyled aria-hidden="true">
+                    <TiChevronLeftOutline/>
+                </OptionIconStyled>
+                <OptionTextStyled>Back</OptionTextStyled>
+            </OptionStyled>
+        </OptionWrapperStyled>
+    );
+
     useEffect(() => {
         if (!menuOpen) {
             clearObservers();
@@ -125,34 +193,29 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
 
     return (
         <div ref={wrapperRef} style={{position: "relative"}}>
-            {triggerElement ?
-                <div onClick={() => setMenuOpen(!menuOpen)}>
-                    {triggerElement}
-                </div> :
-                <DynamicMenuTriggerButton
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    $isOpen={menuOpen}
-                >
-                    {triggerIcon}
-                </DynamicMenuTriggerButton>
-            }
+            {renderTrigger()}
 
             <DynamicMenuWrapperStyled
                 ref={menuWrapperRef}
                 $mobileSize={mobileSize}
                 $isOpen={menuOpen}
+                role="menu"
+                aria-label="Navigation menu"
+                aria-orientation="vertical"
             >
                 <CSSTransition in={menuOpen} timeout={300} classNames="menu" unmountOnExit nodeRef={menuRef}>
                     <DynamicMenuContainerStyled
                         ref={menuRef}
                         $mobileSize={mobileSize}
                         style={isMobile ? {translate: `0 ${dragOffset}px`} : {}}
+                        role="presentation"
+                        aria-live="polite"
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
                         onPointerCancel={handlePointerUp}
                     >
-                        {isMobile && <DynamicMenuHeaderStyled/>}
+                        {isMobile && <DynamicMenuHeaderStyled aria-hidden="true"/>}
 
                         {children}
 
@@ -165,41 +228,12 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
                                     nodeRef={null}
                                 >
                                     <OptionsStyled $mobileSize={mobileSize}>
-                                        {menuStack.length > 1 && (
-                                            <OptionWrapperStyled>
-                                                <OptionStyled onClick={handleBack}>
-                                                    <OptionIconStyled>
-                                                        <TiChevronLeftOutline/>
-                                                    </OptionIconStyled>
-                                                    <OptionTextStyled>Back</OptionTextStyled>
-                                                </OptionStyled>
-                                            </OptionWrapperStyled>
-                                        )}
-
-                                        {currentMenu.map((option, index) => (
-                                            <OptionWrapperStyled key={index}>
-                                                <OptionStyled
-                                                    onClick={() => handleSelection(option)}
-                                                    $danger={option.danger}
-                                                    $disabled={option.disabled}
-                                                >
-                                                    <OptionIconTextContainerStyled>
-                                                        <OptionIconStyled>{option.icon}</OptionIconStyled>
-                                                        <OptionTextStyled>{option.text}</OptionTextStyled>
-                                                    </OptionIconTextContainerStyled>
-
-                                                    <OptionIconsContainerStyled>
-                                                        {option.selected && <TiTickOutline/>}
-                                                        {option.submenu && <MdKeyboardArrowRight/>}
-                                                    </OptionIconsContainerStyled>
-                                                </OptionStyled>
-                                            </OptionWrapperStyled>
-                                        ))}
+                                        {menuStack.length > 1 && renderBackButton()}
+                                        {currentMenu.map((option, index) => renderMenuItem(option, index))}
                                     </OptionsStyled>
                                 </CSSTransition>
                             </TransitionGroup>
                         </OptionsWrapperStyled>
-
                     </DynamicMenuContainerStyled>
                 </CSSTransition>
             </DynamicMenuWrapperStyled>

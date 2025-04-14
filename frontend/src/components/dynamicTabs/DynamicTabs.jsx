@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import PropTypes from 'prop-types';
 import {animated, useSpring} from 'react-spring';
 import {Tab, TabList, TabPanel, Tabs} from 'react-tabs';
 import {useTheme} from "../../contexts/ThemeContext";
@@ -35,10 +36,10 @@ function DynamicTabs({
     // Render Tab List
     const renderTabsList = () => {
         return tabs.map((tab, index) => (
-            <Tab key={`tab-title-${index}`}>
+            <Tab key={`tab-${index}`}>
                 <TitleWrapperStyled>
-                    <div className="tab-title-icon"> {tab.icon} </div>
-                    <div className="tab-title"> {tab.title} </div>
+                    <div className="tab-icon" aria-hidden="true"> {tab.icon}</div>
+                    <span className="tab-title">{tab.title}</span>
                 </TitleWrapperStyled>
             </Tab>
         ));
@@ -47,9 +48,14 @@ function DynamicTabs({
     // Render Tab Content Body
     const renderTabsBody = () => {
         return tabs.map((tab, index) => (
-            <TabPanel key={`tab-${index}`}>
+            <TabPanel key={`tab-content-${index}`}>
                 <TabStyled ref={tabRef}>
-                    <animated.div className="tap" style={tabAnimation(index)}>
+                    <animated.div
+                        className="tab"
+                        style={tabAnimation(index)}
+                        role="region"
+                        aria-live="polite"
+                    >
                         <TabToolbar tabRef={tabRef} className="tab-toolbar"/>
                         <TabBodyStyled className="tab-body">
                             {tab.content}
@@ -61,16 +67,29 @@ function DynamicTabs({
     };
 
     return (
-        <div>
-            <Tabs data-color-mode={theme} selectedIndex={tabIndex} onSelect={handleTabChange}>
-                <TabsListWrapperStyled tabs_count={tabsCount}>
-                    <TabList> {renderTabsList()} </TabList>
-                </TabsListWrapperStyled>
+        <Tabs
+            data-color-mode={theme}
+            selectedIndex={tabIndex}
+            onSelect={handleTabChange}
+        >
+            <TabsListWrapperStyled tabs_count={tabsCount}>
+                <TabList role="presentation">{renderTabsList()}</TabList>
+            </TabsListWrapperStyled>
 
-                {renderTabsBody()}
-            </Tabs>
-        </div>
+            {renderTabsBody()}
+        </Tabs>
     );
 }
 
-export default DynamicTabs;
+DynamicTabs.propTypes = {
+    tabs: PropTypes.arrayOf(
+        PropTypes.shape({
+            title: PropTypes.string.isRequired,
+            icon: PropTypes.node,
+            content: PropTypes.node.isRequired
+        })
+    ).isRequired,
+    onTabChange: PropTypes.func
+};
+
+export default React.memo(DynamicTabs);

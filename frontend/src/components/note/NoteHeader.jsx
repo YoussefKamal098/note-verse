@@ -1,14 +1,12 @@
 import React, {Suspense} from "react";
 import styled from 'styled-components';
-import {PuffLoader} from "react-spinners";
 import Loader from "../common/Loader";
-import Tooltip from "../tooltip/Tooltip";
 import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
 import BackHomeButton from "../buttons/BackHomeButton";
 
 const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
 
-const HeaderContainerStyled = styled.div`
+const HeaderWrapperStyled = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -16,32 +14,24 @@ const HeaderContainerStyled = styled.div`
     margin-bottom: 2em;
 `
 
-const ChangesIndicator = ({onSave}) => {
-    return (
-        <Tooltip title={"Save Your Changes – Click to finalize your commit!"}>
-            <div style={{cursor: "pointer"}} onClick={onSave}>
-                <PuffLoader color={"var(--color-accent)"} size={25}/>
-            </div>
-        </Tooltip>
-    );
-}
+const HeaderLeftPartContainerStyled = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.25em
+`
 
 const NoteHeader = ({user, actions, noteState}) => {
     return (
-        <HeaderContainerStyled>
-            <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.25em"
-            }}>
+        <HeaderWrapperStyled>
+            <HeaderLeftPartContainerStyled style={{}}>
                 <BackHomeButton/>
+
                 <AuthorInfoWithTimestamp
                     fullName={`${user.firstname || ""} ${user.lastname || ""}`}
                     createdAt={noteState.createdAt}
                     avatarUrl={user.avatarUrl}
                 />
-                {noteState.hasChanges && <ChangesIndicator onSave={actions.onSave}/>}
-            </div>
+            </HeaderLeftPartContainerStyled>
 
             <Suspense fallback={<Loader/>}>
                 <NoteMenu
@@ -55,7 +45,7 @@ const NoteHeader = ({user, actions, noteState}) => {
                     disableDelete={(!noteState.id || noteState.id === "new")}
                 />
             </Suspense>
-        </HeaderContainerStyled>
+        </HeaderWrapperStyled>
     );
 }
 

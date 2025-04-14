@@ -1,7 +1,7 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {FaSearch} from "react-icons/fa";
 import {IoClose} from "react-icons/io5";
-import {debounce} from "lodash";
+import useDebounce from "../../hooks/useDebounce";
 import usePersistedState from "../../hooks/usePersistedState";
 import {WidthTransitionContainer} from "../animations/ContainerAnimation";
 
@@ -21,13 +21,12 @@ const SearchBar = ({onSearch = (value) => value}) => {
         setSearchText(value.trim());
     }, [value]);
 
-    const debouncedSearch = useMemo(
-        () =>
-            debounce((value = "") => {
-                if (onSearch) onSearch(value)
-            }, 300),
-        [onSearch]
-    );
+    const handleSearch = useCallback((value) => {
+        onSearch(value.trim());
+        setSearchText(value.trim());
+    }, [onSearch, setSearchText]);
+
+    const debouncedSearch = useDebounce(handleSearch, 300);
 
     const handleChange = (e) => {
         setValue(e.target.value)

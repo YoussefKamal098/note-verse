@@ -1,8 +1,8 @@
-import {useToastNotification} from "../../contexts/ToastNotificationsContext";
-import React, {useEffect, useMemo, useRef, useState} from "react";
-import {debounce} from "lodash";
-import noteValidationSchema from "../../validations/noteValidtion";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import styled from "styled-components";
+import useDebounce from "../../hooks/useDebounce";
+import {useToastNotification} from "../../contexts/ToastNotificationsContext";
+import noteValidationSchema from "../../validations/noteValidtion";
 
 const InputWrapperStyled = styled.div`
     position: relative;
@@ -56,10 +56,12 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     const isValueFromInside = useRef(false);
 
     useEffect(() => {
-        if (isValueFromInside.current) return;
+        if (isValueFromInside.current) {
+            isValueFromInside.current = false;
+            return;
+        }
 
         setValue(title);
-        isValueFromInside.current = false;
     }, [title]);
 
     useEffect(() => {
@@ -76,14 +78,12 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
         textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
     };
 
-    const debouncedTitle = useMemo(() => debounce((newValue = "") => {
+    const handleTitleUpdate = useCallback((newValue) => {
         isValueFromInside.current = true;
         setTitle(newValue);
-    }, 300), [setTitle]);
+    }, [setTitle]);
 
-    useEffect(() => {
-        return () => debouncedTitle.cancel();
-    }, [debouncedTitle]);
+    const debouncedTitleUpdate = useDebounce(handleTitleUpdate, 300);
 
     const onTitleChange = (e) => {
         const value = e.target.value;
@@ -99,7 +99,7 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     };
 
     const onKeyUpUp = () => {
-        debouncedTitle(value);
+        debouncedTitleUpdate(value);
     }
 
     return (
