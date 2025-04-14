@@ -1,6 +1,6 @@
 import React from "react";
 import {MdDeleteForever} from "react-icons/md";
-import {BsDatabaseFillDown, BsDatabaseFillSlash, BsThreeDots} from "react-icons/bs";
+import {BsDatabaseFillDown, BsDatabaseFillSlash} from "react-icons/bs";
 import {RiPushpin2Fill, RiUnpinLine} from "react-icons/ri";
 import Menu from "../Menu";
 
@@ -46,10 +46,7 @@ const NoteMenu = ({
     ].filter(option => !option.disabled); // Filter out disabled options
 
     return (
-        <Menu
-            options={menuOptions}
-            triggerIcon={<BsThreeDots/>}
-        />
+        <Menu options={menuOptions}/>
     );
 };
 

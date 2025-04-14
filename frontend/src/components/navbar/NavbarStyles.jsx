@@ -9,7 +9,7 @@ const NavbarContainerStyled = styled.div`
     background-color: var(--color-background);
     border-bottom: calc(var(--border-width) / 2) solid var(--color-border);
     box-shadow: var(--box-shadow);
-    z-index: 888;
+    z-index: 1000;
 `;
 
 const NavbarWrapperContainerStyled = styled.div`
