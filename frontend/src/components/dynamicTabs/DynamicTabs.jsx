@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {animated, useSpring} from 'react-spring';
 import {Tab, TabList, TabPanel, Tabs} from 'react-tabs';
-import {useTheme} from "../../contexts/ThemeContext";
 import TabToolbar from "./TabToolbar";
 import {TabBodyStyled, TabsListWrapperStyled, TabStyled, TitleWrapperStyled} from "./DynamicTabsStyles";
 import 'react-tabs/style/react-tabs.css';
@@ -11,7 +10,6 @@ function DynamicTabs({
                          tabs = [],
                          onTabChange = (tab) => (tab)
                      }) {
-    const {theme} = useTheme();
     const [tabIndex, setTabIndex] = useState(0);
     const [tabsCount, setTabsCount] = useState(tabs.length);
     const tabRef = useRef(null);
@@ -68,7 +66,6 @@ function DynamicTabs({
 
     return (
         <Tabs
-            data-color-mode={theme}
             selectedIndex={tabIndex}
             onSelect={handleTabChange}
         >

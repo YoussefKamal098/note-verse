@@ -1,6 +1,7 @@
 import React from 'react';
-import MarkdownEditor from "@uiw/react-markdown-editor";
 import styled from "styled-components";
+import MarkdownEditor from "@uiw/react-markdown-editor";
+import {useTheme} from "../../contexts/ThemeContext";
 
 const EditorStyled = styled(MarkdownEditor)`
     font-size: 0.9em !important;
@@ -9,15 +10,20 @@ const EditorStyled = styled(MarkdownEditor)`
 `;
 
 const EditorTab = React.memo(({content, onChange, onKeyUp}) => {
+    const {theme} = useTheme();
+
     return (
-        <EditorStyled
-            value={content}
-            placeholder="Enter your markdown content here..."
-            onChange={onChange}
-            onKeyUp={onKeyUp}
-            onPaste={onKeyUp}
-            enablePreview={false}
-        />
+        <div data-color-mode={theme}>
+            <EditorStyled
+                value={content}
+                placeholder="Enter your markdown content here..."
+                onChange={onChange}
+                onKeyUp={onKeyUp}
+                onPaste={onKeyUp}
+                enablePreview={false}
+            />
+        </div>
+
     );
 });
 

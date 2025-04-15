@@ -27,7 +27,7 @@ const UserMenuAvatarStyled = styled(AvatarStyled)`
 const HeaderStyled = styled.div`
     display: flex;
     align-items: center;
-    border-bottom: calc(var(--border-width) / 2) solid var(--color-border);
+    border-bottom: var(--border-width) solid var(--color-border);
     padding-bottom: 1em;
     gap: 0.5em;
 `;

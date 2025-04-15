@@ -1,6 +1,7 @@
 import React from 'react';
-import MarkdownPreview from "@uiw/react-markdown-preview";
 import styled from "styled-components";
+import MarkdownPreview from "@uiw/react-markdown-preview";
+import {useTheme} from "../../contexts/ThemeContext";
 
 const PreviewStyled = styled(MarkdownPreview)`
     text-align: left;
@@ -11,7 +12,13 @@ const PreviewStyled = styled(MarkdownPreview)`
 `;
 
 const PreviewTab = React.memo(({content}) => {
-    return <PreviewStyled source={content}/>;
+    const {theme} = useTheme();
+
+    return (
+        <div data-color-mode={theme}>
+            <PreviewStyled source={content}/>;
+        </div>
+    )
 });
 
 export default React.memo(PreviewTab);
