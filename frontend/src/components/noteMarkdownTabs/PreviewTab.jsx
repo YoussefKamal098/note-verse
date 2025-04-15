@@ -16,7 +16,7 @@ const PreviewTab = React.memo(({content}) => {
 
     return (
         <div data-color-mode={theme}>
-            <PreviewStyled source={content}/>;
+            <PreviewStyled source={content}/>
         </div>
     )
 });
