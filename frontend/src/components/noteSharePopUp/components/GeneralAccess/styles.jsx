@@ -18,14 +18,14 @@ const AccessRowStyles = styled.div`
 const AccessLeftStyles = styled.div`
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
 `;
 
 const AccessInfoStyles = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
+    gap: 0.15rem;
 `;
 
 const AccessRightStyles = styled.div`
@@ -36,7 +36,7 @@ const AccessRightStyles = styled.div`
 
 const AccessTypeStyles = styled.div`
     color: var(--color-text);
-    font-size: 0.9em;
+    font-size: 0.9rem;
 `;
 
 const AccessDescriptionStyles = styled.div`

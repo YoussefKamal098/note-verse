@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
 import BackHomeButton from "../buttons/BackHomeButton";
 import NoteMenu from "../menus/noteMenu";
-import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
+import UserProfileWithMeta from "./UserProfileWithMeta";
 import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 
@@ -21,7 +21,7 @@ const HeaderLeftPartContainerStyled = styled.div`
     gap: 0.25em
 `
 
-const NoteHeader = ({actions}) => {
+const NoteHeader = ({noteMeta, actions}) => {
     const {selectors} = useNoteContext();
 
     const {isNew, initLoading, isLoading, editMode} = useNoteSelector(selectors.getStatus);
@@ -36,11 +36,12 @@ const NoteHeader = ({actions}) => {
             <HeaderLeftPartContainerStyled>
                 <BackHomeButton/>
 
-                <AuthorInfoWithTimestamp
+                <UserProfileWithMeta
                     firstname={owner?.firstname}
                     lastname={owner?.lastname}
                     createdAt={createdAt}
                     avatarUrl={owner?.avatarUrl}
+                    isPublic={noteMeta?.isPublic}
                     loading={initLoading}
                 />
             </HeaderLeftPartContainerStyled>

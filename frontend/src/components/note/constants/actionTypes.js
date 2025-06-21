@@ -2,7 +2,8 @@ export const ACTION_TYPES = {
     NOTE: {
         INIT: "NOTE/INIT",
         INIT_NEW: "NOTE/INIT_NEW",
-        TOGGLE_PIN: "NOTE/TOGGLE_PIN"
+        TOGGLE_PIN: "NOTE/TOGGLE_PIN",
+        UPDATE_PUBLIC: "NOTE/UPDATE_PUBLIC"
     },
     CONTENT: {
         UPDATE_CURRENT: 'CONTENT/UPDATE_CURRENT',

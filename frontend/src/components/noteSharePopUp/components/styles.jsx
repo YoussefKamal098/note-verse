@@ -17,14 +17,12 @@ const SectionTitleStyles = styled.h4`
 `;
 
 const PublicIconStyles = styled(MdPublic)`
-    width: 24px;
-    height: 24px;
+    font-size: 1.75em;
     color: var(--color-placeholder);
 `;
 
 const PrivateIconStyles = styled(MdVpnLock)`
-    width: 24px;
-    height: 24px;
+    font-size: 1.75em;
     color: var(--color-placeholder);
 `;
 

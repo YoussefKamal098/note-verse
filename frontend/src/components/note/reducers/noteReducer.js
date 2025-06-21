@@ -47,6 +47,10 @@ export const noteReducer = (draft, action) => {
             draft.isPinned = !draft.isPinned;
             break;
 
+        case ACTION_TYPES.NOTE.UPDATE_PUBLIC:
+            draft.isPublic = action.payload;
+            break;
+
         case ACTION_TYPES.STATUS.TOGGLE_EDIT_MODE:
             draft.status.editMode = !draft.status.editMode;
             break;

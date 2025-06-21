@@ -51,6 +51,10 @@ const Note = () => {
         });
     }, [actions.discardChanges, showConfirmation]);
 
+    const onVisibilityChange = useCallback((visibility) => {
+        actions.updatePublicState(visibility);
+    }, [actions.updatePublicState])
+
     const handlePinToggle = useCallback(async () => {
         await actions.togglePin();
     }, [actions.togglePin]);
@@ -83,7 +87,10 @@ const Note = () => {
 
     return (
         <ContainerStyled>
-            <NoteHeader actions={headerActions}/>
+            <NoteHeader
+                noteMeta={{isPublic}}
+                actions={headerActions}
+            />
 
             <EditableTitle
                 title={current.title}
@@ -103,7 +110,12 @@ const Note = () => {
                 canEdit={editMode && canEdit}
             />
 
-            {isOwner && <SharePopUp noteMeta={{id, isPublic}} show={showShare} onClose={handleShowShare}/>}
+            {isOwner && <SharePopUp
+                noteMeta={{id, isPublic}}
+                onClose={handleShowShare}
+                onVisibilityChange={onVisibilityChange}
+                show={showShare}
+            />}
         </ContainerStyled>
     );
 }

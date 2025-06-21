@@ -33,6 +33,8 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
             const controller = requestManager.createAbortController();
 
             try {
+                dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {initLoading: true}});
+
                 const [cachedData, noteResult] = await Promise.all([
                     cacheService.get(noteId).catch(() => null),
                     noteService.getNoteById(noteId, {signal: controller.signal}),
@@ -198,6 +200,16 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 requestManager.removeAbortController(controller);
             }
         },
+
+        /**
+         * Updates the local public/private state without API call
+         * Use when you only need UI feedback before persisting
+         */
+        updatePublicState: (visibility) => {
+            console.log("1", visibility)
+            dispatch({type: ACTION_TYPES.NOTE.UPDATE_PUBLIC, payload: visibility});
+        },
+
         toggleEditMode: () => dispatch({type: ACTION_TYPES.STATUS.TOGGLE_EDIT_MODE})
     };
 };

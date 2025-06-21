@@ -52,7 +52,7 @@ class NotesController {
      * @throws {AppError} If note creation fails.
      */
     async create(req, res) {
-        const {userId} = req.params;
+        const userId = req.userId;
         const {
             title,
             tags,

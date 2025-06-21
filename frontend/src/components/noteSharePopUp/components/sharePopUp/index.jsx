@@ -9,10 +9,14 @@ import CollaboratorSections from "../CollaboratorSections"
 import Footer from "../Footer";
 import {MainContentStyles, PopUpBackdropStyles, PopUpContainerStyles, PopUpHeaderStyles} from "./styles"
 
-const Index = ({show = true, onClose}) => {
-    const {actions} = useSharePopUp();
+const Index = ({onClose, onVisibilityChange, show = true}) => {
+    const {state, actions} = useSharePopUp();
     const inputRef = useRef(null);
     const firstTimeShow = useRef(true);
+
+    useEffect(() => {
+        onVisibilityChange?.(state.isPublic);
+    }, [state.isPublic])
 
     useEffect(() => {
         if (show && firstTimeShow.current) {

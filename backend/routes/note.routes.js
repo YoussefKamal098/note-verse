@@ -43,7 +43,7 @@ const noteCacheMiddleware = createCacheMiddleware({
 router.post(
     '/',
     asyncRequestHandler(validateRequestMiddlewares(noteCreationSchema)),
-    asyncRequestHandler(clearCachePattern.bind(null, cacheKeys.getUserNotesCachePattern)),
+    asyncRequestHandler(clearNotesCaches),
     asyncRequestHandler(api('create'))
 );
 
