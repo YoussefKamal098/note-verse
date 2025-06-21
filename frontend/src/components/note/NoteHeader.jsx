@@ -1,10 +1,11 @@
-import React, {Suspense} from "react";
+import React from "react";
 import styled from 'styled-components';
-import Loader from "../common/Loader";
-import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
+import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
 import BackHomeButton from "../buttons/BackHomeButton";
-
-const NoteMenu = React.lazy(() => import("../menus/noteMenu/NoteMenu"));
+import NoteMenu from "../menus/noteMenu";
+import AuthorInfoWithTimestamp from "./AuthorInfoWithTimestamp";
+import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
+import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 
 const HeaderWrapperStyled = styled.div`
     display: flex;
@@ -20,31 +21,63 @@ const HeaderLeftPartContainerStyled = styled.div`
     gap: 0.25em
 `
 
-const NoteHeader = ({user, actions, noteState}) => {
+const NoteHeader = ({actions}) => {
+    const {selectors} = useNoteContext();
+
+    const {isNew, initLoading, isLoading, editMode} = useNoteSelector(selectors.getStatus);
+    const isOwner = useNoteSelector(selectors.isOwner);
+    const canEdit = useNoteSelector(selectors.canEdit);
+    const hasChanges = useNoteSelector(selectors.hasChanges);
+    const owner = useNoteSelector(selectors.getOwner);
+    const {isPinned, createdAt} = useNoteSelector(selectors.getMeta);
+
     return (
         <HeaderWrapperStyled>
-            <HeaderLeftPartContainerStyled style={{}}>
+            <HeaderLeftPartContainerStyled>
                 <BackHomeButton/>
 
                 <AuthorInfoWithTimestamp
-                    fullName={`${user.firstname || ""} ${user.lastname || ""}`}
-                    createdAt={noteState.createdAt}
-                    avatarUrl={user.avatarUrl}
+                    firstname={owner?.firstname}
+                    lastname={owner?.lastname}
+                    createdAt={createdAt}
+                    avatarUrl={owner?.avatarUrl}
+                    loading={initLoading}
                 />
             </HeaderLeftPartContainerStyled>
 
-            <Suspense fallback={<Loader/>}>
-                <NoteMenu
-                    onDelete={actions.onDelete}
-                    onSave={actions.onSave}
-                    onDiscard={actions.onDiscard}
-                    onTogglePin={actions.onTogglePin}
-                    isPinned={noteState.isPinned}
-                    disableSave={!noteState.hasChanges}
-                    disableDiscard={!noteState.hasChanges}
-                    disableDelete={(!noteState.id || noteState.id === "new")}
-                />
-            </Suspense>
+            {isNew || editMode || hasChanges ? (
+                <TranslateTransitionContainer keyProp={"note_save_discard"}>
+                    <ButtonsContainerStyled>
+                        <Button
+                            type={BUTTON_TYPE.SECONDARY}
+                            onClick={actions.onDiscard}
+                        >
+                            Discard
+                        </Button>
+                        <Button
+                            type={BUTTON_TYPE.SUCCESS}
+                            onClick={actions.onSave}
+                            disabled={!hasChanges}
+                            loading={isLoading}
+                        >
+                            Save
+                        </Button>
+                    </ButtonsContainerStyled>
+                </TranslateTransitionContainer>
+            ) : (
+                <TranslateTransitionContainer
+                    keyProp={"note_memu"}
+                >
+                    <NoteMenu
+                        onDelete={!isNew && isOwner ? actions.onDelete : undefined}
+                        onTogglePin={!isNew && isOwner ? actions.onTogglePin : undefined}
+                        onEdit={!isNew && canEdit ? actions.onEdit : undefined}
+                        onCopyLink={!isNew ? actions.onCopyLink : undefined}
+                        onShowShare={!isNew && isOwner ? actions.onShowShare : undefined}
+                        isPinned={isPinned}
+                    />
+                </TranslateTransitionContainer>
+            )}
         </HeaderWrapperStyled>
     );
 }

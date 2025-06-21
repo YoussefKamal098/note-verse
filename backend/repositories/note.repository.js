@@ -1,5 +1,4 @@
 const NotePaginatorService = require("../services/notePaginatorService");
-const Note = require("../models/note.model");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
 
@@ -57,14 +56,16 @@ class NoteRepository {
      * @param {string} noteData.title - The title of the note.
      * @param {Array<string>} noteData.tags - An array of tags associated with the note.
      * @param {string} noteData.content - The content of the note.
-     * @param {boolean} [noteData.isPinned] - Whether the note is pinned.
+     * @param {boolean} [noteData.isPinned] - The pinned status.
+     * @param {boolean} [noteData.isPublic] - The public accessibility
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object>>} The created note document, deep-frozen.
      * @throws {Error} If an error occurs during note creation.
      */
-    async create(noteData = {}) {
+    async create(noteData = {}, session = null) {
         try {
             const newNote = new this.#model(noteData);
-            await newNote.save();
+            await newNote.save({session});
             return this.#sanitizeNoteMongoObject(newNote.toObject());
         } catch (error) {
             console.error("Error creating note:", error);
@@ -77,10 +78,11 @@ class NoteRepository {
      *
      * @param {string} noteId - The ID of the note to update.
      * @param {Object} updates - The fields to update.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object|null>>} The updated note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the update.
      */
-    async findByIdAndUpdate(noteId, updates = {}) {
+    async findByIdAndUpdate(noteId, updates = {}, session = null) {
         if (!isValidObjectId(noteId)) return null;
 
         try {
@@ -88,7 +90,8 @@ class NoteRepository {
                 convertToObjectId(noteId),
                 {$set: updates}, {
                     new: true,
-                    runValidators: true
+                    runValidators: true,
+                    session
                 }).lean();
             return updatedNote ? deepFreeze(this.#sanitizeNoteMongoObject(updatedNote)) : null;
         } catch (error) {
@@ -101,14 +104,15 @@ class NoteRepository {
      * Retrieves a note by its ID.
      *
      * @param {string} noteId - The ID of the note.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object|null>>} The note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the query.
      */
-    async findById(noteId) {
+    async findById(noteId, session = null) {
         if (!isValidObjectId(noteId)) return null;
 
         try {
-            const note = await this.#model.findById(convertToObjectId(noteId)).lean();
+            const note = await this.#model.findById(convertToObjectId(noteId)).session(session).lean();
             return note ? deepFreeze(this.#sanitizeNoteMongoObject(note)) : null;
         } catch (error) {
             console.error("Error finding note by ID:", error);
@@ -120,12 +124,13 @@ class NoteRepository {
      * Retrieves a single note matching the provided query.
      *
      * @param {Object} [query={}] - The MongoDB query to filter notes.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object|null>>} The found note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the query.
      */
-    async findOne(query = {}) {
+    async findOne(query = {}, session = null) {
         try {
-            const note = await this.#model.findOne(query).lean();
+            const note = await this.#model.findOne(query).session(session).lean();
             return note ? deepFreeze(this.#sanitizeNoteMongoObject(note)) : null;
         } catch (error) {
             console.error("Error finding note:", error);
@@ -137,14 +142,15 @@ class NoteRepository {
      * Deletes a note by its ID.
      *
      * @param {string} noteId - The ID of the note to delete.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object|null>>} The deleted note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during deletion.
      */
-    async deleteById(noteId) {
+    async deleteById(noteId, session = null) {
         if (!isValidObjectId(noteId)) return null;
 
         try {
-            const deletedNote = await this.#model.findByIdAndDelete(convertToObjectId(noteId)).lean();
+            const deletedNote = await this.#model.findByIdAndDelete(convertToObjectId(noteId), {session}).lean();
             return deletedNote ? deepFreeze(this.#sanitizeNoteMongoObject(deletedNote)) : null;
         } catch (error) {
             console.error("Error deleting note:", error);
@@ -163,12 +169,12 @@ class NoteRepository {
      * @param {Object} [options={}] - Pagination and sorting options.
      * @param {number} [options.page=1] - The page number to retrieve (1-based).
      * @param {number} [options.perPage=10] - Number of results per page.
-     * @param {Object} [options.sort={isPinned: -1, updatedAt: -1, createdAt: -1}]
-     *         - Sort criteria.
+     * @param {Object} [options.sort={isPinned: -1, updatedAt: -1, createdAt: -1}] - Sort criteria.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object>>} An object containing paginated search results.
      * @throws {Error} If an error occurs while fetching notes.
      */
-    async find({searchText, query = {}, options = {}} = {}) {
+    async find({searchText, query = {}, options = {}} = {}, session = null) {
         const mustConditions = [];
 
         if (searchText && searchText.trim()) {
@@ -189,7 +195,7 @@ class NoteRepository {
             });
         }
 
-        return this.#fetchNotes(mustConditions, options);
+        return this.#fetchNotes(mustConditions, options, session);
     }
 
     /**
@@ -201,10 +207,11 @@ class NoteRepository {
      * @private
      * @param {Array<Object>} mustConditions - Conditions for the `$search.compound.must` clause.
      * @param {Object} options - Pagination and sorting options.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Readonly<Object>>} An object containing the paginated results.
      * @throws {Error} If an error occurs while fetching notes.
      */
-    async #fetchNotes(mustConditions, options) {
+    async #fetchNotes(mustConditions, options, session = null) {
         // Set default pagination and sort options
         const {
             page = 1,
@@ -213,7 +220,7 @@ class NoteRepository {
         } = options;
 
         try {
-            const result = await this.#paginator.getPagination(mustConditions, {page, perPage, sort});
+            const result = await this.#paginator.getPagination(mustConditions, {page, perPage, sort}, session);
             result.data = result.data.map(this.#sanitizeNoteMongoObject);
             return deepFreeze(result);
         } catch (error) {
@@ -223,4 +230,4 @@ class NoteRepository {
     }
 }
 
-module.exports = new NoteRepository(Note);
+module.exports = NoteRepository;

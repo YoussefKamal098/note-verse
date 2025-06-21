@@ -20,7 +20,8 @@
     background-color: var(--color-background-primary);
 }
 
-.md-editor .cm-content {
+.md-editor .cm-content,
+.wmde-markdown {
     min-height: 50vh;
 }
 

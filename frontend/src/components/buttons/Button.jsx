@@ -6,7 +6,8 @@ import LoadingEffect from "../common/LoadingEffect";
 const BUTTON_TYPE = Object.freeze({
     SUCCESS: "success",
     INFO: "info",
-    DANGER: "danger"
+    SECONDARY: "secondary",
+    DANGER: "danger",
 });
 
 const BUTTON_PROPS = Object.freeze({
@@ -15,6 +16,9 @@ const BUTTON_PROPS = Object.freeze({
     },
     [BUTTON_TYPE.INFO]: {
         color: "var(--color-primary)"
+    },
+    [BUTTON_TYPE.SECONDARY]: {
+        color: "var(--background-quaternary)"
     },
     [BUTTON_TYPE.DANGER]: {
         color: "var(--color-danger)"
@@ -31,8 +35,8 @@ const ButtonStyled = styled.button`
     align-items: center;
     justify-content: center;
     gap: 0.4em;
-    padding: 0.5em;
-    border-radius: calc(var(--border-radius) / 1.5);
+    padding: 8px;
+    border-radius: 8px;
     opacity: ${(props) => props.disabled ? 0.5 : 1};
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
     background-color: ${(props) => BUTTON_PROPS[props.type].color};
@@ -51,7 +55,7 @@ const ButtonsContainerStyled = styled.div`
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.5em;
 `;
 

@@ -1,6 +1,7 @@
 import styled from "styled-components";
+import {motion} from "framer-motion";
 
-const PopUpOverlay = styled.div`
+const PopUpOverlay = styled(motion.div)`
     position: fixed;
     display: flex;
     justify-content: center;

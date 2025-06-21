@@ -11,6 +11,16 @@ const appearKeyframes = keyframes`
     }
 `;
 
+
+const mobileAppearKeyframes = keyframes`
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+`;
+
 const DynamicMenuWrapperStyled = styled.div`
     @media (max-width: ${props => props.$mobileSize}px) {
         position: fixed;
@@ -28,7 +38,6 @@ const DynamicMenuWrapperStyled = styled.div`
 `
 
 const DynamicMenuHeaderStyled = styled.div`
-    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
@@ -52,9 +61,9 @@ const DynamicMenuHeaderStyled = styled.div`
 
 const DynamicMenuContainerStyled = styled.div`
     position: absolute;
-    min-width: 300px;
-    height: 100vh;
-    max-height: 350px;
+    min-width: 200px;
+    max-width: 250px;
+    max-height: 75vh;
     overflow-y: auto;
     overflow-x: hidden;
     translate: 0 100%;
@@ -65,22 +74,13 @@ const DynamicMenuContainerStyled = styled.div`
     gap: 1em;
     padding: 1.75em 0.5em;
     background-color: var(--color-background);
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow-darker);
     user-select: text;
     transition: opacity 300ms ease, transform 300ms ease;
     animation: ${appearKeyframes} 300ms ease-out;
     z-index: 999;
-
-    &.menu-enter {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    &.menu-enter-active {
-        opacity: 1;
-        transform: translateY(0);
-    }
 
     &.menu-exit {
         opacity: 1;
@@ -100,11 +100,13 @@ const DynamicMenuContainerStyled = styled.div`
         height: 75vh;
         min-width: 100vw;
         max-height: 100vh;
-        translate: 0 0;
+        transform: translateX(0);
         padding-top: 0;
         border-radius: 25px 25px 0 0;
         overflow-y: auto;
         transition: opacit 300ms ease, translate 300ms ease;
+        animation: ${mobileAppearKeyframes} 300ms ease-out;
+        z-index: 2000;
 
         &.menu-exit {
             opacity: 1;
@@ -119,15 +121,17 @@ const DynamicMenuContainerStyled = styled.div`
 `;
 
 const DynamicMenuTriggerButton = styled.button`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.5em;
+    max-width: 1.5em;
     aspect-ratio: 1/1;
     border-radius: 50%;
     background: transparent;
     color: var(--color-placeholder);
     border: none;
     cursor: pointer;
-    padding: 0.25em;
-    display: flex;
-    align-items: center;
     font-size: 1.5em;
     transition: 300ms ease;
 
@@ -144,58 +148,82 @@ const DynamicMenuTriggerButton = styled.button`
 
 const OptionsWrapperStyled = styled.div`
     position: relative;
+    width: 100%;
     height: 100%;
-    min-height: 200px;
+    min-height: 100px;
+    max-height: 220px;
     overflow-y: auto;
     overflow-x: hidden;
+
+    @media (max-width: ${props => props.$mobileSize}px) {
+        max-height: 100%;
+    }
 `
 
 const OptionsStyled = styled.ul`
-    position: absolute;
+    list-style-type: none;
     display: flex;
     width: 100%;
+    height: 100%;
     flex-direction: column;
-    font-size: 14px;
+    font-size: 13px;
     gap: 0.5em;
 
     &.slide-right-enter {
+        position: absolute;
         transform: translateX(100%);
-        transition: transform 0s ease;
+        transition: 0s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &.slide-right-enter-active {
+        position: absolute;
         transform: translateX(0);
-        transition: transform 300ms ease;
+        transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &.slide-right-enter-done {
+        position: relative;
     }
 
     &.slide-right-exit {
+        position: absolute;
         transform: translateX(0);
-        transition: transform 0s ease;
+        transition: 0s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &.slide-right-exit-active {
+        position: absolute;
         transform: translateX(100%);
-        transition: transform 300ms ease;
+        opacity: 0;
+        transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &.slide-left-enter {
+        position: absolute;
         transform: translateX(-100%);
-        transition: transform 0s ease;
+        transition: 0s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &.slide-left-enter-active {
+        position: absolute;
         transform: translateX(0);
-        transition: transform 300ms ease;
+        transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &.slide-left-enter-done {
+        position: relative;
     }
 
     &.slide-left-exit {
+        position: absolute;
         transform: translateX(0);
-        transition: transform 0s ease;
+        transition: 0s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &.slide-left-exit-active {
+        position: absolute;
         transform: translateX(-100%);
-        transition: transform 300ms ease;
+        transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 `;
 

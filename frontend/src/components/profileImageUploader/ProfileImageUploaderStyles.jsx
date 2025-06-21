@@ -1,6 +1,6 @@
 import styled, {keyframes} from 'styled-components';
-import AvatarEditor from 'react-avatar-editor';
 import {motion} from 'framer-motion';
+import AvatarEditor from 'react-avatar-editor';
 
 // -----------------------
 // Animations
@@ -198,27 +198,8 @@ const HeaderStyled = styled.div`
 `;
 
 const TitleStyled = styled.h2`
-    font-size: 1.5rem;
+    font-size: 1.5em;
     color: var(--color-text);
-`;
-
-const CloseButtonStyled = styled.button`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: calc(var(--border-radius) / 2);
-    background: transparent;
-    border: none;
-    font-size: 1.6rem;
-    color: var(--color-text);
-    padding: 0.25rem;
-    transition: 0.3s ease;
-    cursor: pointer;
-
-    &:hover {
-        color: var(--color-background);
-        background-color: var(--color-text);
-    }
 `;
 
 const modalOverlayVariants = {
@@ -250,7 +231,6 @@ export {
     ModalContentStyled,
     HeaderStyled,
     TitleStyled,
-    CloseButtonStyled,
     modalOverlayVariants,
     modalContentVariants,
 };

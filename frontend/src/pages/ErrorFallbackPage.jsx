@@ -7,6 +7,7 @@ const ErrorFallbackPage = () => (
         icon={<GiTerror/>}
         title="Oops! Something Went Wrong"
         message="We encountered an error while loading this page. Please try again later."
+        reload={true}
     />
 );
 

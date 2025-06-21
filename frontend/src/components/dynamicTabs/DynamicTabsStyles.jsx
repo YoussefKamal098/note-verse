@@ -20,7 +20,7 @@ const TabsListWrapperStyled = styled.div`
         color: var(--color-text);
         background: var(--color-background);
         border: var(--border-width) solid var(--color-border-secondary);
-        border-radius: calc(var(--border-radius) / 1.5);
+        border-radius: 8px;
         box-shadow: var(--box-shadow);
         transition: 0.3s ease;
     }
@@ -144,6 +144,10 @@ const TabStyled = styled.div`
         max-height: calc(100vh - 2rem);
     }
 
+    &.full-screen .tab-body .wmde-markdown {
+        min-height: calc(100vh - 2rem);
+    }
+
     &.full-screen .tab-body .cm-editor,
     &.full-screen .tab-body .cm-content {
         min-height: calc(100vh - 2rem - 29px); // 29px is the editor toolbar height
@@ -171,10 +175,6 @@ const ToolbarStyled = styled.div`
         top: 0;
         left: 0;
         z-index: 1000;
-    }
-
-    &.fixed {
-        border-radius: 0;
     }
 `
 

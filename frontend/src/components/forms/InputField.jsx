@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {MdVisibility, MdVisibilityOff} from "react-icons/md";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
-import {InputContainerStyled, SensitiveInputStyled} from "./formStyles";
+import {InputContainerStyled, SensitiveInputStyled} from "./Styles";
 
 const InputField = ({
                         field,

@@ -4,8 +4,6 @@ const {parseIp} = require('../utils/ip.utils');
 const AppError = require('../errors/app.error');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
-const userService = require('../services/user.service');
-const sessionRepository = require('../repositories/session.repository');
 
 /**
  * Service for managing user sessions.
@@ -14,11 +12,13 @@ const sessionRepository = require('../repositories/session.repository');
  * operations via the repository using plain parameters.
  */
 class SessionService {
-    #userService;
+    /**
+     * @private
+     * @type {SessionRepository}
+     */
     #sessionRepository;
 
-    constructor(userService, sessionRepository) {
-        this.#userService = userService;
+    constructor(sessionRepository) {
         this.#sessionRepository = sessionRepository;
     }
 
@@ -42,8 +42,6 @@ class SessionService {
      * @throws {AppError} If validations fail.
      */
     async createSession({userId, ip, userAgent, expiredAt}) {
-        await this.#userService.ensureUserExists(userId);
-
         // Validate and normalize the User-Agent.
         const parsedUA = parseUserAgent(userAgent);
         if (!parsedUA) {
@@ -273,4 +271,4 @@ class SessionService {
     }
 }
 
-module.exports = new SessionService(userService, sessionRepository);
+module.exports = SessionService;

@@ -3,27 +3,12 @@ import ReactDOM from "react-dom";
 import {MdFullscreen, MdFullscreenExit} from "react-icons/md";
 import Tooltip from "../tooltip/Tooltip";
 import {ToolbarStyled, ToolStyled} from "./DynamicTabsStyles";
-import {NAVBAR_POSITIONS, useGlobalSettings} from "../../contexts/GlobalSettingsContext";
-import useScrollFixed from "../../hooks/useScrollFixed";
+import {useGlobalSettings} from "../../contexts/GlobalSettingsContext";
 
 const TabToolbar = ({className, tabRef}) => {
-    const {appRef, setNavbarPosition} = useGlobalSettings();
+    const {appRef} = useGlobalSettings();
     const toolbarRef = useRef(null);
     const [fullScreen, setFullScreen] = useState(false);
-
-    const handleFixed = useCallback(() => {
-        setNavbarPosition(NAVBAR_POSITIONS.ABSOLUTE);
-    }, []);
-
-    const handleUnfixed = useCallback(() => {
-        setNavbarPosition(NAVBAR_POSITIONS.FIXED);
-    }, []);
-
-    const {isFixed, getFixedStyle} = useScrollFixed(toolbarRef, {
-        marginTop: 50,
-        onFixed: handleFixed,
-        onUnfixed: handleUnfixed,
-    });
 
     // Fullscreen effect
     useEffect(() => {
@@ -35,9 +20,8 @@ const TabToolbar = ({className, tabRef}) => {
     // Toolbar element rendering
     const renderToolbar = useCallback(() => (
         <ToolbarStyled
-            className={`${className} ${fullScreen ? "full-screen" : ""} ${isFixed ? "fixed" : ""}`}
+            className={`${className} ${fullScreen ? "full-screen" : ""}`}
             ref={toolbarRef}
-            style={isFixed ? getFixedStyle() : {}}
         >
             <Tooltip title={fullScreen ? "Minimize" : "Maximize"}>
                 <ToolStyled onClick={() => setFullScreen(!fullScreen)}>
@@ -45,11 +29,11 @@ const TabToolbar = ({className, tabRef}) => {
                 </ToolStyled>
             </Tooltip>
         </ToolbarStyled>
-    ), [className, fullScreen, getFixedStyle, isFixed]);
+    ), [className, fullScreen]);
 
     return (
         <>
-            {(isFixed || fullScreen) && appRef.current
+            {(fullScreen) && appRef.current
                 ? ReactDOM.createPortal(renderToolbar(), appRef.current)
                 : renderToolbar()}
         </>

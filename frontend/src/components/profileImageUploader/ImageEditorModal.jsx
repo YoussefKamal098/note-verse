@@ -2,14 +2,13 @@ import React, {useCallback, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {AnimatePresence} from 'framer-motion';
 import {FaArrowRotateLeft, FaArrowRotateRight} from 'react-icons/fa6';
-import {CgClose} from 'react-icons/cg';
 import Button, {BUTTON_TYPE} from '../buttons/Button';
 import useImageProcessor from '../../hooks/useImageProcessor';
 import Overlay from '../common/Overlay';
+import CloseButton from "../buttons/CloseButton";
 
 import {
     AvatarEditorStyled,
-    CloseButtonStyled,
     ControlsButtonsStyled,
     ControlsStyled,
     EditorContainerStyled,
@@ -68,9 +67,7 @@ const ImageEditorModal = ({
                         >
                             <HeaderStyled>
                                 <TitleStyled>Upload a New Avatar</TitleStyled>
-                                <CloseButtonStyled onClick={onCancel}>
-                                    <CgClose/>
-                                </CloseButtonStyled>
+                                <CloseButton onClick={onCancel}/>
                             </HeaderStyled>
                             <EditorContainerStyled>
                                 <AvatarEditorStyled

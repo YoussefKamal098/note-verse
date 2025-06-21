@@ -29,12 +29,14 @@ const HeaderStyled = styled.div`
     align-items: center;
     border-bottom: var(--border-width) solid var(--color-border);
     padding-bottom: 1em;
+    padding-right: 2em;
     gap: 0.5em;
 `;
 
 const FullNameStyled = styled.div`
     font-size: 1.5em;
     font-weight: 600;
+    text-wrap: nowrap;
 `;
 
 export {

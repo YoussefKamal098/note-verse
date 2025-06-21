@@ -1,11 +1,7 @@
+const AppError = require('../errors/app.error');
 const httpCodes = require('../constants/httpCodes');
 const httpHeaders = require('../constants/httpHeaders');
 const statusMessages = require('../constants/statusMessages');
-const AppError = require('../errors/app.error');
-const jwtAuthService = require('../services/jwtAuth.service');
-const googleAuthAuthService = require('../services/googleAuth.service');
-const emailService = require('../services/email.service');
-const emailQueue = require('../queues/email.queue');
 
 /**
  * Controller for authentication-related endpoints.
@@ -23,16 +19,24 @@ class AuthController {
      * @description The Google authentication service instance
      */
     #googleAuthService;
+    /**
+     * @private
+     * @type {import('../services/email.mediator')}
+     * @description Email mediator
+     */
+    #emailMediator;
 
     /**
      * Constructs a new AuthController.
-     *
-     * @param {import('../services/jwtAuth.service')} jwtAuthService - The JWT authentication service instance.
-     * @param {import('../services/googleAuth.service')} googleAuthService - The Google authentication service instance.
+     * @param depndencies
+     * @param {import('../services/jwtAuth.service')} depndencies.jwtAuthService
+     * @param {import('../services/googleAuth.service')} depndencies.googleAuthService
+     * @param {import('../services/email.mediator')} depndencies.emailMediator
      */
-    constructor(jwtAuthService, googleAuthService) {
+    constructor({jwtAuthService, googleAuthService, emailMediator}) {
         this.#jwtAuthService = jwtAuthService;
         this.#googleAuthService = googleAuthService;
+        this.#emailMediator = emailMediator;
     }
 
     /**
@@ -47,6 +51,39 @@ class AuthController {
         const cookieOptions = this.#jwtAuthService.config.getCookieOptions();
         res.cookie(this.#jwtAuthService.config.cookiesName, refreshToken, cookieOptions);
         res.json({accessToken});
+    }
+
+    /**
+     * Clears Google authentication cookies
+     * @private
+     * @param {import('express').Response} res
+     */
+    #clearGoogleAuthCookie(res) {
+        const options = this.#jwtAuthService.config.getClearCookieOptions();
+        res.clearCookie(this.#jwtAuthService.config.cookiesName, options);
+    }
+
+    /**
+     * Clears JWT authentication cookies
+     * @private
+     * @param {import('express').Response} res
+     */
+    #clearJwtAuthCookie(res) {
+        const options = this.#googleAuthService.config.getClearCookieOptions();
+        res.clearCookie(this.#googleAuthService.config.cookiesName, options);
+    }
+
+    /**
+     * Extracts session information from request
+     * @private
+     * @param {import('express').Request} req
+     * @returns {SessionInfo}
+     */
+    #getSessionInfo(req) {
+        return {
+            ip: req.ip,
+            userAgent: req.get(httpHeaders.USER_AGENT)
+        };
     }
 
     /**
@@ -74,7 +111,7 @@ class AuthController {
             sessionInfo
         });
 
-        await emailService.sendVerificationEmail(emailQueue, {
+        await this.#emailMediator.sendAccountVerificationEmail({
             email,
             name: `${firstname} ${lastname}`,
             otpCode: user.otpCode,
@@ -101,11 +138,7 @@ class AuthController {
             ));
         }
 
-        const sessionInfo = {
-            ip: req.ip,
-            userAgent: req.get(httpHeaders.USER_AGENT)
-        };
-
+        const sessionInfo = this.#getSessionInfo(req);
         const {accessToken, refreshToken} = await this.#jwtAuthService.verifyEmail(email, otpCode, sessionInfo);
         this.#sendTokens(res, accessToken, refreshToken);
     }
@@ -130,11 +163,8 @@ class AuthController {
                 httpCodes.BAD_REQUEST.name
             ));
         }
-        const sessionInfo = {
-            ip: req.ip,
-            userAgent: req.get(httpHeaders.USER_AGENT)
-        };
 
+        const sessionInfo = this.#getSessionInfo(req);
         const {accessToken, refreshToken} = await this.#jwtAuthService.login({
             email,
             password
@@ -142,7 +172,6 @@ class AuthController {
 
         this.#sendTokens(res, accessToken, refreshToken);
     }
-
 
     /**
      * Initiates the Google authentication flow.
@@ -155,11 +184,7 @@ class AuthController {
      * @returns {Promise<void>} A promise that resolves when the response is sent.
      */
     initiateGoogleAuth = async (req, res) => {
-        const sessionInfo = {
-            ip: req.ip,
-            userAgent: req.get(httpHeaders.USER_AGENT)
-        };
-
+        const sessionInfo = this.#getSessionInfo(req);
         const stateToken = await this.#googleAuthService.generateStateToken(sessionInfo);
 
         // Use config from service for cookie settings
@@ -192,11 +217,7 @@ class AuthController {
             );
         }
 
-        const sessionInfo = {
-            ip: req.ip,
-            userAgent: req.get(httpHeaders.USER_AGENT)
-        };
-
+        const sessionInfo = this.#getSessionInfo(req);
         const tokens = await this.#googleAuthService.handleGoogleCallback(
             code,
             stateToken,
@@ -204,11 +225,8 @@ class AuthController {
         );
 
         // Clear state cookie using config options
-        const clearCookieOptions = this.#googleAuthService.config.getClearCookieOptions();
-        res.clearCookie(this.#googleAuthService.config.cookiesName, clearCookieOptions);
-
+        this.#clearGoogleAuthCookie(res);
         const {accessToken, refreshToken} = tokens;
-
         this.#sendTokens(res, accessToken, refreshToken);
     }
 
@@ -235,18 +253,14 @@ class AuthController {
             }
 
             await this.#jwtAuthService.logout(refreshToken);
-
-            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
-            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
-
+            this.#clearJwtAuthCookie(res);
             res.sendStatus(httpCodes.NO_CONTENT.code);
         } catch (error) {
             if (!(error instanceof AppError) || error.httpCode !== httpCodes.UNAUTHORIZED.code) {
                 throw error;
             }
 
-            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
-            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+            this.#clearJwtAuthCookie(res);
         }
     }
 
@@ -277,11 +291,10 @@ class AuthController {
                 throw error;
             }
 
-            const clearCookieOptions = this.#jwtAuthService.config.getClearCookieOptions();
-            res.clearCookie(this.#jwtAuthService.config.cookiesName, clearCookieOptions);
+            this.#clearJwtAuthCookie(res);
         }
     }
 
 }
 
-module.exports = new AuthController(jwtAuthService, googleAuthAuthService);
+module.exports = AuthController;

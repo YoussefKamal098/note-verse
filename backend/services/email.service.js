@@ -1,8 +1,6 @@
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const emailConfig = require('../config/emailConfig');
-const emailTemplates = require('../constants/emailTemplates');
-const {formatDate} = require("shared-utils/date.utils");
 
 /**
  * EmailService is responsible for sending emails using SMTP settings.
@@ -58,6 +56,9 @@ class EmailService {
         // Create the Nodemailer transporter.
         try {
             this.#transporter = nodemailer.createTransport({
+                pool: true,
+                maxConnections: 10,
+                maxMessages: 100,
                 host: this.#host,
                 port: this.#port,
                 secure: this.#secure,
@@ -116,10 +117,11 @@ class EmailService {
      * @throws {Error} If the directory does not exist.
      * @returns {void}
      */
-    #ensureTemplatesDirExists() {
-        if (!fs.existsSync(this.#templatesDir)) {
-            // Throw an error if the directory does not exist
-            throw new Error(`Templates directory does not exist: ${this.#templatesDir}`);
+    async #ensureTemplatesDirExists() {
+        try {
+            await fs.promises.access(this.#templatesDir);
+        } catch {
+            throw new Error(`Templates directory missing: ${this.#templatesDir}`);
         }
     }
 
@@ -159,40 +161,6 @@ class EmailService {
             console.error('Error sending email:', error);
             throw new Error(`Failed to send email to ${to}: ${error.message}`);
         }
-    }
-
-    /**
-     * Sends a verification email by adding a job to the email queue.
-     *
-     * This method constructs the email context using the provided parameters and enqueues
-     * an email job with the subject "Verify Your Email address" using the 'verify_email' template.
-     *
-     * @async
-     * @param {Queue} emailQueue - The Bull queue instance for email processing.
-     * @param {Object} params - The parameters object.
-     * @param {string} params.email - The recipient's email address.
-     * @param {string} params.name - The recipient's full name.
-     * @param {string} params.otpCode - The one-time password (OTP) code for verification.
-     * @param {Date|string|number} params.otpCodeExpiresAt - The expiration time for the OTP code.
-     * @returns {Promise<void>} A promise that resolves when the email job is successfully added to the queue.
-     * @throws {Error} If adding the email job to the queue fails.
-     */
-    async sendVerificationEmail(emailQueue, {email, name, otpCode, otpCodeExpiresAt}) {
-        const emailContext = {
-            name: name,
-            otpCode: otpCode,
-            expiryTime: formatDate(otpCodeExpiresAt),
-            timestamp: formatDate(new Date()),
-            year: new Date().getFullYear()
-        };
-
-        // Add the email job to the queue using the specified template, subject, and constructed context.
-        await emailQueue.add({
-            to: email,
-            subject: emailTemplates.verify_email.subject,
-            template: emailTemplates.verify_email.template,
-            context: emailContext
-        });
     }
 }
 

@@ -51,7 +51,7 @@ function deepFreeze(object, visited = new WeakSet()) {
 }
 
 /**
- * Deeply compares two values (objects, arrays, or primitives).
+ * Deeply compares two values (primitives, objects, arrays, Maps, or Sets).
  *
  * @param {any} value1 - The first value to compare.
  * @param {any} value2 - The second value to compare.
@@ -77,6 +77,33 @@ function deepEqual(value1, value2) {
 
     if (Array.isArray(value1) || Array.isArray(value2)) return false;
 
+    // Handle Maps
+    if (value1 instanceof Map && value2 instanceof Map) {
+        if (value1.size !== value2.size) return false;
+        for (const [key, val] of value1) {
+            if (!value2.has(key) || !deepEqual(val, value2.get(key))) return false;
+        }
+        return true;
+    }
+
+    // Handle Sets
+    if (value1 instanceof Set && value2 instanceof Set) {
+        if (value1.size !== value2.size) return false;
+        const tempSet = new Set(value2);
+        for (const item of value1) {
+            let found = false;
+            for (const setItem of tempSet) {
+                if (deepEqual(item, setItem)) {
+                    tempSet.delete(setItem);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
+    }
+
     // Handle objects
     const keys1 = Object.keys(value1);
     const keys2 = Object.keys(value2);
@@ -84,7 +111,6 @@ function deepEqual(value1, value2) {
     if (keys1.length !== keys2.length) return false;
 
     for (const key of keys1) {
-        // Compare the values
         if (!(key in value2) || !deepEqual(value1[key], value2[key])) {
             return false;
         }

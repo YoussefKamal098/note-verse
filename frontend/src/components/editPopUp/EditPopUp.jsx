@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
-import {FaTimes} from 'react-icons/fa';
 import {AnimatePresence, motion} from 'framer-motion';
+import CloseButton from "../buttons/CloseButton";
 
 const overlayVariants = {
     visible: {
@@ -49,7 +49,7 @@ const PopupOverlayStyled = styled(motion.div)`
 const PopupContentStyled = styled(motion.div)`
     position: relative;
     background: var(--color-background-primary);
-    padding: 2rem;
+    padding: 1rem 1rem 2em;
     border-radius: var(--border-radius);
     width: 90%;
     max-width: 500px;
@@ -68,16 +68,6 @@ const HeaderStyled = styled.div`
 const TitleStyled = styled.h3`
     margin: 0;
     color: var(--color-text);
-`;
-
-const CloseIconStyled = styled(FaTimes)`
-    cursor: pointer;
-    color: var(--color-text);
-    transition: color 0.2s;
-
-    &:hover {
-        color: var(--color-danger);
-    }
 `;
 
 const ButtonGroupStyled = styled.div`
@@ -158,7 +148,7 @@ const EditPopUp = ({
                         >
                             <HeaderStyled>
                                 <TitleStyled>{title}</TitleStyled>
-                                {showDefaultClose && <CloseIconStyled onClick={onPopUpClose}/>}
+                                {showDefaultClose && <CloseButton onClick={onPopUpClose}/>}
                             </HeaderStyled>
 
                             {children}

@@ -4,6 +4,7 @@ import {FadeInAnimation} from "../animations/ContainerAnimation";
 import {FaExclamationTriangle, FaInfoCircle} from "react-icons/fa";
 import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
 import {PopupContainer, PopUpOverlay} from "./ConfirmationPopupStyles";
+import {AnimatePresence} from "framer-motion";
 
 const POPUP_TYPE = Object.freeze({
     INFO: "info",
@@ -48,7 +49,8 @@ const ConfirmationPopup = ({
                                type = POPUP_TYPE.INFO,
                                confirmationMessage = "Are you sure?",
                                onConfirm = () => ({}),
-                               onCancel = () => ({})
+                               onCancel = () => ({}),
+                               show = false
                            }) => {
     const popupRef = useRef(null);
 
@@ -59,21 +61,28 @@ const ConfirmationPopup = ({
     };
 
     return (
-        <PopUpOverlay onClick={handleClickOutside} aria-modal="true" role="dialog">
-            <FadeInAnimation keyProp="popUpAnimation">
-                <PopupContainer ref={popupRef} onClick={(e) => e.stopPropagation()}>
-                    <div className="confirm-text">
+        <AnimatePresence>
+            {show && (<PopUpOverlay
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
+                onClick={handleClickOutside} aria-modal="true" role="dialog"
+            >
+                <FadeInAnimation keyProp="popUpAnimation">
+                    <PopupContainer ref={popupRef} onClick={(e) => e.stopPropagation()}>
+                        <div className="confirm-text">
                         <span className="icon" style={{color: POPUP_PROPS[type].color}}>
                             {POPUP_PROPS[type].icon}
                         </span>
-                        {confirmationMessage}
-                    </div>
-                    <ButtonsContainerStyled className="controlling-buttons">
-                        {renderButtons(type, onConfirm, onCancel)}
-                    </ButtonsContainerStyled>
-                </PopupContainer>
-            </FadeInAnimation>
-        </PopUpOverlay>
+                            {confirmationMessage}
+                        </div>
+                        <ButtonsContainerStyled className="controlling-buttons">
+                            {renderButtons(type, onConfirm, onCancel)}
+                        </ButtonsContainerStyled>
+                    </PopupContainer>
+                </FadeInAnimation>
+            </PopUpOverlay>)}
+        </AnimatePresence>
     );
 };
 

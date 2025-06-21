@@ -35,20 +35,22 @@ class NotePaginatorService {
      * @param {number} [options.page=0] - The page number (0-indexed).
      * @param {number} [options.perPage=10] - Number of items per page.
      * @param {Object} [options.sort={isPinned: -1, updatedAt: -1, createdAt: -1}] - Sort criteria.
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
      * @returns {Promise<Object>} Object containing paginated search results and metadata.
      * @throws {Error} If an error occurs during aggregation.
      */
-    async getPagination(query = [], options = {}) {
+    async getPagination(query = [], options = {}, session = null) {
         const {
             page = 0,
             perPage = 10,
             sort = {isPinned: -1, updatedAt: -1, createdAt: -1}
         } = options;
+
         const skip = page * perPage;
         const pipeline = this.#buildAggregationPipeline(query, sort, skip, perPage);
 
         try {
-            const result = await this.#model.aggregate(pipeline);
+            const result = await this.#model.aggregate(pipeline).session(session);
             const totalItems = result[0]?.metadata[0]?.totalItems || 0;
             const data = result[0]?.data || [];
 
@@ -87,7 +89,6 @@ class NotePaginatorService {
                     metadata: [{$count: "totalItems"}],
                     data: [
                         {$sort: sortObj},
-                        {$project: {content: 0}}, // Exclude the 'content' field
                         {$skip: skip},
                         {$limit: perPage}
                     ]

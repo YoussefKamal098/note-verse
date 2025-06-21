@@ -27,14 +27,13 @@ const ConfirmationPopUpProvider = ({children}) => {
 
     return (
         <ConfirmationContext.Provider value={{showConfirmation}}>
-            {popupConfig.isVisible && (
-                <ConfirmationPopup
-                    type={popupConfig.type}
-                    confirmationMessage={popupConfig.confirmationMessage}
-                    onConfirm={popupConfig.onConfirm}
-                    onCancel={popupConfig.onCancel}
-                />
-            )}
+            <ConfirmationPopup
+                show={popupConfig.isVisible}
+                type={popupConfig.type}
+                confirmationMessage={popupConfig.confirmationMessage}
+                onConfirm={popupConfig.onConfirm}
+                onCancel={popupConfig.onCancel}
+            />
             {children}
         </ConfirmationContext.Provider>
     );

@@ -26,6 +26,10 @@ const noteSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    isPublic: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true,
     toJSON: {

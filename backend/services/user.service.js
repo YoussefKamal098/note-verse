@@ -4,11 +4,6 @@ const {timeUnit, time, timeFromNow} = require('shared-utils/date.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
 const {generateSecureOTP} = require("../utils/otp.utils");
 const AppError = require('../errors/app.error');
-const PasswordHasherService = require('../services/passwordHasher.service');
-const userValidationService = require('../validations/user.validation');
-const cacheService = require('../services/cache.service');
-const userRepository = require("../repositories/user.repository");
-const fileRepository = require("../repositories/file.repository");
 const dbErrorCodes = require('../constants/dbErrorCodes');
 
 
@@ -27,19 +22,9 @@ const dbErrorCodes = require('../constants/dbErrorCodes');
 class UserService {
     /**
      * @private
-     * @type {UserValidationService}
-     */
-    #userValidationService;
-    /**
-     * @private
      * @type {UserRepository}
      */
     #userRepository;
-    /**
-     * @private
-     * @type {FileRepository}
-     */
-    #fileRepository;
     /**
      * @private
      * @type {CacheService}
@@ -50,39 +35,17 @@ class UserService {
      */
     passwordHasherService;
 
-
     /**
      * Creates an instance of UserService.
      *
-     * @param {UserValidationService} userValidationService - Service for validating user data.
      * @param {PasswordHasherService} passwordHasherService - Service for hashing and verifying passwords.
      * @param {UserRepository} userRepository - Repository for user database operations.
-     * @param {FileRepository} fileRepository - Repository for file database operations.
      * @param {CacheService} cacheService - The cache service instance used for caching operations.
      */
-    constructor(userValidationService, passwordHasherService, userRepository, fileRepository, cacheService) {
-        this.#userValidationService = userValidationService;
+    constructor(passwordHasherService, userRepository, cacheService) {
         this.passwordHasherService = passwordHasherService;
         this.#userRepository = userRepository;
-        this.#fileRepository = fileRepository;
         this.#cacheService = cacheService;
-    }
-
-    /**
-     * Ensures that a user exists with the given ID.
-     *
-     * @param {string} userId - The ID of the user.
-     * @returns {Promise<void>}
-     * @throws {AppError} If the user does not exist.
-     */
-    async ensureUserExists(userId) {
-        if (!userId || !(await this.findById(userId))) {
-            throw new AppError(
-                statusMessages.USER_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
     }
 
     /**
@@ -117,11 +80,6 @@ class UserService {
      * @throws {AppError} If caching the unverified user data fails.
      */
     async createUnverifiedUser(userData) {
-        this.#userValidationService.validateEmail('email', userData.email);
-        this.#userValidationService.validatePassword('password', userData.password);
-        this.#userValidationService.validateName('firstname', userData.firstname);
-        this.#userValidationService.validateName('lastname', userData.lastname);
-
         const otpCode = generateSecureOTP({
             length: 6,
             charType: 'alphanumeric',
@@ -165,10 +123,7 @@ class UserService {
      */
     async createAuthProviderUser(authUserData = {}, provider) {
         try {
-            return await this.#userRepository.findOrCreateAuthUser(
-                authUserData,
-                provider
-            );
+            return await this.#userRepository.findOrCreateAuthUser({...authUserData, provider});
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
                 throw new AppError(
@@ -296,25 +251,13 @@ class UserService {
      * - Database update fails (500)
      */
     async updateAvatar(userId, fileId) {
-        await this.ensureUserExists(userId);
-
-        // Verify the file exists first
-        const file = await this.#fileRepository.findByFileId(fileId);
-        if (!file) {
-            throw new AppError(
-                statusMessages.FILE_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
         try {
             const updatedUser = await this.#userRepository.findByIdAndUpdate(
                 userId,
                 {avatar: fileId}
             );
 
-            return updatedUser.avatar; // Returns the fileId string
+            return updatedUser?.avatar; // Returns the fileId string
         } catch (error) {
             throw new AppError(
                 statusMessages.AVATAR_UPDATE_FAILED,
@@ -325,4 +268,5 @@ class UserService {
     }
 }
 
-module.exports = new UserService(new userValidationService(), new PasswordHasherService(), userRepository, fileRepository, cacheService);
+module.exports = UserService;
+

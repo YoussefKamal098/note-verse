@@ -1,9 +1,7 @@
-const User = require("../models/user.model");
-const authProvider = require("../models/authProvider.model");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
 const {deepFreeze} = require('shared-utils/obj.utils');
-
+const config = require("../config/config");
 
 /**
  * Repository for performing CRUD operations on the User collection.
@@ -44,40 +42,151 @@ class UserRepository {
     }
 
     /**
-     * Creates or updates a local email/password user document with OTP verification handling.
-     *
-     * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
-     * non-verified user (whose OTP has expired) or create a new user document.
-     * The update only applies to
-     * non-email fields, while the email field is set only during document insertion.
-     * The userData object
-     * may include the following properties:
-     *
-     * @param {Object} userData - The data for creating or updating the user.
-     * @param {string} userData.firstname - The user's first name.
-     * @param {string} userData.lastname - The user's last name.
-     * @param {string} userData.email - The user's email address.
-     * @param {string} userData.password - The user's hashed password.
-     *
-     * @returns {Promise<Readonly<Object>>} The created or updated user document, deep-frozen.
-     * @throws {Error} If a duplicate key error occurs (indicating a conflict, e.g., a verified user already exists),
-     * or if any other error occurs during the operation.
+     * Adds authProvider population to a query
+     * @private
+     * @param {import('mongoose').Query} query - The query to modify
+     * @returns {import('mongoose').Query} The modified query
      */
-    async createLocalUser(userData = {}) {
-        try {
-            const newUser = new this.#userModel(userData);
-            await newUser.save();
-            return deepFreeze(sanitizeMongoObject(newUser.toObject()));
-        } catch (error) {
-            // Check for duplicate key error (E11000) which indicates a conflict (e.g., verified user exists)
-            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
-                console.error("Duplicate local user conflict:", error);
-                const conflictError = new Error("Local user already exists");
-                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
-                throw conflictError;
-            }
-            console.error("Error creating local user:", error);
-            throw new Error("Unable to create local user");
+    #withAuthProvider(query) {
+        return query.populate({
+            path: 'authProvider',
+            select: 'providerId avatarUrl -_id -userId',
+            options: {lean: true}
+        });
+    }
+
+    /**
+     * Processes and prepares a user document for return
+     * @private
+     * @param {Object} user - The raw user document
+     * @returns {Readonly<Object>} Processed user document
+     */
+    #prepareUserDocument(user) {
+        return user
+            ? deepFreeze(sanitizeMongoObject(this.#constructUserAvatarUrl(user)))
+            : null;
+    }
+
+    /**
+     * Constructs the avatar URL for a user document.
+     * @private
+     * @param {Object} user - The user document
+     * @returns {Object} The user document with avatarUrl property
+     */
+    #constructUserAvatarUrl(user) {
+        if (!user) return user;
+
+        const userWithAvatar = {...user};
+        userWithAvatar.avatarUrl = user.avatar
+            ? config.storage.constructFileUrl(user.avatar)
+            : user.authProvider?.avatarUrl;
+
+        if (user.authProvider) {
+            delete userWithAvatar.authProvider;
+        }
+
+        return userWithAvatar;
+    }
+
+    /**
+     * @private
+     * Initializes a session if one isn't provided
+     */
+    async #initializeSession(session) {
+        return session || await this.#userModel.db.startSession();
+    }
+
+    /**
+     * @private
+     * Begins transaction if no session was provided
+     */
+    async #beginTransactionIfNeeded(externalSession, session) {
+        if (!externalSession) {
+            await session.startTransaction();
+        }
+    }
+
+    /**
+     * @private
+     * Checks for existing auth provider user
+     */
+    async #checkExistingAuthUser({provider, providerId}, session) {
+        const existingUser = await this.#findUserByAuthProvider(provider, providerId, session);
+        if (existingUser) {
+            return deepFreeze(sanitizeMongoObject(existingUser));
+        }
+        return null;
+    }
+
+    /**
+     * @private
+     * Checks for email conflict with existing users
+     */
+    async #checkForLocalEmailConflict(email, session) {
+        const emailUser = await this.#userModel.findOne({email}).session(session).lean();
+        if (emailUser) {
+            throw {code: dbErrorCodes.DUPLICATE_KEY};
+        }
+    }
+
+    /**
+     * @private
+     * Creates new user with auth provider
+     */
+    async #createAuthUserWithProvider({firstname, lastname, email, provider, providerId, avatarUrl}, session) {
+        const newUser = await this.#userModel.create([{
+            firstname,
+            lastname,
+            email,
+            provider
+        }], {session});
+
+        await this.#authProviderModel.create([{
+            userId: newUser[0]._id,
+            provider,
+            providerId,
+            avatarUrl
+        }], {session});
+
+        return deepFreeze(sanitizeMongoObject(newUser[0].toObject()));
+    }
+
+    /**
+     * @private
+     * Commits transaction if no session was provided
+     */
+    async #commitTransactionIfNeeded(externalSession, session) {
+        if (!externalSession) {
+            await session.commitTransaction();
+        }
+    }
+
+    /**
+     * @private
+     * Handles errors during user creation
+     */
+    async #handleFindOrCreateAuthUserError(error, provider, externalSession, session) {
+        if (!externalSession) {
+            await session.abortTransaction();
+        }
+
+        if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+            const conflictError = new Error("User already exists");
+            conflictError.code = dbErrorCodes.DUPLICATE_KEY;
+            throw conflictError;
+        }
+
+        console.error(`Error creating ${provider} user:`, error);
+        throw new Error(`Unable to create ${provider} user`);
+    }
+
+    /**
+     * @private
+     * Cleans up session if we created it
+     */
+    async #cleanupSession(externalSession, session) {
+        if (!externalSession) {
+            await session.endSession();
         }
     }
 
@@ -102,6 +211,45 @@ class UserRepository {
     }
 
     /**
+     * Creates or updates a local email/password user document with OTP verification handling.
+     *
+     * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
+     * non-verified user (whose OTP has expired) or create a new user document.
+     * The update only applies to
+     * non-email fields, while the email field is set only during document insertion.
+     * The userData object
+     * may include the following properties:
+     *
+     * @param {Object} userData - The data for creating or updating the user.
+     * @param {string} userData.firstname - The user's first name.
+     * @param {string} userData.lastname - The user's last name.
+     * @param {string} userData.email - The user's email address.
+     * @param {string} userData.password - The user's hashed password.
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @returns {Promise<Readonly<Object>>} The created or updated user document, deep-frozen.
+     * @throws {Error} If a duplicate key error occurs (indicating a conflict, e.g., a verified user already exists),
+     * or if any other error occurs during the operation.
+     */
+    async createLocalUser(userData = {}, {session = null} = {}) {
+        try {
+            const newUser = new this.#userModel(userData);
+            await newUser.save({session});
+            return deepFreeze(sanitizeMongoObject(newUser.toObject()));
+        } catch (error) {
+            // Check for duplicate key error (E11000) which indicates a conflict (e.g., verified user exists)
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                console.error("Duplicate local user conflict:", error);
+                const conflictError = new Error("Local user already exists");
+                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
+                throw conflictError;
+            }
+            console.error("Error creating local user:", error);
+            throw new Error("Unable to create local user");
+        }
+    }
+
+    /**
      * Finds an existing user by an authentication provider ID or creates a new user.
      *
      * This method performs the following steps:
@@ -119,9 +267,10 @@ class UserRepository {
      * @param {string} authUserData.providerId - The unique provider authentication ID.
      * @param {string} authUserData.firstname - The user's first name.
      * @param {string} authUserData.lastname - The user's last name.
+     * @param {string} authUserData.provider - The authentication provider (e.g., 'google', 'facebook').
      * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
-     * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
-     *
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
      * @returns {Promise<Readonly<Object>>} The created or existing user document, deep-frozen.
      *
      * @throws {Error} Throws an error if:
@@ -129,81 +278,49 @@ class UserRepository {
      *   meaning a non-authenticated user with the same email already exists.
      * - Any other database error happens during the operation.
      */
-    async findOrCreateAuthUser(authUserData = {}, provider) {
-        const session = await this.#userModel.db.startSession();
+    async findOrCreateAuthUser(authUserData = {}, {session = null} = {}) {
+        const {email, provider} = authUserData;
+        const InSession = await this.#initializeSession(session);
+
         try {
-            session.startTransaction();
-            const {email, providerId, firstname, lastname, avatarUrl} = authUserData;
+            await this.#beginTransactionIfNeeded(session, InSession);
 
-            // Check existing auth provider
-            const existingUser = await this.#findUserByAuthProvider(provider, providerId, session);
-            if (existingUser) {
-                await session.commitTransaction();
-                return deepFreeze(sanitizeMongoObject(existingUser));
-            }
+            const existingUser = await this.#checkExistingAuthUser(authUserData, InSession);
+            if (existingUser) return existingUser;
 
-            // Check for existing email conflict
-            const emailUser = await this.#userModel.findOne({email}).session(session).lean();
-            if (emailUser) {
-                throw {code: dbErrorCodes.DUPLICATE_KEY};
-            }
+            await this.#checkForLocalEmailConflict(email, InSession);
+            const newUser = await this.#createAuthUserWithProvider(authUserData, InSession);
 
-            // Create new User
-            const newUser = await this.#userModel.create([{
-                firstname,
-                lastname,
-                email,
-                provider: provider
-            }], {session});
-
-            // Create AuthProvider entry
-            await this.#authProviderModel.create([{
-                userId: newUser[0]._id,
-                provider,
-                providerId,
-                avatarUrl
-            }], {session});
-
-            await session.commitTransaction();
-            return deepFreeze(sanitizeMongoObject(newUser[0].toObject()));
+            await this.#commitTransactionIfNeeded(session, InSession);
+            return newUser;
         } catch (error) {
-            await session.abortTransaction();
-            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
-                const conflictError = new Error("User already exists");
-                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
-                throw conflictError;
-            }
-            console.error(`Error creating ${provider} user:`, error);
-            throw new Error(`Unable to create ${provider} user`);
+            await this.#handleFindOrCreateAuthUserError(error, provider, session, InSession);
+            throw error; // Re-throw after handling
         } finally {
-            await session.endSession();
+            await this.#cleanupSession(session, InSession);
         }
     }
 
     /**
-     * Finds a verified user by ID.
-     *
-     * Only users with `isVerified` set to `true` will be retrieved.
-     *
-     * @param {string} userId - The ID of the user to retrieve.
-     *
-     * @returns {Promise<Readonly<Object>|null>} The user document if found, or `null` if not found.
-     * @throws {Error} If an error occurs while retrieving the user.
+     * Finds a user by ID
+     * @param {string} userId - User ID
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @param {Object} [options.projection] - Fields to include/exclude
+     * @returns {Promise<Readonly<Object>|null>} User document or null
      */
-    async findById(userId) {
+    async findById(userId, {session = null, projection = {}} = {}) {
         if (!isValidObjectId(userId)) return null;
 
         try {
-            const user = await this.#userModel
+            let query = this.#userModel
                 .findById(convertToObjectId(userId))
-                .populate({
-                    path: 'authProvider',
-                    select: 'providerId avatarUrl -_id -userId',
-                    options: {lean: true}
-                }).lean();
+                .select(projection);
 
-            if (!user) return null;
-            return deepFreeze(sanitizeMongoObject(user));
+            if (session) query = query.session(session);
+
+            const user = await this.#withAuthProvider(query).lean();
+            return this.#prepareUserDocument(user);
         } catch (error) {
             console.error("Error finding user by ID:", error);
             throw new Error("Error finding user by ID");
@@ -211,49 +328,58 @@ class UserRepository {
     }
 
     /**
-     * Finds a verified user by ID and updates the document.
-     *
-     * Only users with isVerified equal to true will be updated.
-     *
-     * @param {string} userId - The ID of the user to update.
-     * @param {Object} updates - The update operations to apply.
-     * @returns {Promise<Readonly<Object|null>>} The updated user document, or null if not found.
-     * @throws {Error} If an error occurs during the update.
+     * Finds and updates a user by ID
+     * @param {string} userId - User ID
+     * @param {Object} updates - Update operations
+     * @param {Object} options - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @param {Object} [options.projection] - Fields to return
+     * @returns {Promise<Readonly<Object|null>>} Updated user or null
      */
-    async findByIdAndUpdate(userId, updates = {}) {
+    async findByIdAndUpdate(userId, updates = {}, {session = null, projection = {}} = {}) {
         if (!isValidObjectId(userId)) return null;
 
         try {
-            // Only update if the user is verified
-            const updatedUser = await this.#userModel.findByIdAndUpdate(
+            let query = this.#userModel.findByIdAndUpdate(
                 convertToObjectId(userId),
                 {$set: updates},
                 {new: true, runValidators: true}
-            ).lean();
-            return updatedUser ? deepFreeze(sanitizeMongoObject(updatedUser)) : null;
+            ).select(projection);
+
+            query = this.#withAuthProvider(query);
+
+            const updatedUser = await query.lean();
+            return this.#prepareUserDocument(updatedUser);
         } catch (error) {
             console.error("Error updating user:", error);
             throw new Error("Error updating user");
         }
     }
 
+
     /**
-     * Finds a user by email and updates the document.
-     *
-     * @param {string} email - The user's email address.
-     * @param {Object} updates - The update operations to apply.
-     * @returns {Promise<Readonly<Object|null>>} The updated user document, or null if not found.
-     * @throws {Error} If an error occurs during the update.
+     * Finds and updates a user by email
+     * @param {string} email - User email
+     * @param {Object} updates - Update operations
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @param {Object} [options.projection] - Fields to return
+     * @returns {Promise<Readonly<Object|null>>} Updated user or null
      */
-    async findByEmailAndUpdate(email, updates = {}) {
+    async findByEmailAndUpdate(email, updates = {}, {session = null, projection = {}} = {}) {
         try {
-            const updatedUser = await this.#userModel.findOneAndUpdate(
+            let query = this.#userModel.findOneAndUpdate(
                 {email},
                 {$set: updates},
                 {new: true, runValidators: true}
-            ).lean();
+            ).select(projection);
 
-            return updatedUser ? deepFreeze(sanitizeMongoObject(updatedUser)) : null;
+            if (session) query = query.session(session);
+
+            query = this.#withAuthProvider(query);
+
+            const updatedUser = await query.lean();
+            return this.#prepareUserDocument(updatedUser);
         } catch (error) {
             console.error("Error updating user by email:", error);
             throw new Error("Error updating user by email");
@@ -261,19 +387,55 @@ class UserRepository {
     }
 
     /**
-     * Finds a user based on a query and optional projection.
-     *
-     * @param {Object} [query={}] - The MongoDB query object to filter users.
-     * @param {Object} [projection={}] - An optional projection to specify which fields to include or exclude.
-     * @returns {Promise<Readonly<Object|null>>} The user document if found; otherwise, null.
-     * @throws {Error} If an error occurs during the query.
+     * Finds multiple users by their IDs in a single query
+     * @param {Array<string>} userIds - Array of user IDs to find
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @param {Object} [options.projection] - Fields to include/exclude
+     * @returns {Promise<ReadonlyArray<Readonly<Object>>>} Array of user documents
      */
-    async findOne(query = {}, projection = {}) {
+    async findByIds(userIds, {session = null, projection = {}} = {}) {
+        if (!Array.isArray(userIds) || userIds.length === 0) return Object.freeze([]);
+
+        // Filter valid IDs and convert to ObjectId
+        const objectIds = userIds
+            .filter(id => isValidObjectId(id))
+            .map(id => convertToObjectId(id));
+
         try {
-            const user = await this.#userModel.findOne(query)
-                .select(projection)
-                .lean();
-            return user ? deepFreeze(sanitizeMongoObject(user)) : null;
+            let query = this.#userModel.find({_id: {$in: objectIds}})
+                .select(projection);
+
+            query = this.#withAuthProvider(query);
+            if (session) {
+                query = query.session(session);
+            }
+
+            const users = await query.lean();
+            return users.map(user => this.#prepareUserDocument(user));
+        } catch (error) {
+            console.error("Error finding users by IDs:", error);
+            throw new Error("Error finding users by IDs");
+        }
+    }
+
+    /**
+     * Finds a single user matching query
+     * @param {Object} [query={}] - Query conditions
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @param {Object} [options.projection] - Fields to include/exclude
+     * @returns {Promise<Readonly<Object|null>>} User document or null
+     */
+    async findOne(query = {}, {session = null, projection = {}} = {}) {
+        try {
+            let baseQuery = this.#userModel.findOne(query)
+                .select(projection);
+
+            if (session) baseQuery = baseQuery.session(session);
+
+            const user = await this.#withAuthProvider(baseQuery).lean();
+            return this.#prepareUserDocument(user);
         } catch (error) {
             console.error("Error finding user:", error);
             throw new Error("Error finding user");
@@ -281,4 +443,4 @@ class UserRepository {
     }
 }
 
-module.exports = new UserRepository(User, authProvider);
+module.exports = UserRepository;

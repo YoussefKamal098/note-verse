@@ -11,8 +11,14 @@ const ErrorContainerStyled = styled.div`
 `;
 
 const IconContainerStyled = styled.div`
-    font-size: 7em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     color: var(--color-text);
+
+    > * {
+        font-size: 10rem;
+    }
 `;
 
 const MessageStyled = styled.div`

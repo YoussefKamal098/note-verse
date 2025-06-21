@@ -1,6 +1,6 @@
 import React from "react";
 import LoadingEffect from "../common/LoadingEffect";
-import {SubmitButtonStyled} from "./formStyles";
+import {SubmitButtonStyled} from "./Styles";
 
 const SubmitButton = ({isSubmitting, loading, disabled, children}) => {
     return (

@@ -1,6 +1,7 @@
 .pagination {
     position: relative;
     width: fit-content;
+    list-style: none;
     display: flex;
     font-size: 0.9em;
     flex-wrap: nowrap;

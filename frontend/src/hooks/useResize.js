@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-const useResize = () => {
+const useResize = (fn) => {
     const [dimensions, setDimensions] = useState({
         width: window.innerWidth,
         height: window.innerHeight,
@@ -12,6 +12,8 @@ const useResize = () => {
                 width: window.innerWidth,
                 height: window.innerHeight,
             });
+
+            fn?.();
         };
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);

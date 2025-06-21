@@ -9,7 +9,6 @@ const ContainerStyled = styled.div`
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 16px;
     width: 100%;
 `;
 
@@ -17,8 +16,8 @@ const AvatarWrapperStyled = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5em;
+    height: 2.5em;
     font-size: 1em;
     font-weight: 600;
     flex-shrink: 0;
@@ -75,7 +74,7 @@ const formatSocialDate = (date) => {
     }
 };
 
-const AuthorInfoWithTimestamp = ({fullName, createdAt, avatarUrl, loading = false}) => {
+const AuthorInfoWithTimestamp = ({firstname, lastname, avatarUrl, createdAt, loading = false}) => {
     return (
         <SkeletonTheme baseColor="var(--color-background-skeletonbase)"
                        highlightColor="var(--color-background-skeletonhighlight)">
@@ -89,10 +88,12 @@ const AuthorInfoWithTimestamp = ({fullName, createdAt, avatarUrl, loading = fals
                 </AvatarWrapperStyled>
                 <UserInfoStyled>
                     <FullNameStyled>
-                        {loading ? <Skeleton width={150}/> : fullName}
+                        {loading && <Skeleton width={150}/>}
+                        {firstname && lastname && !loading && `${firstname} ${lastname}`}
                     </FullNameStyled>
                     <DateStyled>
-                        {loading ? <Skeleton width={100}/> : formatSocialDate(createdAt)}
+                        {loading && <Skeleton width={100}/>}
+                        {createdAt && !loading && formatSocialDate(createdAt)}
                     </DateStyled>
                 </UserInfoStyled>
             </ContainerStyled>

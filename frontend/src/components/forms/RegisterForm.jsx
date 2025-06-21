@@ -6,16 +6,16 @@ import * as Yup from "yup";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
 import {FadeInAnimatedText} from "../animations/TextAnimation";
 import useFormNavigation from "../../hooks/useFormNavigation";
-import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./formStyles";
+import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
 import SubmitButton from "./SubmitButtom";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import FirstNameInput from "./FirstNameInput";
 import LastNameInput from "./LastNameInput";
 import AuthSeparator from "./AuthSeparator";
-import GoogleLoginButton from "../buttons/GoogleLoginButton";
+import GoogleLoginButton from "./GoogleLoginButton";
 import authService from "../../api/authService";
-import RoutesPaths from "../../constants/RoutesPaths";
+import routesPaths from "../../constants/routesPaths";
 import {
     confirmPasswordValidation,
     emailValidation,
@@ -38,6 +38,10 @@ const NameFieldsContainerStyled = styled.div`
 // Override FormContainerStyled by extending it
 const OverriddenFormContainerStyled = styled(FormContainerStyled)`
     max-width: 400px; // Override the max-width
+
+    @media (max-width: 550px) {
+        max-width: 300px;
+    }
 `;
 
 const registerValidationSchema = Yup.object({
@@ -67,7 +71,7 @@ const RegisterForm = () => {
             setSubmitting(true);
             await authService.register(values);
             // Pass the email to the verified account page via location state
-            navigate(RoutesPaths.VERIFY_ACCOUNT, {state: {email: values.email}});
+            navigate(routesPaths.VERIFY_ACCOUNT, {state: {email: values.email}});
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
@@ -130,7 +134,7 @@ const RegisterForm = () => {
                                     label="Confirm Password"
                                 />
                                 <SubmitButton isSubmitting={isSubmitting} loading={formLoading}
-                                              disabled={googleLoading}>SIGN UP</SubmitButton>
+                                              disabled={googleLoading}>Sign Up</SubmitButton>
                             </Form>
                         )}
                     </Formik>
@@ -144,7 +148,7 @@ const RegisterForm = () => {
                     />
 
                     <LinkStyled>
-                        <p>Already have an account? <a href={RoutesPaths.LOGIN}>Sign in</a></p>
+                        <p>Already have an account? <a href={routesPaths.LOGIN}>Sign in</a></p>
                     </LinkStyled>
                 </OverriddenFormContainerStyled>
             </HeightTransitionContainer>

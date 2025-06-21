@@ -2,7 +2,6 @@ const mime = require('mime-types');
 const {time, timeUnit} = require("shared-utils/date.utils");
 const httpCodes = require("../constants/httpCodes");
 const httpHeaders = require("../constants/httpHeaders");
-const fileStorageService = require("../services/fileStorage.service");
 const CacheControlBuilder = require("../utils/cacheControlBuilder");
 
 class FileController {
@@ -15,10 +14,10 @@ class FileController {
 
     /**
      * Constructs a new FileController.
-     *
-     * @param {FileStorageService} fileStorageService - The file storage service instance.
+     * @param dependencies
+     * @param {FileStorageService} dependencies.fileStorageService - The file storage service instance.
      */
-    constructor(fileStorageService) {
+    constructor({fileStorageService}) {
         this.#fileStorageService = fileStorageService;
     }
 
@@ -33,7 +32,6 @@ class FileController {
      */
     async getFile(req, res) {
         const {fileId} = req.params;
-
         const {stream, metadata} = await this.#fileStorageService.download(fileId);
 
         const etag = `"${metadata.hash}"`;
@@ -60,4 +58,4 @@ class FileController {
     }
 }
 
-module.exports = new FileController(fileStorageService);
+module.exports = FileController;

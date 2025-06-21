@@ -1,4 +1,3 @@
-const Session = require('../models/session.model');
 const {deepFreeze} = require('shared-utils/obj.utils');
 const {
     isValidObjectId,
@@ -138,4 +137,4 @@ class SessionRepository {
     }
 }
 
-module.exports = new SessionRepository(Session);
+module.exports = SessionRepository;

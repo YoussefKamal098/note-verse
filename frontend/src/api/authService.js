@@ -151,7 +151,7 @@ class AuthService {
         this.#tokenStorageService.setAccessToken(accessToken);
 
         // Fetch user details
-        const user = await this.#userService.getUser("me", config);
+        const user = await this.#userService.getUser({id: "me"}, config);
         const {id, email, firstname, lastname, avatarUrl} = user.data;
 
         // Emit the login event with user details

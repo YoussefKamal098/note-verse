@@ -2,8 +2,9 @@ import apiClient from './apiClient';
 import httpHeaders from "../constants/httpHeaders";
 
 const ENDPOINTS = {
-    GET_USER: (userId) => `/users/${userId}`,
-    AVATAR_UPLOAD: (userId) => `/users/${userId}/avatar`
+    GET_USER: `/users/`,
+    AVATAR_UPLOAD: (userId) => `/users/${userId}/avatar`,
+    GET_USER_GRANTED_PERMISSIONS: (userId) => `users/${userId}/granted-permissions`
 };
 
 /**
@@ -21,14 +22,22 @@ class UserService {
     }
 
     /**
-     * Fetches the specified user's information from the server.
-     * @param {string} userId - The ID of the user to fetch.
+     * Fetches user information from the server by either ID or email.
+     * @param {Object} params - The query parameters for the request.
+     * @param {string} [params.id] - The ID of the user to fetch.
+     * @param {string} [params.email] - The email of the user to fetch.
      * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
-     * @returns {Promise<Object>} The response object containing status code and user data.
+     * @returns {Promise<Object>} The response object containing user data.
      * @throws {Error} If the request fails or there is an error.
      */
-    async getUser(userId, config = {}) {
-        return await this.#apiClient.get(ENDPOINTS.GET_USER(userId), config);
+    async getUser({id, email}, config = {}) {
+        return await this.#apiClient.get(ENDPOINTS.GET_USER, {
+            ...config,
+            params: {
+                ...(id && {id}),
+                ...(email && {email})
+            }
+        });
     }
 
     /**
@@ -58,6 +67,28 @@ class UserService {
                 headers: {
                     [httpHeaders.CONTENT_TYPE]: 'multipart/form-data'
                 }
+            }
+        );
+    }
+
+    /**
+     * Get all permissions granted by a specific user.
+     * @param {string} userId - The ID of the user who granted permissions.
+     * @param {Object} [queryParams={}] - Query parameters for pagination.
+     * @param {number} [queryParams.page] - Page number.
+     * @param {number} [queryParams.limit] - Items per page.
+     * @param {number} [queryParams.limit] - Items per page.
+     * @param {'note'|'file'} [queryParams.resource] - The type of resource for which permissions were granted.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with status code and data.
+     * @throws {Error} If fetching granted permissions fails.
+     */
+    async getPermissionsGrantedByUser(userId, queryParams = {}, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_USER_GRANTED_PERMISSIONS(userId),
+            {
+                ...config,
+                params: {...queryParams}
             }
         );
     }

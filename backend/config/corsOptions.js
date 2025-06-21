@@ -19,7 +19,7 @@ const corsOptions = {
             callback(error, false);
         }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],  // Allowed methods
     allowedHeaders: [httpHeaders.CONTENT_TYPE, httpHeaders.AUTHORIZATION, httpHeaders.IF_NONE_MATCH, httpHeaders.X_CSRF_TOKEN],  // Allowed headers
     exposedHeaders: [httpHeaders.ETAG], // Expose the ETag header to the client
     credentials: true,  // Allow credentials (cookies, headers, etc.)

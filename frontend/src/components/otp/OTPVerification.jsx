@@ -10,7 +10,7 @@ import Button, {BUTTON_TYPE} from "../buttons/Button";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
 import LoadingEffect from "../common/LoadingEffect";
 import authService from "../../api/authService";
-import RoutesPaths from "../../constants/RoutesPaths";
+import routesPaths from "../../constants/routesPaths";
 
 import {
     ContainerStyled,
@@ -79,7 +79,7 @@ const OTPVerification = memo(({email, length = 6}) => {
                 setAnimationState("success");
                 // Redirect to the home page after 3 seconds.
                 setTimeout(() => {
-                    navigate(RoutesPaths.HOME);
+                    navigate(routesPaths.HOME);
                 }, 3000);
             } catch (err) {
                 setError(`OTP verification failed. ${err.message}`);

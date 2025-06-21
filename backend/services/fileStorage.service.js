@@ -3,9 +3,6 @@ const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 const statusMessages = require('../constants/statusMessages');
 const httpCodes = require('../constants/httpCodes');
 const AppError = require('../errors/app.error');
-const B2StorageEngine = require("./storage/b2storage-engine");
-const B2StorageConfig = require("../config/B2StorageConfig");
-const fileRepository = require("../repositories/file.repository");
 
 /**
  * FileStorageService handles file storage operations, including upload, download, deletion,
@@ -210,6 +207,4 @@ class FileStorageService {
     }
 }
 
-module.exports = new FileStorageService(new B2StorageEngine(B2StorageConfig), fileRepository,
-    {filenameGenerator: () => crypto.randomUUID()}
-);
+module.exports = FileStorageService;

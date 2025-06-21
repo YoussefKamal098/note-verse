@@ -5,16 +5,16 @@ import * as Yup from "yup";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
 import {FadeInAnimatedText} from "../animations/TextAnimation";
 import useFormNavigation from "../../hooks/useFormNavigation";
-import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./formStyles";
+import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
 import SubmitButton from "./SubmitButtom";
-import GoogleLoginButton from "../buttons/GoogleLoginButton";
+import GoogleLoginButton from "./GoogleLoginButton";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import AuthSeparator from "./AuthSeparator";
 import Overlay from "../common/Overlay";
 
 import AuthService from "../../api/authService";
-import RoutesPaths from "../../constants/RoutesPaths";
+import routesPaths from "../../constants/routesPaths";
 import {FieldTypes, requiredField} from "../../validations/fieldTypeValidators";
 import {emailValidation} from "../../validations/userValidation";
 
@@ -37,7 +37,7 @@ const LoginForm = () => {
         try {
             setFormLoading(true);
             await AuthService.login(values);
-            navigate(RoutesPaths.HOME);
+            navigate(routesPaths.HOME);
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
@@ -80,7 +80,7 @@ const LoginForm = () => {
                                     innerRef={passwordRef}
                                 />
                                 <SubmitButton isSubmitting={isSubmitting} loading={formLoading}
-                                              disabled={googleLoading}>SIGN IN</SubmitButton>
+                                              disabled={googleLoading}>Log in</SubmitButton>
                             </Form>
                         )}
                     </Formik>
@@ -94,7 +94,7 @@ const LoginForm = () => {
                     />
 
                     <LinkStyled>
-                        <p>Don't have an account? <a href={RoutesPaths.REGISTER}>Sign up</a></p>
+                        <p>Don't have an account? <a href={routesPaths.REGISTER}>Sign up</a></p>
                     </LinkStyled>
                 </FormContainerStyled>
             </HeightTransitionContainer>

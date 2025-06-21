@@ -1,12 +1,13 @@
 const {connectDB, disconnectDB, isDBConnected} = require('./services/db.service');
-const cacheService = require('./services/cache.service');
 const {gracefulShutdown} = require('./utils/system.utils');
+const container = require("./container");
 
 /**
  * Start the application by connecting to the database and cache service then starting the server.
  */
 async function startServer({server, port = 5000}) {
     try {
+        const cacheService = container.resolve('cacheService');
         // Connect to both cache service and DB concurrently
         await Promise.all([connectDB(), cacheService.connect()]);
 

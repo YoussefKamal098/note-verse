@@ -3,7 +3,7 @@ import {Navigate} from 'react-router-dom';
 import AuthRoute from "./AuthRoute";
 import PrivateRoute from "./PrivateRoute";
 import GeneralErrorPage from "../pages/GeneralErrorPage";
-import RoutesPaths from "../constants/RoutesPaths";
+import routesPaths from "../constants/routesPaths";
 
 // Lazy load components
 const HomePage = React.lazy(() => import('../pages/HomePage'));
@@ -16,16 +16,16 @@ const OTPVerificationPage = React.lazy(() => import('../pages/OTPVerificationPag
 const GoogleCallbackAuthPage = React.lazy(() => import('../pages/GoogleCallbackAuthPage'));
 
 const RoutesDefinition = [
-    {path: RoutesPaths.LOGIN, element: <AuthRoute><LoginPage/></AuthRoute>},
-    {path: RoutesPaths.REGISTER, element: <AuthRoute><RegisterPage/></AuthRoute>},
-    {path: RoutesPaths.HOME, element: <PrivateRoute><HomePage/></PrivateRoute>},
-    {path: '/', element: <Navigate to={RoutesPaths.HOME} replace/>},
-    {path: RoutesPaths.NOTE(":id"), element: <PrivateRoute><NotePage/></PrivateRoute>},
-    {path: RoutesPaths.ERROR, element: <GeneralErrorPage/>},
-    {path: RoutesPaths.NOT_FOUND, element: <NotFoundPage/>},
-    {path: RoutesPaths.VERIFY_ACCOUNT, element: <OTPVerificationPage/>},
-    {path: RoutesPaths.GOOGLE_AUTH_CALLBACK, element: <AuthRoute><GoogleCallbackAuthPage/></AuthRoute>},
-    {path: RoutesPaths.PROFILE, element: <PrivateRoute><ProfilePage/></PrivateRoute>}
+    {path: routesPaths.LOGIN, element: <AuthRoute><LoginPage/></AuthRoute>},
+    {path: routesPaths.REGISTER, element: <AuthRoute><RegisterPage/></AuthRoute>},
+    {path: routesPaths.HOME, element: <PrivateRoute><HomePage/></PrivateRoute>},
+    {path: '/', element: <Navigate to={routesPaths.HOME} replace/>},
+    {path: routesPaths.NOTE(":id"), element: <PrivateRoute><NotePage/></PrivateRoute>},
+    {path: routesPaths.ERROR, element: <GeneralErrorPage/>},
+    {path: routesPaths.NOT_FOUND, element: <NotFoundPage/>},
+    {path: routesPaths.VERIFY_ACCOUNT, element: <OTPVerificationPage/>},
+    {path: routesPaths.GOOGLE_AUTH_CALLBACK, element: <AuthRoute><GoogleCallbackAuthPage/></AuthRoute>},
+    {path: routesPaths.PROFILE, element: <PrivateRoute><ProfilePage/></PrivateRoute>}
 ];
 
 export default RoutesDefinition;

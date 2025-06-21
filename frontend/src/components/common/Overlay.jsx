@@ -2,20 +2,20 @@ import React from "react";
 import styled from "styled-components";
 
 const Styled = styled.div`
-    position: fixed;
+    position: ${({$isAbsolute}) => $isAbsolute ? "absolute" : "fixed"};
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: ${({$isAbsolute}) => $isAbsolute ? "100%" : "100vw"};
+    height: ${({$isAbsolute}) => $isAbsolute ? "100%" : "100vh"};
     background-color: transparent;
-    z-index: 10000;
+    z-index: ${({$isAbsolute}) => $isAbsolute ? "2" : "10000"};
 `;
 
-const Overlay = ({isVisible}) => {
+const Overlay = ({isVisible, isAbsolute = false}) => {
     if (!isVisible) return null;
 
     return (
-        <Styled></Styled>
+        <Styled $isAbsolute={isAbsolute}></Styled>
     );
 };
 

@@ -6,7 +6,7 @@ import {MoonLoader} from 'react-spinners';
 import useRequestManager from '../hooks/useRequestManager';
 import Navbar from "../components/navbar/Navbar";
 import authService from '../api/authService';
-import RoutesPaths from "../constants/RoutesPaths";
+import routesPaths from "../constants/routesPaths";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const Container = styled.div`
@@ -52,7 +52,7 @@ const GoogleCallbackAuthPage = () => {
         window.history.replaceState({}, document.title, window.location.pathname);
 
         if (errorParam) {
-            navigate(RoutesPaths.ERROR, {
+            navigate(routesPaths.ERROR, {
                 state: {
                     title: "Google Authentication Error",
                     message: `Google authentication failed due to the following error: ${errorParam}`
@@ -62,7 +62,7 @@ const GoogleCallbackAuthPage = () => {
         }
 
         if (!code) {
-            navigate(RoutesPaths.ERROR, {
+            navigate(routesPaths.ERROR, {
                 state: {
                     title: "Missing Authorization Code",
                     message: "No authorization code was provided in the callback from Google. " +
@@ -79,11 +79,11 @@ const GoogleCallbackAuthPage = () => {
             await authService.handleGoogleCallback({code}, {signal: controller.signal});
             // Redirect to the home page after one second.
             setTimeout(() => {
-                navigate(RoutesPaths.HOME);
+                navigate(routesPaths.HOME);
             }, 1000);
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                navigate(RoutesPaths.ERROR, {
+                navigate(routesPaths.ERROR, {
                     state: {
                         title: "Google Authentication Failed",
                         message: `Google authentication encountered an error: ${err.message}`

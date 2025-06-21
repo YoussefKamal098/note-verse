@@ -7,4 +7,4 @@ class HasherService {
     }
 }
 
-module.exports = new HasherService();
+module.exports = HasherService;

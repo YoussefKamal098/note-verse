@@ -1,11 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import styled from 'styled-components';
 import {FaTimes} from 'react-icons/fa';
-import {AnimatedListHeightChildrenFade} from "../animations/ContainerAnimation";
+import {AnimatedListWidthChildrenFade} from "../animations/ContainerAnimation";
 import TagsInput from './TagsInput';
 import EditPopUp from "../editPopUp/EditPopUp";
 import {TagsContainerStyled, TagStyled} from "./TagsStyles";
 import useNoteValidation from "../../hooks/useNoteValidation";
+
+const ContainerStyled = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+`;
 
 const DeleteTagButtonStyled = styled(FaTimes)`
     cursor: pointer;
@@ -44,25 +50,25 @@ const TagEditorPopup = ({tags, onSave, children}) => {
             onSave={onPopupSave}
             openElement={children}
         >
-            <div style={{display: "flex", flexDirection: "column", gap: "1rem"}}>
+            <ContainerStyled>
                 <TagsInput
                     tags={editTags}
                     setTags={setEditTags}
                 />
 
                 <TagsContainerStyled>
-                    <AnimatedListHeightChildrenFade>
+                    <AnimatedListWidthChildrenFade>
                         {editTags.map((tag, index) => (
                             <TagStyled key={`editable-tag-${index}`}>
                                 <span>#</span> {tag}
                                 <DeleteTagButtonStyled onClick={() => onTagDelete(tag)}/>
                             </TagStyled>
                         ))}
-                    </AnimatedListHeightChildrenFade>
+                    </AnimatedListWidthChildrenFade>
                 </TagsContainerStyled>
-            </div>
+            </ContainerStyled>
         </EditPopUp>
     );
 };
 
-export default TagEditorPopup;
+export default React.memo(TagEditorPopup);

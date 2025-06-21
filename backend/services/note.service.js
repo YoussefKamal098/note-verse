@@ -1,9 +1,6 @@
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
-const NoteValidationService = require("../validations/note.validation");
-const noteRepository = require("../repositories/note.repository");
-const userService = require('../services/user.service');
 
 /**
  * Service for managing user notes.
@@ -20,71 +17,14 @@ class NoteService {
      * @type {NoteRepository}
      */
     #noteRepository;
-    /**
-     * @private
-     * @type {NoteValidationService}
-     */
-    #noteValidationService;
-    /**
-     * @private
-     * @type {UserService}
-     */
-    #userService;
 
     /**
      * Creates an instance of NoteService.
      *
      * @param {NoteRepository} noteRepository - Repository handling note database operations.
-     * @param {NoteValidationService} noteValidationService - Service to validate note data.
-     * @param {UserService} userService - Service for managing user-related operations.
      */
-    constructor(noteRepository, noteValidationService, userService) {
+    constructor(noteRepository) {
         this.#noteRepository = noteRepository;
-        this.#noteValidationService = noteValidationService;
-        this.#userService = userService;
-    }
-
-    /**
-     * Validates note data for creation or update.
-     *
-     * If the note is new or if a field is provided (i.e., not undefined), the corresponding
-     * validation method is invoked on the NoteValidationService.
-     *
-     * @private
-     * @param {Object} noteData - The note data to validate.
-     * @param {string} noteData.title - The title of the note.
-     * @param {Array} noteData.tags - The tags associated with the note.
-     * @param {string} noteData.content - The content of the note.
-     * @param {boolean} noteData.isPinned - Indicates if the note is pinned.
-     * @param {boolean} [isNew=true] - Flag indicating if this is a new note.
-     * @returns {void}
-     */
-    #validateNoteData({title, tags, content, isPinned}, isNew = true) {
-        if (isNew || title !== undefined) {
-            this.#noteValidationService.validateTitle(title);
-        }
-        if (isNew || tags !== undefined) {
-            this.#noteValidationService.validateTags(tags);
-        }
-        if (isNew || content !== undefined) {
-            this.#noteValidationService.validateContent(content);
-        }
-        if (isNew || isPinned !== undefined) {
-            this.#noteValidationService.validateIsPinned(isPinned);
-        }
-    }
-
-    /**
-     * Ensures that a note exists for the given user by attempting to find it.
-     *
-     * @private
-     * @param {string} userId - The ID of the user.
-     * @param {string} noteId - The ID of the note.
-     * @returns {Promise<void>}
-     * @throws {AppError} If the note does not exist or does not belong to the user.
-     */
-    async #ensureUserNoteExists(userId, noteId) {
-        await this.findUserNoteById(userId, noteId);
     }
 
     /**
@@ -98,16 +38,14 @@ class NoteService {
      * @param {string} params.title - The title of the note.
      * @param {Array} params.tags - The tags associated with the note.
      * @param {string} params.content - The content of the note.
-     * @param {boolean} params.isPinned - Indicates if the note is pinned.
-     * @returns {Promise<Object>} The newly created note object.
+     * @param {boolean} [params.isPinned] - The pinned status.
+     * @param {boolean} [params.isPublic] - The public accessibility
+     * @returns {Promise<Readonly<Object>>} The newly created note object.
      * @throws {AppError} If note creation fails.
      */
-    async create({userId, title, tags, content, isPinned} = {}) {
-        await this.#userService.ensureUserExists(userId);
-        this.#validateNoteData({title, tags, content, isPinned});
-
+    async create({userId, title, tags, content, isPinned = false, isPublic = false} = {}) {
         try {
-            return await this.#noteRepository.create({userId, title, tags, content, isPinned});
+            return await this.#noteRepository.create({userId, title, tags, content, isPinned, isPublic});
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTE_CREATION_FAILED,
@@ -122,17 +60,13 @@ class NoteService {
      *
      * Ensures that the user exists and that the note belongs to the user.
      *
-     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
-     * @returns {Promise<Object>} The note object deep-frozen if found.
-     * @throws {AppError} If the note is not found or does not belong to the user.
+     * @returns {Promise<Readonly<Object || null>>} The note object deep-frozen if found.
+     * @throws {AppError} If the retrieval operation fails.
      */
-    async findUserNoteById(userId, noteId) {
-        await this.#userService.ensureUserExists(userId);
-        let note;
-
+    async findNoteById(noteId) {
         try {
-            note = await this.#noteRepository.findById(noteId);
+            return await this.#noteRepository.findById(noteId);
         } catch (error) {
             throw new AppError(
                 httpCodes.INTERNAL_SERVER_ERROR.message,
@@ -140,16 +74,6 @@ class NoteService {
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );
         }
-
-        if (!note || note.userId !== userId) {
-            throw new AppError(
-                statusMessages.USER_NOTE_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        return note;
     }
 
     /**
@@ -158,24 +82,21 @@ class NoteService {
      * Validates that the note exists for the user and that the provided update data is valid.
      * Delegates the update operation to the note repository.
      *
-     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
      * @param {Object} updates - The fields to update.
      * @param {string} [updates.title] - The updated title of the note.
      * @param {Array} [updates.tags] - The updated tags for the note.
      * @param {string} [updates.content] - The updated content of the note.
      * @param {boolean} [updates.isPinned] - The updated pinned status.
-     * @returns {Promise<Object>} The updated note object deep-frozen if found.
+     * @param {boolean} [updates.isPublic] - The updated public accessibility
+     * @returns {Promise<Readonly<Object || null>>} The updated note object deep-frozen if found.
      * @throws {AppError} If the update operation fails.
      */
-    async updateUserNote(userId, noteId, {title, tags, content, isPinned}) {
-        await this.#ensureUserNoteExists(userId, noteId);
-        this.#validateNoteData({title, tags, content, isPinned}, false);
-        let note;
+    async updateNoteById(noteId, {title, tags, content, isPinned, isPublic}) {
 
         try {
-            const updates = {title, tags, content, isPinned};
-            note = await this.#noteRepository.findByIdAndUpdate(noteId, updates);
+            const updates = {title, tags, content, isPinned, isPublic};
+            return await this.#noteRepository.findByIdAndUpdate(noteId, updates);
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTE_UPDATE_FAILED,
@@ -183,16 +104,6 @@ class NoteService {
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );
         }
-
-        if (!note) {
-            throw new AppError(
-                statusMessages.NOTE_UPDATE_FAILED,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        return note;
     }
 
     /**
@@ -200,17 +111,13 @@ class NoteService {
      *
      * Ensures that the note exists for the user, then delegates deletion to the note repository.
      *
-     * @param {string} userId - The ID of the user.
      * @param {string} noteId - The ID of the note.
-     * @returns {Promise<Object>} The deleted note object.
+     * @returns {Promise<Readonly<Object || null>>} The deleted note deep-frozen object or null if not found.
      * @throws {AppError} If note deletion fails.
      */
-    async deleteUserNoteById(userId, noteId) {
-        await this.#ensureUserNoteExists(userId, noteId);
-        let deletedNote;
-
+    async deleteNoteById(noteId) {
         try {
-            deletedNote = await this.#noteRepository.deleteById(noteId);
+            return await this.#noteRepository.deleteById(noteId);
         } catch (error) {
             throw new AppError(
                 statusMessages.NOTE_DELETION_FAILED,
@@ -218,16 +125,6 @@ class NoteService {
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );
         }
-
-        if (!deletedNote) {
-            throw new AppError(
-                statusMessages.NOTE_DELETION_FAILED,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        return deletedNote;
     }
 
     /**
@@ -242,15 +139,13 @@ class NoteService {
      * @param {number} [options.page=1] - The page number to retrieve (1-based).
      * @param {number} [options.perPage=10] - Number of results per page.
      * @param {Object} [options.sort={isPinned: 1, createdAt: -1, updatedAt: -1}] - Sort criteria.
-     * @returns {Promise<Readonly<Object>>} An array of note objects.
+     * @returns {Promise<Readonly<Object>>} An object containing the paginated results.
      * @throws {AppError} If note retrieval fails.
      */
     async findUserNotes(userId, {
         searchText,
         options = {}
     } = {}) {
-        await this.#userService.ensureUserExists(userId);
-
         try {
             const {
                 page,
@@ -269,4 +164,4 @@ class NoteService {
     }
 }
 
-module.exports = new NoteService(noteRepository, new NoteValidationService(), userService);
+module.exports = NoteService;

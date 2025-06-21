@@ -33,9 +33,8 @@ const ProfilePage = () => {
         if (!user || !user.id) {
             return "";
         }
-
         const result = await userService.uploadAvatar(user.id, file);
-        return result?.data.avatarUrl;
+        setUserImageUrl(result?.data.avatarUrl || "");
     };
 
     return (

@@ -1,19 +1,36 @@
 const express = require('express');
-const notesController = require('../controllers/note.controller');
+const {makeClassInvoker} = require('awilix-express');
+const NotesController = require('../controllers/note.controller');
 const asyncRequestHandler = require('../utils/asyncHandler');
 const cacheKeys = require('../utils/cacheKeys');
 const {createCacheMiddleware, clearCache, clearCachePattern} = require('../middlewares/cache.middleware');
-const verifyAuthUserOwnershipMiddleware = require('../middlewares/verifyAuthUserOwnership.middleware');
-const router = express.Router({mergeParams: true});
+const validateRequestMiddlewares = require('../middlewares/validateRequest.middleware');
+const noteCreationSchema = require("../schemas/noteCreation.schema");
+const notesQuerySchema = require("../schemas/notesQuery.schema");
+const grantPermissionsSchema = require('../schemas/grantPermissions.schema');
+const updatePermissionSchema = require('../schemas/updatePermission.schema');
+const grantedPermissionsQuerySchema = require('../schemas/grantedPermissionsQuery.schema');
+const container = require('../container');
+const {
+    validateNoteUpdatePermission,
+    validateNoteViewPermission,
+    validateNoteOwnership
+} = require('../middlewares/note.permissionValidation.middleware');
 
-// Middleware to clear caches for the notes.
-async function clearNotesCaches(req, res, next) {
+const router = express.Router({mergeParams: true});
+const validateNoteUpdatePermissionMiddleware = container.build(validateNoteUpdatePermission);
+const validateNoteViewPermissionMiddleware = container.build(validateNoteViewPermission);
+const validateNoteOwnershipMiddleware = container.build(validateNoteOwnership);
+const api = makeClassInvoker(NotesController);
+
+// Middleware to clear caches for a single note and the user’s notes list
+const clearNotesCaches = async (req, res, next) => {
     await clearCache(cacheKeys.getNoteCacheKey(req));
     await clearCachePattern(cacheKeys.getUserNotesCachePattern(req));
     next();
 }
 
-// Create caching middleware instances.
+// Caching middleware for GET routes
 const notesCacheMiddleware = createCacheMiddleware({
     generateCacheKey: cacheKeys.getUserNotesCacheKey
 });
@@ -22,36 +39,75 @@ const noteCacheMiddleware = createCacheMiddleware({
     generateCacheKey: cacheKeys.getNoteCacheKey
 });
 
-// Routes
-router.post("/",
-    asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
-    asyncRequestHandler(async (req, res) => {
-        await clearCachePattern(cacheKeys.getUserNotesCachePattern(req));
-        await notesController.create(req, res);
-    }));
+// Create a new note
+router.post(
+    '/',
+    asyncRequestHandler(validateRequestMiddlewares(noteCreationSchema)),
+    asyncRequestHandler(clearCachePattern.bind(null, cacheKeys.getUserNotesCachePattern)),
+    asyncRequestHandler(api('create'))
+);
 
-router.get("/",
-    asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
+// Get paginated notes for a user
+router.get(
+    '/',
+    asyncRequestHandler(validateRequestMiddlewares(notesQuerySchema, {isQuery: true})),
     asyncRequestHandler(notesCacheMiddleware),
-    asyncRequestHandler(notesController.findPaginatedUserNotes.bind(notesController))
+    asyncRequestHandler(api('findPaginatedUserNotes'))
 );
 
-router.get("/:noteId",
-    asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
+// Get a single note by ID
+router.get(
+    '/:noteId',
+    asyncRequestHandler(validateNoteViewPermissionMiddleware),
     asyncRequestHandler(noteCacheMiddleware),
-    asyncRequestHandler(notesController.findUserNoteById.bind(notesController))
+    asyncRequestHandler(api('findNoteById'))
 );
 
-router.put("/:noteId",
-    asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
+// Update a note by ID
+router.put(
+    '/:noteId',
+    asyncRequestHandler(validateNoteUpdatePermissionMiddleware),
     asyncRequestHandler(clearNotesCaches),
-    asyncRequestHandler(notesController.updateUserNoteById.bind(notesController))
+    asyncRequestHandler(api('updateNoteById'))
 );
 
-router.delete("/:noteId",
-    asyncRequestHandler(verifyAuthUserOwnershipMiddleware),
+// Delete a note by ID
+router.delete(
+    '/:noteId',
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
     asyncRequestHandler(clearNotesCaches),
-    asyncRequestHandler(notesController.deleteUserNoteById.bind(notesController))
+    asyncRequestHandler(api('deleteNoteById'))
+);
+
+router.post(
+    '/:noteId/permissions',
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
+    validateRequestMiddlewares(grantPermissionsSchema),
+    asyncRequestHandler(api('grantPermissions'))
+);
+
+router.delete(
+    '/:noteId/permissions/:userId',
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
+    asyncRequestHandler(api('revokePermission'))
+);
+
+router.patch(
+    '/:noteId/permissions/:userId',
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
+    validateRequestMiddlewares(updatePermissionSchema),
+    asyncRequestHandler(api('updatePermission'))
+);
+
+router.get(
+    '/:noteId/permissions/:userId',
+    asyncRequestHandler(api('getUserPermission'))
+);
+
+router.get(
+    '/:noteId/permissions',
+    validateRequestMiddlewares(grantedPermissionsQuerySchema, {isQuery: true}),
+    asyncRequestHandler(api('getNotePermissions'))
 );
 
 module.exports = router;

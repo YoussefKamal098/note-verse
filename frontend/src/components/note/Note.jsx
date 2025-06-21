@@ -1,18 +1,14 @@
-import React, {Suspense, useCallback, useEffect} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import styled from 'styled-components';
-import {deepEqual} from "shared-utils/obj.utils";
-import useNoteState from '../../hooks/useNoteState';
-import useNoteStateCache from '../../hooks/useNoteStateCache';
-import useNoteValidation from '../../hooks/useNoteValidation';
-import {useConfirmation} from "../../contexts/ConfirmationContext";
-import {useAuth} from "../../contexts/AuthContext";
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
-import Loader from "../common/Loader";
+import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
 import NoteHeader from "./NoteHeader"
-
-const NoteMarkdownTabs = React.lazy(() => import("../noteMarkdownTabs/NoteMarkdownTabs"));
+import NoteMarkdownTabs from "../noteMarkdownTabs/NoteMarkdownTabs";
+import SharePopUp from '../noteSharePopUp';
+import useCopyLink from "../../hooks/useCopyLink";
 
 const ContainerStyled = styled.div`
     position: relative;
@@ -27,112 +23,87 @@ const ContainerStyled = styled.div`
     overflow: hidden;
 `;
 
-const getChanges = (original, current) => ({
-    ...(original.title !== current.title && {title: current.title}),
-    ...(original.content !== current.content && {content: current.content}),
-    ...(!deepEqual(original.tags, current.tags) && {tags: current.tags}),
-    ...(original.isPinned !== current.isPinned && {isPinned: current.isPinned}),
-});
+const Note = () => {
+    const copyLink = useCopyLink();
+    const {actions, selectors} = useNoteContext();
+    const [showShare, setShowShare] = useState(false);
+    const {editMode} = useNoteSelector(selectors.getStatus);
+    const {id, isPublic} = useNoteSelector(selectors.getMeta);
+    const {current} = useNoteSelector(selectors.getContent);
+    const isOwner = useNoteSelector(selectors.isOwner);
+    const canEdit = useNoteSelector(selectors.canEdit);
 
-const Note = ({
-                  origNote = {},
-                  onSave = (id, updates) => ({id, ...updates}),
-                  onDelete = () => ({}),
-                  unsavedChanges = {}
-              }) => {
-    const {user} = useAuth();
     const {showConfirmation} = useConfirmation();
 
-    // Note state management
-    const {noteState, hasChanges, updateState} = useNoteState(origNote);
-    useNoteStateCache(origNote, noteState, hasChanges, unsavedChanges, updateState);
-
-    useEffect(() => {
-        updateState(origNote);
-    }, [origNote]);
-
-    // Validation
-    const {validateNote} = useNoteValidation();
-
-    // Save handler
-    const handleSave = useCallback(() => {
-        if (!validateNote(noteState)) return;
-
-        if (!origNote.id || origNote.id === "new") {
-            onSave(origNote.id, noteState);
-        } else {
-            const changes = getChanges(origNote, noteState);
-            if (Object.keys(changes).length > 0) onSave(origNote.id, {...changes});
-        }
-    }, [noteState, origNote, onSave]);
-
-    // Delete confirmation
     const handleDelete = useCallback(() => {
         showConfirmation({
             type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Delete this note?",
-            onConfirm: () => onDelete(),
+            confirmationMessage: "Are you sure you want to permanently delete this note? This action cannot be undone.",
+            onConfirm: actions.deleteNote,
         });
-    }, [onDelete]);
+    }, [actions.deleteNote, showConfirmation]);
 
-    const onTogglePin = () => {
-        updateState({isPinned: !noteState.isPinned});
-        if (origNote.id && origNote.id !== "new") onSave(origNote.id, {isPinned: !origNote.isPinned});
-    }
-
-    const onTagsUpdate = (tags) => {
-        updateState({tags});
-        if (origNote.id && origNote.id !== "new" && onSave) onSave(origNote.id, {tags});
-    }
-
-    const onTitleUpdate = (title) => {
-        updateState({title});
-        if (origNote.id && origNote.id !== "new" && onSave) onSave(origNote.id, {title});
-    }
-
-    // Discard changes
     const handleDiscard = useCallback(() => {
         showConfirmation({
-            type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Discard changes?",
-            onConfirm: () => updateState(origNote)
+            type: POPUP_TYPE.WARNING,
+            confirmationMessage: "Are you sure you want to discard all unsaved changes? Your modifications will be lost permanently.",
+            onConfirm: actions.discardChanges,
         });
-    }, [origNote, updateState]);
+    }, [actions.discardChanges, showConfirmation]);
 
-    const headerActions = {
-        onSave: handleSave,
+    const handlePinToggle = useCallback(async () => {
+        await actions.togglePin();
+    }, [actions.togglePin]);
+
+    const handleOnSave = useCallback(async () => {
+        await actions.persistNote();
+    }, [actions.persistNote]);
+
+    const handleEdit = useCallback(() => {
+        actions.toggleEditMode();
+    }, [actions.toggleEditMode]);
+
+    const handleCopyLink = useCallback(async () => {
+        await copyLink();
+    }, []);
+
+    const handleShowShare = useCallback(() => {
+        setShowShare((prev) => !prev);
+    }, []);
+
+    const headerActions = useMemo(() => ({
+        onSave: handleOnSave,
         onDelete: handleDelete,
         onDiscard: handleDiscard,
-        onTogglePin: onTogglePin
-    };
+        onTogglePin: handlePinToggle,
+        onEdit: handleEdit,
+        onCopyLink: handleCopyLink,
+        onShowShare: handleShowShare
+    }), [actions, handleCopyLink, handleShowShare]);
 
     return (
         <ContainerStyled>
-            <NoteHeader
-                user={user}
-                actions={headerActions}
-                noteState={{
-                    ...noteState,
-                    hasChanges
-                }}
-            />
+            <NoteHeader actions={headerActions}/>
 
             <EditableTitle
-                title={noteState.title}
-                onSave={onTitleUpdate}
+                title={current.title}
+                onSave={useCallback((title) => actions.updateContent({title}), [actions.updateContent])}
+                canEdit={editMode && canEdit}
             />
 
             <EditableTags
-                tags={noteState.tags}
-                onSave={onTagsUpdate}
+                tags={current.tags}
+                onSave={useCallback((tags) => actions.updateContent({tags}), [actions.updateContent])}
+                canEdit={editMode && canEdit}
             />
 
-            <Suspense fallback={<Loader/>}>
-                <NoteMarkdownTabs
-                    content={noteState.content}
-                    onContentChange={content => updateState({content})}
-                />
-            </Suspense>
+            <NoteMarkdownTabs
+                content={current.content}
+                onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
+                canEdit={editMode && canEdit}
+            />
+
+            {isOwner && <SharePopUp noteMeta={{id, isPublic}} show={showShare} onClose={handleShowShare}/>}
         </ContainerStyled>
     );
 }

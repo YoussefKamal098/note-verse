@@ -3,8 +3,12 @@ const {isSuccessfulStatus} = require("shared-utils/http.utils");
 const httpHeaders = require("../constants/httpHeaders");
 const {timeUnit, time} = require("shared-utils/date.utils");
 const CacheControlBuilder = require("../utils/cacheControlBuilder");
-const hasherService = require('../services/hasher.service');
-const cacheService = require("../services/cache.service");
+const container = require("../container");
+
+// Constants for cache headers
+const CACHE_HIT = "HIT";
+const CACHE_MISS = "MISS";
+const CACHE_ERROR = "ERROR";
 
 class CacheMiddleware {
     /**
@@ -99,15 +103,21 @@ class CacheMiddleware {
      * @returns {Promise<void>}
      */
     async cache(req, res, next) {
-        const cacheKey = this.#generateCacheKey(req);
-        const cachedData = await this.#cacheService.get(cacheKey);
-        if (cachedData) {
-            return this.#handleCacheHit(req, res, cachedData);
-        }
+        try {
+            const cacheKey = this.#generateCacheKey(req);
+            const cachedData = await this.#cacheService.get(cacheKey);
 
-        this.#markCacheMiss(res, cacheKey);
-        this.#interceptResponse(res, cacheKey);
-        next();
+            if (cachedData) {
+                return this.#handleCacheHit(req, res, cachedData, cacheKey);
+            }
+
+            this.#markCacheMiss(res, cacheKey);
+            this.#interceptResponse(res, cacheKey);
+            return next();
+        } catch (error) {
+            this.#handleCacheError(res, error);
+            return next();
+        }
     }
 
     /**
@@ -120,24 +130,30 @@ class CacheMiddleware {
      * @param {import('express').Request} req - Express a request object.
      * @param {import('express').Response} res - Express response object.
      * @param {string} cachedData - JSON string containing the cached response data (ETag and body).
+     * @param {string} cacheKey - cache key.
      * @returns {Promise<void>}
      */
-    async #handleCacheHit(req, res, cachedData) {
+    async #handleCacheHit(req, res, cachedData, cacheKey) {
         const {etag, body} = JSON.parse(cachedData);
 
-        // Refresh the TTL for the cache key using Redis's EXPIRE command
-        const cacheKey = this.#generateCacheKey(req);
-        await this.#refreshCacheTTL(cacheKey);
+        try {
+            await this.#refreshCacheTTL(cacheKey);
 
-        res.setHeader(httpHeaders.CACHE_CONTROL, this.#cacheControl);
-        if (req.headers[httpHeaders.IF_NONE_MATCH] === etag) {
-            res.status(httpCodes.NOT_MODIFIED.code).json({message: httpCodes.NOT_MODIFIED.message});
-            return;
+            res.setHeader(httpHeaders.CACHE_CONTROL, this.#cacheControl);
+
+            if (req.headers[httpHeaders.IF_NONE_MATCH] === etag) {
+                res.status(httpCodes.NOT_MODIFIED.code).end();
+                return;
+            }
+
+            res.setHeader(httpHeaders.ETAG, etag)
+                .setHeader(httpHeaders.X_CACHE, CACHE_HIT)
+                .status(httpCodes.OK.code)
+                .send(body);
+        } catch (error) {
+            this.#handleCacheError(res, error);
+            res.status(httpCodes.OK.code).send(body); // Fallback to cached body
         }
-
-        res.setHeader(httpHeaders.ETAG, etag);
-        res.setHeader(httpHeaders.X_CACHE, "HIT");
-        res.status(httpCodes.OK.code).send(body);
     }
 
     /**
@@ -151,10 +167,9 @@ class CacheMiddleware {
      */
     async #refreshCacheTTL(cacheKey) {
         try {
-            // Refresh the TTL without re-setting the value
             await this.#cacheService.expire(cacheKey, this.#ttl);
         } catch (error) {
-            console.error(`Failed to refresh TTL for cache key "${cacheKey}":`, error);
+            console.error(`Cache TTL refresh failed: ${cacheKey}`, error);
         }
     }
 
@@ -167,7 +182,8 @@ class CacheMiddleware {
      * @returns {void}
      */
     #markCacheMiss(res, cacheKey) {
-        res.setHeader(httpHeaders.X_CACHE, "MISS");
+        res.setHeader(httpHeaders.X_CACHE, CACHE_MISS)
+            .setHeader(httpHeaders.CACHE_CONTROL, this.#cacheControl);
         res.locals.cacheKey = cacheKey;
     }
 
@@ -185,16 +201,16 @@ class CacheMiddleware {
         const originalSend = res.send;
 
         res.send = async (body) => {
-            if (isSuccessfulStatus(res.statusCode)) {
-                try {
+            try {
+                if (isSuccessfulStatus(res.statusCode)) {
                     await this.#cacheResponse(cacheKey, body);
-                } catch (error) {
-                    console.error("Failed to cache response:", error);
                 }
+            } catch (error) {
+                console.error("Response caching failed", error);
+                res.setHeader(httpHeaders.X_CACHE, CACHE_ERROR);
+            } finally {
+                await originalSend.call(res, body);
             }
-
-            // Call the original send method
-            await originalSend.call(res, body);
         };
     }
 
@@ -209,8 +225,36 @@ class CacheMiddleware {
      * @returns {Promise<void>}
      */
     async #cacheResponse(cacheKey, body) {
-        const etag = await this.#hasherService.generateHash(body);
-        await this.#cacheService.set(cacheKey, JSON.stringify({etag, body}), this.#ttl);
+        try {
+            const etag = await this.#hasherService.generateHash(body);
+            await this.#cacheService.set(
+                cacheKey,
+                JSON.stringify({etag, body}),
+                this.#ttl
+            );
+        } catch (error) {
+            console.error("Cache set operation failed", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Handles cache-related errors by setting appropriate headers and logging the error.
+     *
+     * This method is called when an error occurs during cache operations. It:
+     * 1. Logs the error to the console
+     * 2. Sets the X-Cache header to indicate an error state
+     * 3. Sets Cache-Control to 'no-store' to prevent caching of the errored response
+     *
+     * @private
+     * @param {import('express').Response} res - Express response object
+     * @param {Error} error - The error object that occurred during cache operations
+     * @returns {void}
+     */
+    #handleCacheError(res, error) {
+        console.error("Cache middleware error", error);
+        res.setHeader(httpHeaders.X_CACHE, CACHE_ERROR)
+            .setHeader(httpHeaders.CACHE_CONTROL, "no-store");
     }
 }
 
@@ -222,6 +266,7 @@ class CacheMiddleware {
  */
 const clearCache = async (key) => {
     try {
+        const cacheService = container.resolve('cacheService');
         await cacheService.delete(key);
     } catch (error) {
         console.error(`Failed to clear cache for key "${key}":`, error);
@@ -236,6 +281,7 @@ const clearCache = async (key) => {
  */
 const clearCachePattern = async (pattern) => {
     try {
+        const cacheService = container.resolve('cacheService');
         await cacheService.clearKeysByPattern(pattern);
     } catch (error) {
         console.error(`Failed to clear cache for pattern "${pattern}":`, error);
@@ -261,7 +307,11 @@ const clearCachePattern = async (pattern) => {
  * @returns {Function} The Express middleware function for caching.
  */
 const createCacheMiddleware = (options = {}) => {
-    const cacheMiddleware = new CacheMiddleware(cacheService, hasherService, options);
+    const cacheMiddleware = new CacheMiddleware(
+        container.resolve('cacheService'),
+        container.resolve('hasherService'),
+        options
+    );
     return cacheMiddleware.cache.bind(cacheMiddleware);
 };
 

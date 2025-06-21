@@ -1,8 +1,7 @@
-import React, {Suspense} from "react";
-import {useGlobalSettings} from '../../contexts/GlobalSettingsContext';
+import React from "react";
 import {useAuth} from "../../contexts/AuthContext";
 import SearchBar from "../searchBar/SearchBar";
-import Loader from '../common/Loader';
+import UserMenu from "../menus/userMenu";
 
 import {
     LeftNavbarSideStyled,
@@ -13,17 +12,15 @@ import {
     RightNavbarSideStyled
 } from "./NavbarStyles";
 
-const UserMenu = React.lazy(() => import("../menus/userMenu/UserMenu"));
 
 const Navbar = ({
                     showSearch = false,
                     onSearch = (searchText) => searchText
                 }) => {
-    const {navbarPosition} = useGlobalSettings();
     const {user} = useAuth();
 
     return (
-        <NavbarContainerStyled style={{position: navbarPosition}}>
+        <NavbarContainerStyled>
             <NavbarWrapperContainerStyled className="container">
                 <LeftNavbarSideStyled>
                     <NavbarLogoStyled>Notes</NavbarLogoStyled>
@@ -33,12 +30,9 @@ const Navbar = ({
                     {showSearch && user && <SearchBar onSearch={(searchText) => onSearch(searchText)}/>}
                 </MiddleNavbarSideStyled>
 
-                {user &&
-                    <RightNavbarSideStyled>
-                        <Suspense fallback={<Loader/>}>
-                            <UserMenu/>
-                        </Suspense>
-                    </RightNavbarSideStyled>}
+                {user && <RightNavbarSideStyled>
+                    <UserMenu/>
+                </RightNavbarSideStyled>}
             </NavbarWrapperContainerStyled>
         </NavbarContainerStyled>
     );

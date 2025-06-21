@@ -11,6 +11,8 @@ const securityHeadersMiddleware = require('./middlewares/securityHeaders.middlew
 const {createTimeoutMiddleware} = require('./middlewares/timeout.middleware');
 const notFoundMiddleware = require('./middlewares/notFound.middleware');
 const startServer = require('./serverInitializer');
+const {scopePerRequest} = require('awilix-express');
+const container = require('./container');
 const loggerService = require('./services/logger.service');
 const routes = require('./routes/index');
 
@@ -40,6 +42,8 @@ app.use(cookieParser());
 app.use(express.json({limit: '1mb'}));
 // Middleware to parse URL-encoded forms with size limit (e.g., 1MB)
 app.use(express.urlencoded({extended: true, limit: '1mb'}));
+// Attach a scoped DI container to each request for per-request dependency resolution
+app.use(scopePerRequest(container));
 
 // All routes
 app.use('/api/v1', routes);

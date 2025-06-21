@@ -1,5 +1,5 @@
 const RateLimiterService = require("../services/rateLimiter.service");
-const cacheService = require("../services/cache.service");
+const container = require("../container");
 
 const rateLimiterMiddleware = (rateLimiterService) => {
     return async (req, res, next) => {
@@ -14,10 +14,7 @@ const rateLimiterMiddleware = (rateLimiterService) => {
 
 const createRateLimiterMiddleware = (options = {}) => {
     return rateLimiterMiddleware(
-        new RateLimiterService(
-            cacheService,
-            options
-        )
+        new RateLimiterService(container.resolve('cacheService'), options)
     );
 }
 

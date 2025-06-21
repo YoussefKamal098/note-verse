@@ -3,12 +3,11 @@ import {ToastNotificationContainerStyled} from './ToastNotificationsStyled';
 
 const ToastNotifications = () => (
     <ToastNotificationContainerStyled
-        position="top-right"
+        position="top-center"
         autoClose={3000}
-        hideProgressBar={false}
+        hideProgressBar={true}
         newestOnTop
         closeOnClick
-        rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover

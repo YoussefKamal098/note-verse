@@ -1,11 +1,11 @@
 import React from "react";
 import {Navigate} from "react-router-dom";
-import RoutesPaths from "../constants/RoutesPaths";
+import routesPaths from "../constants/routesPaths";
 import {useAuth} from "../contexts/AuthContext";
 
 const AuthRoute = ({children}) => {
     const {user} = useAuth();
-    return user ? <Navigate to={RoutesPaths.HOME} replace/> : children;
+    return user ? <Navigate to={routesPaths.HOME} replace/> : children;
 };
 
 export default AuthRoute;

@@ -1,6 +1,5 @@
 const redis = require('redis');
 const {timeUnit, time} = require('shared-utils/date.utils');
-const config = require('../config/config');
 
 class CacheService {
     #client;
@@ -82,4 +81,4 @@ class CacheService {
     }
 }
 
-module.exports = new CacheService({redisUrl: config.redisUri});
+module.exports = CacheService;

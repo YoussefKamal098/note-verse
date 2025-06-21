@@ -3,10 +3,6 @@ const httpCodes = require('../constants/httpCodes');
 const statusMessages = require('../constants/statusMessages');
 const errorCodes = require('../constants/errorCodes');
 const AppError = require('../errors/app.error');
-const userService = require('../services/user.service');
-const sessionService = require('../services/session.service');
-const JwtProviderService = require('../services/jwtProvider.service');
-const authConfig = require('../config/authConfig');
 const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 
 /**
@@ -445,4 +441,4 @@ class JwtAuthService {
     }
 }
 
-module.exports = new JwtAuthService(userService, sessionService, new JwtProviderService(), authConfig);
+module.exports = JwtAuthService;

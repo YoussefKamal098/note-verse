@@ -3,7 +3,7 @@ import styled from "styled-components";
 const TagStyled = styled.span`
     color: var(--color-text);
     box-shadow: var(--box-shadow);
-    border-radius: var(--border-radius);
+    border-radius: 10px;
     border: var(--border-width) solid var(--color-border-secondary);
     padding: 0.1em 0.4em;
     font-size: 0.75em;

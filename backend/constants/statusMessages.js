@@ -7,6 +7,7 @@ const statusMessages = Object.freeze({
     USER_LOGIN_FAILED: "Login attempt unsuccessful. Verify your email and password, then try again.",
     USER_REGISTRATION_FAILED: "User registration failed. Please ensure all required fields are correctly filled.",
     USER_NOT_FOUND: "User not found, Ensure the provided id is correct and try again later.",
+    USERS_NOT_FOUND: "The following users could not be found: %s",
     USER_ID_MISSING: "User ID is missing. Please provide a valid user ID to proceed.",
     USER_ID_REQUIRED: "User ID is required. Please provide a valid user ID to access this resource.",
     USER_ID_INVALID: "User ID is invalid. Please provide a valid user ID and try again.",
@@ -15,6 +16,7 @@ const statusMessages = Object.freeze({
     USER_NOT_AUTH: "Authentication required. Please provide a valid user ID to access this resource.",
     GOOGLE_USER_CREATE_FAILED: "Google authentication process failed. Please try again later.",
     MISSING_GOOGLE_AUTH_DATA: "Required Google authentication data is missing",
+    USER_NOTE_UPDATE_FORBIDDEN: "You do not have permission to update this note. Ensure you have the correct permissions.",
 
     // =======================
     // User-specific update errors
@@ -39,6 +41,9 @@ const statusMessages = Object.freeze({
     NOTE_ID_MISSING: "Note ID is missing. Please provide a valid note ID to proceed.",
     NOTE_ID_REQUIRED: "Note ID is required. Please provide a valid note ID to access this resource.",
     NOTE_ID_INVALID: "Note ID is invalid. Please provide a valid note ID and try again.",
+    NOTE_UPDATE_VALIDATION_FAILED: 'Note update validation failed',
+    NOTE_ACCESS_CHECK_FAILED: 'Failed to check note access permissions',
+    NOTE_OWNER_REQUIRED: 'Only the note owner can perform this action',
 
     // =======================
     // Authentication errors
@@ -81,16 +86,6 @@ const statusMessages = Object.freeze({
     CSRF_TOKEN_GENERATION_FAILED: "Failed to generate a CSRF token. Please refresh the page and try again. If the issue continues, contact support for assistance.",
 
     // =======================
-    // General errors
-    // =======================
-    SERVER_ERROR: "An unexpected server error occurred. Please try again later.",
-    RESOURCE_NOT_FOUND: "The requested resource could not be found. Verify the URL and try again.",
-    CORS_NOT_ALLOWED: "Cross-Origin Resource Sharing (CORS) is not allowed from this origin. Access to the requested resource has been denied.",
-    REQUEST_TIMEOUT: "The server took too long to respond. Please try again later.",
-    TOO_MANY_REQUESTS: "You have made too many requests in a short period. Please try again later.",
-
-
-    // =======================
     // File upload errors
     // =======================
     INVALID_CONTENT_TYPE: "Invalid content type.",
@@ -103,6 +98,28 @@ const statusMessages = Object.freeze({
     DOWNLOAD_FILE_FAILED: "Download file failed.",
     DELETE_FILE_FAILED: "Delete file failed.",
     CHECK_FILE_EXISTENCE_FAILED: "Checking file existence failed.",
+
+    // ======================= 💠 NEW PERMISSION ERRORS 💠 =======================
+    PERMISSION_OPERATION_FAILED: "Permission operation failed. Please check your permissions and try again.",
+    PERMISSION_GRANT_FAILED: "Failed to grant permissions. Please verify the users and resource exist.",
+    PERMISSION_REMOVAL_FAILED: "Failed to remove permissions. Please verify the permissions exist.",
+    PERMISSION_UPDATE_FAILED: "Failed to update permissions. Ensure valid roles/actions are provided.",
+    PERMISSION_RETRIEVAL_FAILED: "Failed to retrieve permissions. Please try again later.",
+    RESOURCE_USERS_RETRIEVAL_FAILED: "Failed to retrieve permissions. Please try again later.",
+    GRANTED_PERMISSIONS_RETRIEVAL_FAILED: "Failed to retrieve permissions. Please try again later.",
+    PERMISSION_NOT_FOUND: "Permission not found. The requested permission does not exist or was revoked.",
+    PERMISSION_DENIED: "Access denied. You don't have permission to perform this action.",
+    MISSING_RESOURCE_ID: 'The resource ID is required but was not provided.',
+
+    // =======================
+    // General errors
+    // =======================
+    SERVER_ERROR: "An unexpected server error occurred. Please try again later.",
+    RESOURCE_NOT_FOUND: "The requested resource could not be found. Verify the URL and try again.",
+    CORS_NOT_ALLOWED: "Cross-Origin Resource Sharing (CORS) is not allowed from this origin. Access to the requested resource has been denied.",
+    REQUEST_TIMEOUT: "The server took too long to respond. Please try again later.",
+    TOO_MANY_REQUESTS: "You have made too many requests in a short period. Please try again later.",
+
 });
 
 module.exports = statusMessages

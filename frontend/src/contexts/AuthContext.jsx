@@ -26,7 +26,7 @@ const AuthProvider = ({children}) => {
 
         try {
             const controller = createAbortController();
-            const response = await userService.getUser(user.id, {signal: controller.signal});
+            const response = await userService.getUser({id: user.id}, {signal: controller.signal});
             setUser(response.data);
         } catch (error) {
             if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {

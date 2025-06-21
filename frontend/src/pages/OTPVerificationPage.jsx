@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import Navbar from "../components/navbar/Navbar";
-import RoutesPaths from "../constants/RoutesPaths";
+import routesPaths from "../constants/routesPaths";
 import OTPVerification from "../components/otp/OTPVerification";
 
 /**
@@ -20,7 +20,7 @@ const OTPVerificationPage = () => {
     useEffect(() => {
         if (!email) {
             // Redirect to the registration page if email is missing
-            navigate(RoutesPaths.REGISTER, {replace: true});
+            navigate(routesPaths.REGISTER, {replace: true});
         }
     }, [email, navigate]);
 

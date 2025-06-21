@@ -16,6 +16,13 @@
     --color-border-secondary-light: var(--color-background-light);
     --color-placeholder-light: #888;
     --color-warning-light: #f1c40f;
+    --color-background-tertiary: #f1f3f4;
+    --color-background-quaternary: #4d4d4d;
+    --color-suggestion-hover: #f8f9fa;
+    --color-suggestion-highlight: #e8f0fe;
+    --color-suggestion-highlight-text: #1967d2;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-icon-hover-bg: rgba(0, 0, 0, 0.1);
 
     /* Color Palette - Dark Mode */
     --color-background-dark: #1b1e1f;
@@ -30,6 +37,13 @@
     --color-border-dark: #3e4446;
     --color-border-secondary-dark: var(--color-border-dark);
     --color-warning-dark: #f1c40f;
+    --color-background-tertiary-dark: #2d2f31;
+    --color-background-quaternary-dark: #4d4d4d;
+    --color-suggestion-hover-dark: #34373a;
+    --color-suggestion-highlight-dark: #1e3a5f;
+    --color-suggestion-highlight-text-dark: #8ab4f8;
+    --color-shadow-dark: rgba(0, 0, 0, 0.3);
+    --color-icon-hover-bg-dark: rgba(255, 255, 255, 0.1);
 
     --box-shadow: 0 0.25em 0.75em rgba(0, 0, 0, 0.1);
     --box-shadow-hoverable: 0em 0.25em 0.375em rgba(0, 0, 0, 0.1), 0em 0.0625em 0.1875em rgba(0, 0, 0, 0.08);
@@ -66,6 +80,13 @@
     --color-warning: var(--color-warning-light);
     --color-background-skeletonbase: var(--color-background-skeletonbase-light);
     --color-background-skeletonhighlight: var(--color-background-skeletonhighlight-light);
+    --background-tertiary: var(--color-background-tertiary);
+    --background-quaternary: var(--color-background-quaternary);
+    --suggestion-hover: var(--color-suggestion-hover);
+    --suggestion-highlight: var(--color-suggestion-highlight);
+    --suggestion-highlight-text: var(--color-suggestion-highlight-text);
+    --shadow: var(--color-shadow);
+    --icon-hover-bg: var(--color-icon-hover-bg);
 }
 
 /* Dark Mode */
@@ -88,6 +109,13 @@
     --color-warning: var(--color-warning-dark);
     --color-background-skeletonbase: var(--color-background-skeletonbase-dark);
     --color-background-skeletonhighlight: var(--color-background-skeletonhighlight-dark);
+    --background-tertiary: var(--color-background-tertiary-dark);
+    --background-quaternary: var(--color-background-quaternary-dark);
+    --suggestion-hover: var(--color-suggestion-hover-dark);
+    --suggestion-highlight: var(--color-suggestion-highlight-dark);
+    --suggestion-highlight-text: var(--color-suggestion-highlight-text-dark);
+    --shadow: var(--color-shadow-dark);
+    --icon-hover-bg: var(--color-icon-hover-bg-dark);
 }
 
 /* Reset */
@@ -96,7 +124,6 @@
     padding: 0;
     border: none;
     outline: none;
-    list-style: none;
     background: none;
     box-sizing: border-box;
     font-family: "Quicksand", sans-serif;
@@ -135,6 +162,10 @@
 }
 
 @media (max-width: 550px) {
+    * {
+        font-size: 12px;
+    }
+
     .page {
         padding: 6em 0 2.5em;
     }

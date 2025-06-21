@@ -5,6 +5,11 @@ import Tooltip from "../tooltip/Tooltip";
 import TitleInput from "./TitleInput";
 import TitleEditorPopup from "./TitleEditorPopup";
 
+const ContainerStyled = styled.div`
+    position: relative;
+    margin: 0 auto 2em
+`;
+
 const EditButtonStyled = styled(LuPencilLine)`
     position: absolute;
     cursor: pointer;
@@ -23,7 +28,7 @@ const EditButtonStyled = styled(LuPencilLine)`
 `;
 
 
-const EditableTitle = ({title, onSave = (title) => ({title})}) => {
+const EditableTitle = ({title, canEdit = true, onSave = (title) => ({title})}) => {
     const [isHovering, setIsHovering] = useState(false);
     const [editBtnRect, setEditBtnRect] = useState({});
     const wrapperRef = useRef(null);
@@ -48,15 +53,11 @@ const EditableTitle = ({title, onSave = (title) => ({title})}) => {
     };
 
     return (
-        <div
-            style={{
-                position: "relative",
-                margin: "0 auto 2em"
-            }}
+        <ContainerStyled
             ref={wrapperRef}
-            onPointerEnter={() => setIsHovering(true)}
-            onPointerLeave={() => setIsHovering(false)}
-            onPointerMove={handleMouseMove}
+            onPointerEnter={canEdit && onSave ? () => setIsHovering(true) : undefined}
+            onPointerLeave={canEdit && onSave ? () => setIsHovering(false) : undefined}
+            onPointerMove={canEdit && onSave ? handleMouseMove : undefined}
         >
             <TitleInput title={title} disabled={true}/>
 
@@ -64,7 +65,7 @@ const EditableTitle = ({title, onSave = (title) => ({title})}) => {
                 title={title}
                 onSave={onSave}
             >
-                <Tooltip title={"Edit Title"} targetRect={editBtnRect}>
+                {canEdit && onSave && <Tooltip title={"Edit Title"} targetRect={editBtnRect}>
                     <EditButtonStyled
                         style={{
                             left: `${editBtnRect.x}px`,
@@ -73,9 +74,9 @@ const EditableTitle = ({title, onSave = (title) => ({title})}) => {
                             pointerEvents: isHovering ? 'auto' : 'none'
                         }}
                     />
-                </Tooltip>
+                </Tooltip>}
             </TitleEditorPopup>
-        </div>
+        </ContainerStyled>
     );
 };
 

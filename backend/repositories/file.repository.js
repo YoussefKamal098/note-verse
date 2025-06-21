@@ -1,4 +1,3 @@
-const File = require("../models/file.model");
 const {sanitizeMongoObject, convertToObjectId} = require('../utils/obj.utils');
 const dbErrorCodes = require('../constants/dbErrorCodes');
 const {deepFreeze} = require('shared-utils/obj.utils');
@@ -49,13 +48,16 @@ class FileRepository {
      * @param {string} fileData.mimetype - MIME type
      * @param {number} fileData.size - File size in bytes
      * @param {string} fileData.userId - Owner's user ID
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
      * @returns {Promise<Readonly<Object>>} Created file document
      * @throws {Error} If duplicate fileId or validation error occurs
      */
-    async createFile(fileData) {
+    async createFile(fileData, {session} = {}) {
         try {
-            const file = await this.#model.create(fileData);
-            return deepFreeze(this.#sanitizeFileMongoObject(file.toObject()));
+            const options = session ? {session} : {};
+            const file = await this.#model.create([fileData], options);
+            return deepFreeze(this.#sanitizeFileMongoObject(file[0].toObject()));
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
                 const conflictError = new Error("File ID conflict");
@@ -71,11 +73,18 @@ class FileRepository {
      * Finds a file by its unique fileId.
      *
      * @param {string} fileId - Unique file identifier
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
+     * @param {Object} [options.projection] - MongoDB projection
      * @returns {Promise<Readonly<Object|null>>}
      */
-    async findByFileId(fileId) {
+    async findByFileId(fileId, {session, projection} = {}) {
         try {
-            const fileDoc = await this.#model.findById(convertToObjectId(fileId)).lean();
+            const query = this.#model.findById(convertToObjectId(fileId));
+            if (projection) query.select(projection);
+            if (session) query.session(session);
+
+            const fileDoc = await query.lean();
             return fileDoc ? deepFreeze(this.#sanitizeFileMongoObject(fileDoc)) : null;
         } catch (error) {
             console.error("Error finding a file document by fileId:", error);
@@ -87,12 +96,21 @@ class FileRepository {
      * Deletes a file by its unique fileId.
      *
      * @param {string} fileId - Unique file identifier
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
+     * @param {Object} [options.projection] - MongoDB projection
      * @returns {Promise<Readonly<Object|null>>} Deleted document
      */
-    async deleteByFileId(fileId) {
+    async deleteByFileId(fileId, {session, projection} = {}) {
         try {
-            const deletedFile = await this.#model.findByIdAndDelete(convertToObjectId(fileId)).lean();
+            const options = {new: true, lean: true};
+            if (session) options.session = session;
+            if (projection) options.projection = projection;
 
+            const deletedFile = await this.#model.findByIdAndDelete(
+                convertToObjectId(fileId),
+                options
+            );
             return deletedFile ? deepFreeze(this.#sanitizeFileMongoObject(deletedFile)) : null;
         } catch (error) {
             console.error("Error deleting a file document:", error);
@@ -104,14 +122,22 @@ class FileRepository {
      * Finds a file by both fileId and owner ID
      * @param {string} fileId - Unique file identifier
      * @param {string} userId - Owner user ID
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
+     * @param {Object} [options.projection] - MongoDB projection
      * @returns {Promise<Readonly<Object|null>>}
      */
-    async findByFileIdAndOwner(fileId, userId) {
+    async findByFileIdAndOwner(fileId, userId, {session, projection} = {}) {
         try {
-            const file = await this.#model.findOne({
+            const query = this.#model.findOne({
                 _id: convertToObjectId(fileId),
                 userId: convertToObjectId(userId)
-            }).lean();
+            });
+
+            if (projection) query.select(projection);
+            if (session) query.session(session);
+
+            const file = await query.lean();
             return file ? deepFreeze(this.#sanitizeFileMongoObject(file)) : null;
         } catch (error) {
             console.error("Error finding file by fileId and owner:", error);
@@ -123,14 +149,22 @@ class FileRepository {
      * Deletes a file by both fileId and owner ID
      * @param {string} fileId - Unique file identifier
      * @param {string} userId - Owner user ID
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
+     * @param {Object} [options.projection] - MongoDB projection
      * @returns {Promise<Readonly<Object|null>>} Deleted document
      */
-    async deleteByFileIdAndOwner(fileId, userId) {
+    async deleteByFileIdAndOwner(fileId, userId, {session, projection} = {}) {
         try {
+            const options = {new: true, lean: true};
+            if (session) options.session = session;
+            if (projection) options.projection = projection;
+
             const deletedFile = await this.#model.findOneAndDelete({
                 _id: convertToObjectId(fileId),
                 userId: convertToObjectId(userId)
-            }).lean();
+            }, options);
+
             return deletedFile ? deepFreeze(this.#sanitizeFileMongoObject(deletedFile)) : null;
         } catch (error) {
             console.error("Error deleting file by fileId and owner:", error);
@@ -138,6 +172,37 @@ class FileRepository {
         }
     }
 
+    /**
+     * Updates a file by both fileId and owner ID
+     * @param {string} fileId - Unique file identifier
+     * @param {string} userId - Owner user ID
+     * @param {Object} updates - Update operations
+     * @param {Object} [options] - Additional options
+     * @param {Object} [options.session] - MongoDB session for transactions
+     * @param {Object} [options.projection] - MongoDB projection
+     * @returns {Promise<Readonly<Object|null>>} Updated document
+     */
+    async updateByFileIdAndOwner(fileId, userId, updates, {session, projection} = {}) {
+        try {
+            const options = {new: true, lean: true};
+            if (session) options.session = session;
+            if (projection) options.projection = projection;
+
+            const updatedFile = await this.#model.findOneAndUpdate(
+                {
+                    _id: convertToObjectId(fileId),
+                    userId: convertToObjectId(userId)
+                },
+                updates,
+                options
+            );
+
+            return updatedFile ? deepFreeze(this.#sanitizeFileMongoObject(updatedFile)) : null;
+        } catch (error) {
+            console.error("Error updating file by fileId and owner:", error);
+            throw new Error("Error updating file document");
+        }
+    }
 }
 
-module.exports = new FileRepository(File);
+module.exports = FileRepository;

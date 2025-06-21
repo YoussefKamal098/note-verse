@@ -47,8 +47,7 @@ const ProfileImageUploader = ({
         setLoading(true);
         try {
             const file = new File([blob], `avatar.${ext}`, {type});
-            const savedUrl = await onSaveImage({file});
-            setSavedImageUrl(savedUrl || '');
+            await onSaveImage({file});
         } catch (error) {
             notify.error(error.message);
         } finally {

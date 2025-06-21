@@ -77,6 +77,7 @@ const ToastNotificationContainerStyled = styled(ToastContainer)`
 
     .Toastify__close-button {
         color: var(--color-text);
+        margin: auto;
     }
 
     .Toastify__toast--success .Toastify__close-button:hover,

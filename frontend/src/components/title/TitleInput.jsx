@@ -118,4 +118,4 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     );
 }
 
-export default TitleInput;
+export default React.memo(TitleInput);

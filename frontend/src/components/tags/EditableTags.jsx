@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import {AnimatedListHeightChildrenFade} from "../animations/ContainerAnimation";
+import {AnimatedListWidthChildrenFade} from "../animations/ContainerAnimation";
 import {TagsContainerStyled, TagStyled} from "./TagsStyles";
 import TagEditorPopup from "./TagEditorPopup";
 import Tooltip from "../tooltip/Tooltip";
@@ -14,27 +14,27 @@ const ContainerStyled = styled.div`
     gap: 1em;
 `;
 
-function EditableTags({tags, onSave = (tags) => ({tags})}) {
+function EditableTags({tags, canEdit = true, onSave = (tags) => ({tags})}) {
     return (
         <ContainerStyled>
             <TagsContainerStyled>
-                <AnimatedListHeightChildrenFade>
+                <AnimatedListWidthChildrenFade>
                     {tags.map((tag, index) => (
                         <TagStyled key={`tag-${index}`}>
                             <span>#</span> {tag}
                         </TagStyled>
                     ))}
-                </AnimatedListHeightChildrenFade>
+                </AnimatedListWidthChildrenFade>
 
                 <TagEditorPopup
                     tags={tags}
                     onSave={onSave}
                 >
-                    <Tooltip title="Edit tags">
+                    {canEdit && onSave && <Tooltip title="Edit tags">
                         <TagStyled style={{fontSize: "1em", cursor: "pointer"}}>
                             <TbEditCircle/>
                         </TagStyled>
-                    </Tooltip>
+                    </Tooltip>}
                 </TagEditorPopup>
             </TagsContainerStyled>
         </ContainerStyled>

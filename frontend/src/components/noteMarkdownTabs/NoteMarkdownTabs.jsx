@@ -12,7 +12,7 @@ const NoteMarkdownTabsWrapperStyled = styled.div`
     margin-top: 2em;
 `;
 
-const NoteMarkdownTabs = ({content, onContentChange}) => {
+const NoteMarkdownTabs = ({content, canEdit, onContentChange}) => {
     const [value, setValue] = useState(content);
     const isValueFromInside = useRef(false);
 
@@ -47,21 +47,23 @@ const NoteMarkdownTabs = ({content, onContentChange}) => {
     const memoizedContent = useMemo(() => value, [value]);
 
     const tabs = useMemo(() => [
+        ...(canEdit ? [
+            {
+                title: 'Editor',
+                icon: <HiOutlineWrenchScrewdriver/>,
+                content: <EditorTab
+                    content={memoizedContent}
+                    onChange={handleOnChange}
+                    onKeyUp={handleOnKeyUp}
+                />
+            }
+        ] : []),
         {
             title: 'Preview',
             icon: <FaBookOpenReader/>,
             content: <PreviewTab content={memoizedContent}/>
         },
-        {
-            title: 'Editor',
-            icon: <HiOutlineWrenchScrewdriver/>,
-            content: <EditorTab
-                content={memoizedContent}
-                onChange={handleOnChange}
-                onKeyUp={handleOnKeyUp}
-            />
-        }
-    ], [memoizedContent, handleOnChange, handleOnKeyUp]);
+    ], [memoizedContent, handleOnChange, handleOnKeyUp, canEdit]);
 
     return (
         <NoteMarkdownTabsWrapperStyled>

@@ -4,7 +4,7 @@ import httpHeaders from '../constants/httpHeaders';
 import {isServerErrorStatus} from 'shared-utils/http.utils';
 import {time, timeUnit} from 'shared-utils/date.utils';
 import AppConfig from '../config/config';
-import RoutesPaths from '../constants/RoutesPaths';
+import routesPaths from '../constants/routesPaths';
 import CacheInterceptor from './interceptors/cacheInterceptor';
 import CsrfInterceptor from './interceptors/csrfInterceptor';
 
@@ -125,7 +125,7 @@ class ApiClient {
         console.error("API Error:", {message, status});
 
         if (isServerErrorStatus(status)) {
-            window.location = RoutesPaths.ERROR;
+            window.location = routesPaths.ERROR;
         }
 
         return Promise.reject({...error, message});
@@ -161,6 +161,17 @@ class ApiClient {
      */
     async put(url, data, config = {}) {
         return this.#api.put(url, data, config);
+    }
+
+    /**
+     * Sends a PATCH request.
+     * @param {string} url - The request URL.
+     * @param {any} data - The request payload.
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Optional Axios request config.
+     * @returns {Promise<import('axios').AxiosResponse>} Axios response promise.
+     */
+    async patch(url, data, config = {}) {
+        return this.#api.patch(url, data, config);
     }
 
     /**

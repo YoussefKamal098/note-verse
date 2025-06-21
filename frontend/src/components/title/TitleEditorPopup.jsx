@@ -28,4 +28,4 @@ const TitleEditorPopup = ({title, onSave, children}) => {
     );
 }
 
-export default TitleEditorPopup;
+export default React.memo(TitleEditorPopup);

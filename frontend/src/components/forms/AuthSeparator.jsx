@@ -11,7 +11,7 @@ const SeparatorContainer = styled.div`
 
 const Line = styled.div`
     flex: 1;
-    height: 0.095em;
+    height: 2px;
     border-radius: 25px;
     background-color: var(--color-background-secondary);
 `;

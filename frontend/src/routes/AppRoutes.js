@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
+import React, {Suspense} from 'react';
 import {Route, Routes} from 'react-router-dom';
 import Loader from '../components/common/Loader';
 import {ErrorBoundary} from 'react-error-boundary';
@@ -17,4 +17,4 @@ const AppRoutes = () => (
     </ErrorBoundary>
 );
 
-export default AppRoutes;
+export default React.memo(AppRoutes);

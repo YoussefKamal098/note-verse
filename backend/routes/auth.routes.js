@@ -1,11 +1,15 @@
 const express = require('express');
 const {timeUnit, time} = require('shared-utils/date.utils');
-const authController = require('../controllers/auth.controller');
 const {createRateLimiterMiddleware, defaultRateLimiterMiddleware} = require("../middlewares/rateLimiter.middleware");
 const asyncRequestHandler = require('../utils/asyncHandler');
 const CsrfMiddleware = require('../middlewares/csrf.middleware');
+const validateRequestMiddlewares = require('../middlewares/validateRequest.middleware');
+const userCreationSchema = require('../schemas/userCreation.schema');
+const {makeClassInvoker} = require("awilix-express");
+const AuthController = require("../controllers/auth.controller");
 
 const router = express.Router();
+const api = makeClassInvoker(AuthController);
 
 // Create a CSRF middleware instance.
 const csrf = CsrfMiddleware.create();
@@ -35,14 +39,14 @@ const googleCallbackLimiter = createRateLimiterMiddleware({
 
 
 // Routes with rate-limiting and CSRF validation middleware applied.
-router.post('/register', registerLimiterMiddleware, csrf.validate(), asyncRequestHandler(authController.register.bind(authController)));
-router.post('/verify_email', verifyLimiterMiddleware, csrf.validate(), asyncRequestHandler(authController.verifyEmail.bind(authController)));
-router.post('/login', loginLimiterMiddleware, csrf.validate(), asyncRequestHandler(authController.login.bind(authController)));
-router.post('/logout', defaultRateLimiterMiddleware, csrf.validate(), asyncRequestHandler(authController.logout.bind(authController)));
-router.post('/refresh', defaultRateLimiterMiddleware, csrf.validate(), asyncRequestHandler(authController.refreshToken.bind(authController)));
+router.post('/register', registerLimiterMiddleware, validateRequestMiddlewares(userCreationSchema), csrf.validate(), asyncRequestHandler(api('register')));
+router.post('/verify_email', verifyLimiterMiddleware, csrf.validate(), asyncRequestHandler(api('verifyEmail')));
+router.post('/login', loginLimiterMiddleware, csrf.validate(), asyncRequestHandler(api('login')));
+router.post('/logout', defaultRateLimiterMiddleware, csrf.validate(), asyncRequestHandler(api('logout')));
+router.post('/refresh', defaultRateLimiterMiddleware, csrf.validate(), asyncRequestHandler(api('refreshToken')));
 
 // Google OAuth 2.0 routes
-router.post('/google', googleAuthLimiter, csrf.validate(), asyncRequestHandler(authController.initiateGoogleAuth));
-router.post('/google/callback', googleCallbackLimiter, csrf.validate(), asyncRequestHandler(authController.handleGoogleCallback));
+router.post('/google', googleAuthLimiter, csrf.validate(), asyncRequestHandler(api('initiateGoogleAuth')));
+router.post('/google/callback', googleCallbackLimiter, csrf.validate(), asyncRequestHandler(api('handleGoogleCallback')));
 
 module.exports = router;

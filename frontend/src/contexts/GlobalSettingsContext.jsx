@@ -1,29 +1,17 @@
-import React, {createContext, useContext, useRef, useState} from 'react';
-
-const NAVBAR_POSITIONS = Object.freeze({
-    FIXED: 'fixed',
-    ABSOLUTE: 'absolute'
-});
+import React, {createContext, useContext, useMemo, useRef} from 'react';
 
 const GlobalSettingsContext = createContext({
-    navbarPosition: NAVBAR_POSITIONS.FIXED,
-    setNavbarPosition: () => {
-        throw new Error('GlobalSettingsProvider not found in component tree');
-    },
     appRef: {current: null}
 });
 
 const useGlobalSettings = () => useContext(GlobalSettingsContext);
 
 export const GlobalSettingsProvider = ({children}) => {
-    const [navbarPosition, setNavbarPosition] = useState('fixed');
     const appRef = useRef(null);
 
-    const value = {
-        navbarPosition,
-        setNavbarPosition,
+    const value = useMemo(() => ({
         appRef
-    };
+    }), []);
 
     return (
         <GlobalSettingsContext.Provider value={value}>
@@ -32,5 +20,5 @@ export const GlobalSettingsProvider = ({children}) => {
     );
 };
 
-export {useGlobalSettings, NAVBAR_POSITIONS};
+export {useGlobalSettings};
 export default GlobalSettingsProvider;

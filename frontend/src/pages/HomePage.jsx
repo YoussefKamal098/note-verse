@@ -1,7 +1,7 @@
-import React, {useRef} from "react";
+import React, {useCallback, useRef} from "react";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/pagination/Pagination";
-import NotesList from "../components/notesList/NotesList";
+import NoteCards from "../components/noteCards";
 import Navbar from "../components/navbar/Navbar";
 import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config/config";
@@ -49,7 +49,9 @@ const HomePage = () => {
         }
     };
 
-    const deleteNote = async (noteId, replacedNote) => {
+    const deleteNote = useCallback(async (noteId) => {
+        const replacedNote = await fetchReplacedNote();
+
         setNotes((prevNotes) =>
             replacedNote
                 ? [...prevNotes.filter((note) => note.id !== noteId), replacedNote]
@@ -63,7 +65,7 @@ const HomePage = () => {
         );
         setTotalPages(newTotalPages);
         replacedNoteIndexFromAdjacentPage.current -= 1;
-    };
+    }, []);
 
     const handleSearch = (text) => {
         setCurrentPage(0);
@@ -84,13 +86,12 @@ const HomePage = () => {
             />
 
             <div className="container">
-                {loading ? <Loader/> : null}
+                {loading && <Loader/>}
 
-                <NotesList
+                <NoteCards
                     loading={loading}
                     notes={notes}
                     onDelete={deleteNote}
-                    fetchReplacedNote={fetchReplacedNote}
                 />
             </div>
 

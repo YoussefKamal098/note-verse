@@ -17,6 +17,11 @@ const emailTemplates = Object.freeze({
     verify_email: Object.freeze({
         subject: "Verify Your Email Address",
         template: "verify_email"
+    }),
+
+    note_sharing: Object.freeze({
+        subject: "You\\'ve Been Added to a Note",
+        template: "note_access_granted_notification"
     })
 });
 

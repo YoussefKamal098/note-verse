@@ -2,10 +2,6 @@ const {OAuth2Client} = require('google-auth-library');
 const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 const httpCodes = require('../constants/httpCodes');
-const userService = require('../services/user.service');
-const sessionService = require('../services/session.service');
-const jwtAuthService = require('../services/jwtAuth.service');
-const googleAuthConfig = require('../config/googleAuthConfig');
 const {compareDates, timeUnit, time} = require("shared-utils/date.utils");
 const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 const {generateTokenAsync} = require('../utils/crypto.utils');
@@ -225,4 +221,4 @@ class GoogleAuthService {
     }
 }
 
-module.exports = new GoogleAuthService(userService, sessionService, jwtAuthService, googleAuthConfig);
+module.exports = GoogleAuthService;

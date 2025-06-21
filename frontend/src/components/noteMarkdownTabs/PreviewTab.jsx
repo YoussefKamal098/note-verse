@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from "styled-components";
 import MarkdownPreview from "@uiw/react-markdown-preview";
+import '@uiw/react-markdown-preview/markdown.css';
 import {useTheme} from "../../contexts/ThemeContext";
 
 const PreviewStyled = styled(MarkdownPreview)`
