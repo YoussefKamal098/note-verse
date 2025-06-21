@@ -10,6 +10,7 @@ const PreviewStyled = styled(MarkdownPreview)`
     font-size: 1em !important;
     font-family: "Poppins", sans-serif !important;
     font-weight: 700 !important;
+    background-color: transparent !important;
 `;
 
 const PreviewTab = React.memo(({content}) => {
