@@ -114,7 +114,7 @@ class PermissionService {
 
         const userIds = [...new Set(permissions.map(p => p.userId))];
         const users = await this.#userRepo.findByIds(userIds, {session});
-        return this.#combinePermissionsWithUsers(permissions, users);
+        return this.#combinePermissionsWithUsers(permissions, users).filter(u => u.user !== null);
     }
 
     /**

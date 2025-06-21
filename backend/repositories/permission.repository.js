@@ -232,7 +232,7 @@ class PermissionRepository {
         const skip = page * limit;
 
         try {
-            const docs = await this.#model
+            const perms = await this.#model
                 .find(query)
                 .sort(this.#getSortOptions())
                 .skip(skip)
@@ -240,7 +240,7 @@ class PermissionRepository {
                 .session(session)
                 .lean({virtuals: true})
 
-            return deepFreeze(docs);
+            return deepFreeze(perms.map(perm => this.#sanitizePermission(perm)));
         } catch (error) {
             console.error("Resource user retrieval failed:", error);
             throw new Error(`Failed to get resource users: ${error.message}`);

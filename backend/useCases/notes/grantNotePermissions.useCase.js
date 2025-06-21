@@ -166,8 +166,9 @@ class GrantNotePermissionsUseCase {
             users.map(recipient =>
                 this.#emailMediator.sendNoteSharingNotification({
                     recipientEmail: recipient.email,
-                    recipientFullName: `${recipient.firstname} ${recipient.lastname}`,
-                    senderFullName: `${granter.firstname} ${granter.lastname}`,
+                    recipientName: recipient.firstname,
+                    senderFirstname: granter.firstname,
+                    senderLastname: granter.lastname,
                     senderEmail: granter.email,
                     senderAvatar: granter.avatarUrl,
                     customMessage: message,

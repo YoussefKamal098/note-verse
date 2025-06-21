@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
             color: #333;
@@ -17,17 +17,18 @@
         .email-container {
             max-width: 600px;
             margin: 30px auto;
-            background: white;
-            border-radius: 8px;
+            background: #ffffff;
+            border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .header {
-            background-color: #4f46e5;
+            background-color: #007bff;
             padding: 25px;
             text-align: center;
             color: white;
+            border-radius: 12px 12px 0 0;
         }
 
         .header h1 {
@@ -37,26 +38,38 @@
         }
 
         .content {
-            padding: 30px;
+            padding: 25px;
         }
 
         .greeting {
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 20px;
         }
 
+        .email-highlight {
+            background-color: #e8f0fe;
+            color: #1967d2;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-decoration: none !important;
+        }
+
         .message-box {
-            background-color: #f3f4f6;
-            border-left: 4px solid #4f46e5;
+            background-color: #f1f3f4;
+            border-left: 4px solid #007bff;
             padding: 20px;
             margin: 25px 0;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 8px 8px 0;
         }
 
         .sender-info {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            background-color: #f1f3f4;
+            padding: 15px;
+            border-radius: 8px;
         }
 
         .avatar {
@@ -65,28 +78,31 @@
             border-radius: 50%;
             margin-right: 15px;
             object-fit: cover;
+            border: 2px solid #007bff;
+            overflow: hidden;
         }
 
         .note-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
             padding: 20px;
             margin: 25px 0;
-            background-color: #f9fafb;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .note-title {
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #111827;
+            color: #333;
         }
 
         .permission-badge {
             display: inline-block;
-            padding: 4px 12px;
-            background-color: #e0e7ff;
-            color: #4f46e5;
+            padding: 6px 14px;
+            background-color: #e8f0fe;
+            color: #1967d2;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
@@ -95,31 +111,34 @@
         .action-button {
             display: inline-block;
             padding: 12px 24px;
-            background-color: #4f46e5;
+            background-color: #007bff;
             color: white !important;
             text-decoration: none;
             border-radius: 10px;
             font-weight: 500;
             margin-top: 20px;
-            transition: transform 0.3s ease;
-
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .action-button:hover {
-            transform: scale(1.05);
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .footer {
             text-align: center;
             padding: 20px;
-            background-color: #f9fafb;
-            color: #6b7280;
+            background-color: #f1f3f4;
+            color: #6c757d;
             font-size: 14px;
+            border-radius: 0 0 12px 12px;
         }
 
         .divider {
             height: 1px;
-            background-color: #e5e7eb;
+            background-color: #ccc;
             margin: 25px 0;
         }
     </style>
@@ -132,15 +151,15 @@
 
     <div class="content">
         <div class="greeting">
-            <p>Hello {{recipient_full_name}},</p>
-            <p>{{sender_full_name}} has shared a note with you</p>
+            <p>Hello <span class="email-highlight">{{recipient_name}}</span>,</p>
+            <p><span class="email-highlight">{{sender_firstname}}</span> has shared a note with you</p>
         </div>
 
         <div class="sender-info">
-            <img src="{{sender_avatar}}" alt="{{sender_name}}" class="avatar">
+            <img src="{{sender_avatar}}" alt="{{sender_firstname}}" class="avatar">
             <div>
-                <strong>{{sender_name}}</strong><br>
-                <span style="color: #6b7280;">{{sender_email}}</span>
+                <strong class="email-highlight">{{sender_firstname}} {{sender_lastname}}</strong><br>
+                <span style="color: #6c757d;">{{sender_email}}</span>
             </div>
         </div>
 
@@ -157,8 +176,7 @@
 
         <div class="divider"></div>
 
-        <p>This note was shared with you on {{share_date}}.</p>
-        <p>You can manage your notification preferences in your account settings.</p>
+        <p>This note was shared with you on <span class="email-highlight">{{share_date}}</span>.</p>
     </div>
 
     <div class="footer">

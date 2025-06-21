@@ -56,8 +56,9 @@ class EmailMediator {
      * @async
      * @param {Object} params - The parameters object.
      * @param {string} params.recipientEmail - The recipient's email address.
-     * @param {string} params.recipientFullName - The recipient's full name.
-     * @param {string} params.senderFullName - The sender's full name.
+     * @param {string} params.recipientName - The recipient's name.
+     * @param {string} params.senderFirstname - The sender's first name.
+     * @param {string} params.senderLastname - The sender's last name.
      * @param {string} params.senderEmail - The sender's email address.
      * @param {string} params.senderAvatar - URL to the sender's avatar image.
      * @param {string} params.customMessage - The personalized message from the sender.
@@ -69,8 +70,9 @@ class EmailMediator {
      */
     async sendNoteSharingNotification({
                                           recipientEmail,
-                                          recipientFullName,
-                                          senderFullName,
+                                          recipientName,
+                                          senderFirstname,
+                                          senderLastname,
                                           senderEmail,
                                           senderAvatar,
                                           customMessage,
@@ -79,8 +81,9 @@ class EmailMediator {
                                           noteLink
                                       }) {
         const emailContext = {
-            recipient_full_name: recipientFullName,
-            sender_full_name: senderFullName,
+            recipient_name: recipientName,
+            sender_firstname: senderFirstname,
+            sender_lastname: senderLastname,
             sender_email: senderEmail,
             sender_avatar: senderAvatar,
             custom_message: customMessage,

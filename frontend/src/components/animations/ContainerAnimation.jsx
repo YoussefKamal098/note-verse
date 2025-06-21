@@ -53,7 +53,7 @@ const WidthTransitionContainer = ({children, keyProp}) => {
                         // width: { type: "spring", stiffness: 100, damping: 25 },
                         opacity: {duration: 0.5}
                     }}
-                    style={{overflow: "hidden"}}
+                    // style={{overflow: "hidden"}}
                     layout
                 >
                     {children}
