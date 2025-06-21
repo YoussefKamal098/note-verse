@@ -58,6 +58,7 @@ npm install
 # Application Configuration
 NODE_ENV=development
 PORT=5000
+FRONTEND_BASE_URL=http://localhost:3000  # Base URL for frontend application (used for redirects, links, etc.)
 
 # Database Configuration
 MONGO_URI=mongodb://localhost:27017/notes
@@ -237,32 +238,49 @@ The following routes are used for file operations:
 
 #### Notes API
 
+<small>
+<i>
+Note: Planning to separate permission routes into dedicated '/permissions'
+endpoints in upcoming commit for better RESTful design and maintainability.
+The current nested routes under '/notes' will be deprecated in favor of:
+
+- /permissions/notes/:noteId
+- /permissions/notes/:noteId/users/:userId
+  </small>
+  </i>
+
 The following routes are used for managing notes:
 
-| HTTP Method | Endpoint                             | Description                                                                                                                    |
-|-------------|--------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `POST`      | `api/v1/users/:userId/notes`         | Create a new note for the specified user. You can use `"me"` as the userId to refer to the authenticated user.                 |
-| `GET`       | `api/v1/users/:userId/notes`         | Retrieve paginated notes for the specified user with optional query parameters. Use `"me"` to refer to the authenticated user. |
-| `GET`       | `api/v1/users/:userId/notes/:noteId` | Retrieve a specific note by its ID for the specified user. You can replace `:userId` with `"me"` for the authenticated user.   |
-| `PUT`       | `api/v1/users/:userId/notes/:noteId` | Update a specific note by its ID for the specified user. Replace `:userId` with `"me"` to target the authenticated user.       |
-| `DELETE`    | `api/v1/users/:userId/notes/:noteId` | Delete a specific note by its ID for the specified user. Use `"me"` in place of `:userId` for the authenticated user.          |
+| HTTP Method | Endpoint                                   | Description                                                                     |
+|-------------|--------------------------------------------|---------------------------------------------------------------------------------|
+| `POST`      | `api/v1/notes`                             | Create a new note for the specified user.                                       |
+| `GET`       | `api/v1/notes`                             | Retrieve paginated notes for the specified user with optional query parameters. |
+| `GET`       | `api/v1/notes/:noteId`                     | Retrieve a specific note by its ID for the specified user.                      |
+| `PUT`       | `api/v1/notes/:noteId`                     | Update a specific note by its ID for the specified user.                        |
+| `DELETE`    | `api/v1/notes/:noteId`                     | Delete a specific note by its ID for the specified user.                        |
+| `POST`      | `api/v1/notes/:noteId/permissions`         | Grant permissions for a note. Requires ownership.                               |
+| `DELETE`    | `api/v1/notes/:noteId/permissions/:userId` | Revoke permission for a user. Requires ownership.                               |
+| `PATCH`     | `api/v1/notes/:noteId/permissions/:userId` | Update permission level for a user. Requires ownership.                         |
+| `GET`       | `api/v1/notes/:noteId/permissions/:userId` | Get specific user's permission for a note.                                      |
+| `GET`       | `api/v1/notes/:noteId/permissions`         | Get all permissions for a note with pagination.                                 |
 
 #### User and Authentication API
 
 The following routes are used for user management and authentication:
 
-| HTTP Method | Endpoint                      | Description                                                                                                                                                                      |
-|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POST`      | `api/v1/auth/register`        | Register a new user and send an OTP code to the provided email for verification                                                                                                  |
-| `POST`      | `api/v1/auth/login`           | Log in an existing user                                                                                                                                                          |
-| `POST`      | `api/v1/auth/logout`          | Log out the currently logged-in user                                                                                                                                             |
-| `POST`      | `api/v1/auth/refresh`         | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
-| `POST`      | `api/v1/auth/verify_email`    | Verify the user's email address using the provided OTP code                                                                                                                      |
-| `POST`      | `api/v1/auth/google`          | Initiates the Google OAuth 2.0 authentication process (redirects to Google's consent screen)                                                                                     |
-| `POST`      | `api/v1/auth/google/callback` | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                               |
-| `GET`       | `api/v1/csrf-tokens`          | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
-| `GET`       | `api/v1/users/:userId`        | Retrieve the user's profile. You can either provide a specific userId or use the keyword "me", which will automatically resolve to the authenticated user's ID.                  |
-| `POST`      | `api/v1/users/:userId/avatar` | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user         |   
+| HTTP Method | Endpoint                                   | Description                                                                                                                                                                                                                                                                 |
+|-------------|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/auth/register`                     | Register a new user and send an OTP code to the provided email for verification                                                                                                                                                                                             |
+| `POST`      | `api/v1/auth/login`                        | Log in an existing user                                                                                                                                                                                                                                                     |
+| `POST`      | `api/v1/auth/logout`                       | Log out the currently logged-in user                                                                                                                                                                                                                                        |
+| `POST`      | `api/v1/auth/refresh`                      | Refresh the access token using the stored JWT in the cookie in browser                                                                                                                                                                                                      |
+| `POST`      | `api/v1/auth/verify_email`                 | Verify the user's email address using the provided OTP code                                                                                                                                                                                                                 |
+| `POST`      | `api/v1/auth/google`                       | Initiates the Google OAuth 2.0 authentication process (redirects to Google's consent screen)                                                                                                                                                                                |
+| `POST`      | `api/v1/auth/google/callback`              | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                                                                                                                          |
+| `GET`       | `api/v1/csrf-tokens`                       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks.                                                                                            |
+| `GET`       | `api/v1/users`                             | Retrieve a user's profile. You can query by either:<br>- `id`: The user's unique identifier<br>- `email`: The user's email address<br>- `"me"` as a query parameter: Resolves to the authenticated user's profile<br><br>*Response is cached for performance optimization.* |
+| `POST`      | `api/v1/users/:userId/avatar`              | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
+| `GET`       | `api/v1/users/:userId/granted-permissions` | Get permissions granted by user with pagination.                                                                                                                                                                                                                            |
 
 ---
 
@@ -276,7 +294,9 @@ notes_app/
 ├── backend/                       # Backend application code (Node.js, Express)
 │   ├── config/                    # Configuration files for the backend
 │   ├── constants/                 # Centralized application constants and configurations
+│   ├── container/                 # Dependency injection container setup using Awilix
 │   ├── controllers/               # Controller files for handling HTTP requests
+│   ├── enums/                     # Enum definitions for type-safe constants
 │   ├── errors/                    # Error handling classes and functions
 │   ├── interfaces/                # Contains interface definitions to standardize data structures
 │   ├── middlewares/               # Middleware for various backend operations
@@ -284,12 +304,14 @@ notes_app/
 │   ├── queues/                    # Background job queues and workers and task scheduling (e.g., using Bull)
 │   ├── repositories/              # Data access layer for database queries and operations
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
+│   ├── schemas/                   # Validation schemas for request payloads using Joi
 │   ├── services/                  # Service layer for business logic and external integrations
-│   │   ├── storage/                # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
+│   │   ├── storage/               # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
 │   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
 │   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
+│   ├── unitOfWork/                # Unit of Work pattern implementation for transactional operations
+│   ├── useCases/                  # Business use cases and application logic      
 │   ├── utils/                     # Utility functions for various tasks
-│   ├── validations/               # Validation logic for incoming requests (data validation)
 │   ├── .nvmrc                     # Node.js version specification .nvmrc  
 │   ├── serverInitializer.js       # Responsible for initializing the server by setting up middleware, routing, and other core configurations for the application.
 │   ├── app.js                     # Main application setup (e.g., middleware, routing)
@@ -302,6 +324,8 @@ notes_app/
 │   │   ├── components/            # Reusable React components for UI
 │   │   │   ├── animations/        # Components for handling animations
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
+│   │   │   ├── checkBox/          # Custom checkbox components
+│   │   │   ├── collaboratorsInput/# Input component for managing note collaborators insertion       
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
 │   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)
 │   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
@@ -313,14 +337,18 @@ notes_app/
 │   │   │   ├── note/              # Components related to note display and creation
 │   │   │   ├── noteCards/         # Components for displaying notes
 │   │   │   ├── noteMarkdownTabs/  # Components for displaying note markdown editor
+│   │   │   ├── noteSharPopUp/     # Component for sharing notes with other users
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
 │   │   │   ├── pagination/        # Pagination component module.
 │   │   │   ├── profileImageUploader/           # This folder contains React components for profile image uploading and editing.
 │   │   │   ├── progressiveImage/               # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
+│   │   │   ├── selection/         # Custom selection/dropdown components
 │   │   │   ├── tags/              # Components for managing tags on notes
-│   │   │   ├── title/              # Components for managing title on notes
+│   │   │   ├── texterea/          # Custom textarea components with enhanced features   
+│   │   │   ├── title/             # Components for managing title on notes
+│   │   │   ├── toggle/            # Custom Toggle switch components
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
 │   │   ├── config/                # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
@@ -329,6 +357,7 @@ notes_app/
 │   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, Errors, etc.)
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
 │   │   ├── styles/                # Styles (CSS) for the app's UI
+│   │   ├── utils/                 # Shared utility functions and helpers
 │   │   ├── validations/           # Frontend form validation logic (email, password, etc.)
 │   │   ├── workers/               # Web Workers for running background tasks without blocking the main thread
 │   │   ├── App.jsx                # Main React component for the app (entry point)
