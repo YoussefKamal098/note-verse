@@ -84,7 +84,7 @@ class NoteService {
      * @throws {Error} If note update fails.
      */
     async updateNoteById(noteId, {title, content, tags, isPinned, isPublic} = {}, config = {}) {
-        return await this.#apiClient.put(
+        return await this.#apiClient.patch(
             ENDPOINTS.UPDATE_USER_NOTE_BY_ID(noteId),
             {title, content, tags, isPinned, isPublic},
             config

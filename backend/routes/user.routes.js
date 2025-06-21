@@ -50,7 +50,7 @@ router.get('/',
     asyncRequestHandler(api('getUser'))
 );
 
-router.post('/:userId/avatar',
+router.patch('/:userId/avatar',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(uploadUserImageMiddleWare),
     asyncRequestHandler(clearUserCaches),

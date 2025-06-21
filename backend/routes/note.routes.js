@@ -64,7 +64,7 @@ router.get(
 );
 
 // Update a note by ID
-router.put(
+router.patch(
     '/:noteId',
     asyncRequestHandler(validateNoteUpdatePermissionMiddleware),
     asyncRequestHandler(clearNotesCaches),

@@ -256,7 +256,7 @@ The following routes are used for managing notes:
 | `POST`      | `api/v1/notes`                             | Create a new note for the specified user.                                       |
 | `GET`       | `api/v1/notes`                             | Retrieve paginated notes for the specified user with optional query parameters. |
 | `GET`       | `api/v1/notes/:noteId`                     | Retrieve a specific note by its ID for the specified user.                      |
-| `PUT`       | `api/v1/notes/:noteId`                     | Update a specific note by its ID for the specified user.                        |
+| `PATCH`     | `api/v1/notes/:noteId`                     | Update a specific note by its ID for the specified user.                        |
 | `DELETE`    | `api/v1/notes/:noteId`                     | Delete a specific note by its ID for the specified user.                        |
 | `POST`      | `api/v1/notes/:noteId/permissions`         | Grant permissions for a note. Requires ownership.                               |
 | `DELETE`    | `api/v1/notes/:noteId/permissions/:userId` | Revoke permission for a user. Requires ownership.                               |
@@ -279,7 +279,7 @@ The following routes are used for user management and authentication:
 | `POST`      | `api/v1/auth/google/callback`              | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                                                                                                                          |
 | `GET`       | `api/v1/csrf-tokens`                       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks.                                                                                            |
 | `GET`       | `api/v1/users`                             | Retrieve a user's profile. You can query by either:<br>- `id`: The user's unique identifier<br>- `email`: The user's email address<br>- `"me"` as a query parameter: Resolves to the authenticated user's profile<br><br>*Response is cached for performance optimization.* |
-| `POST`      | `api/v1/users/:userId/avatar`              | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
+| `PATCH`     | `api/v1/users/:userId/avatar`              | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
 | `GET`       | `api/v1/users/:userId/granted-permissions` | Get permissions granted by user with pagination.                                                                                                                                                                                                                            |
 
 ---

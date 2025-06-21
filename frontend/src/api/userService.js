@@ -60,7 +60,7 @@ class UserService {
 
         formData.append('file', file);
 
-        return this.#apiClient.post(
+        return this.#apiClient.patch(
             ENDPOINTS.AVATAR_UPLOAD(userId),
             formData, {
                 ...config,
