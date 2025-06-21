@@ -30,18 +30,20 @@ class NoteService {
      * @param {Object} params - The note details.
      * @param {string} params.title - Title of the note.
      * @param {string} params.content - Content of the note.
-     * @param {string[]} [params.tags] - Tags associated with the note.
+     * @param {string[]} params.tags - Tags associated with the note.
      * @param {boolean} [params.isPinned=false] - Whether the note is pinned.
+     * @param {boolean} [params.isPublic=false] - Whether the note is public visibility .
      * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note creation fails.
      */
-    async create(userId, {title, content, tags, isPinned}, config = {}) {
+    async create(userId, {title, content, tags, isPinned, isPublic}, config = {}) {
         return await this.#apiClient.post(ENDPOINTS.CREATE, {
             title,
             content,
             tags,
             isPinned,
+            isPublic
         }, config);
     }
 

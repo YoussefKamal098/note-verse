@@ -10,9 +10,11 @@ import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 const HeaderWrapperStyled = styled.div`
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
     align-items: center;
     font-size: 1em;
-    margin-bottom: 2em;
+    gap: 10px;
+    margin-bottom: 1em;
 `
 
 const HeaderLeftPartContainerStyled = styled.div`
@@ -21,7 +23,7 @@ const HeaderLeftPartContainerStyled = styled.div`
     gap: 0.25em
 `
 
-const NoteHeader = ({noteMeta, actions}) => {
+const NoteHeader = ({actions}) => {
     const {selectors} = useNoteContext();
 
     const {isNew, initLoading, isLoading, editMode} = useNoteSelector(selectors.getStatus);
@@ -29,7 +31,7 @@ const NoteHeader = ({noteMeta, actions}) => {
     const canEdit = useNoteSelector(selectors.canEdit);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
-    const {isPinned, createdAt} = useNoteSelector(selectors.getMeta);
+    const {isPinned, isPublic, createdAt} = useNoteSelector(selectors.getMeta);
 
     return (
         <HeaderWrapperStyled>
@@ -41,7 +43,7 @@ const NoteHeader = ({noteMeta, actions}) => {
                     lastname={owner?.lastname}
                     createdAt={createdAt}
                     avatarUrl={owner?.avatarUrl}
-                    isPublic={noteMeta?.isPublic}
+                    isPublic={isPublic}
                     loading={initLoading}
                 />
             </HeaderLeftPartContainerStyled>

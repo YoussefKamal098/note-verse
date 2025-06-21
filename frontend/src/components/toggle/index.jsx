@@ -9,7 +9,7 @@ const TRANSITION_TIMING = '0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15)';
 const ToggleContainer = styled.label`
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.75em;
     cursor: ${({$disabled}) => $disabled ? 'not-allowed' : 'pointer'};
     opacity: ${({$disabled}) => $disabled ? '0.5' : '1'};
     user-select: none;
@@ -63,7 +63,7 @@ const LabelText = styled.span`
     order: ${({$labelPosition}) => {
         return $labelPosition === 'left' ? -1 : 1;
     }};
-    font-size: 0.9rem;
+    font-size: 0.9em;
     font-weight: 600;
     transition: color 0.2s ease;
 `;

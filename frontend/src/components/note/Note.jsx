@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
+import Toggle from "../toggle";
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
 import NoteHeader from "./NoteHeader"
@@ -23,12 +24,23 @@ const ContainerStyled = styled.div`
     overflow: hidden;
 `;
 
+const ToggleControlsWrapperStyles = styled.div`
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+`;
+
 const Note = () => {
     const copyLink = useCopyLink();
     const {actions, selectors} = useNoteContext();
     const [showShare, setShowShare] = useState(false);
-    const {editMode} = useNoteSelector(selectors.getStatus);
-    const {id, isPublic} = useNoteSelector(selectors.getMeta);
+    const {editMode, isNew} = useNoteSelector(selectors.getStatus);
+    const {id, isPublic, isPinned} = useNoteSelector(selectors.getMeta);
     const {current} = useNoteSelector(selectors.getContent);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
@@ -52,8 +64,8 @@ const Note = () => {
     }, [actions.discardChanges, showConfirmation]);
 
     const onVisibilityChange = useCallback((visibility) => {
-        actions.updatePublicState(visibility);
-    }, [actions.updatePublicState])
+        actions.updateVisibilityState(visibility);
+    }, [actions.updateVisibilityState]);
 
     const handlePinToggle = useCallback(async () => {
         await actions.togglePin();
@@ -87,10 +99,16 @@ const Note = () => {
 
     return (
         <ContainerStyled>
-            <NoteHeader
-                noteMeta={{isPublic}}
-                actions={headerActions}
-            />
+            <NoteHeader actions={headerActions}/>
+
+            {editMode && isNew && (<ToggleControlsWrapperStyles>
+                <Toggle checked={isPinned}
+                        onChange={actions.togglePinState}
+                        label={"Pin status"}/>
+                <Toggle checked={isPublic}
+                        onChange={actions.toggleVisibilityState}
+                        label={"Public visibility"}/>
+            </ToggleControlsWrapperStyles>)}
 
             <EditableTitle
                 title={current.title}

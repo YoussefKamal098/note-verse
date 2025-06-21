@@ -3,6 +3,7 @@ export const ACTION_TYPES = {
         INIT: "NOTE/INIT",
         INIT_NEW: "NOTE/INIT_NEW",
         TOGGLE_PIN: "NOTE/TOGGLE_PIN",
+        TOGGLE_PUBLIC: "NOTE/TOGGLE_PUBLIC",
         UPDATE_PUBLIC: "NOTE/UPDATE_PUBLIC"
     },
     CONTENT: {

@@ -122,14 +122,18 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
             const controller = requestManager.createAbortController();
 
             try {
-                const {currentContent, originalContent, status} = getState();
+                const {currentContent, originalContent, status, isPinned, isPublic} = getState();
                 if (!validateNote(currentContent)) return;
 
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: true}});
 
                 const changes = getContentChanges(originalContent, currentContent);
                 const result = status.isNew
-                    ? await noteService.create(user?.id, currentContent, {signal: controller.signal})
+                    ? await noteService.create(user?.id, {
+                        ...currentContent,
+                        isPinned,
+                        isPublic
+                    }, {signal: controller.signal})
                     : await noteService.updateNoteById(getState().id, changes, {signal: controller.signal});
 
                 const savedNote = result.data;
@@ -202,12 +206,27 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
         },
 
         /**
-         * Updates the local public/private state without API call
+         * Toggle the local public/private state without API call
          * Use when you only need UI feedback before persisting
          */
-        updatePublicState: (visibility) => {
-            console.log("1", visibility)
+        togglePinState: () => {
+            dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PIN});
+        },
+
+        /**
+         * Updates the local pin/unpin state without API call
+         * Use when you only need UI feedback before persisting
+         */
+        updateVisibilityState: (visibility) => {
             dispatch({type: ACTION_TYPES.NOTE.UPDATE_PUBLIC, payload: visibility});
+        },
+
+        /**
+         * Toggle the local public/private state without API call
+         * Use when you only need UI feedback before persisting
+         */
+        toggleVisibilityState: () => {
+            dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PUBLIC});
         },
 
         toggleEditMode: () => dispatch({type: ACTION_TYPES.STATUS.TOGGLE_EDIT_MODE})
