@@ -3,44 +3,43 @@ import styled from 'styled-components';
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
 import {useConfirmation} from "../../contexts/ConfirmationContext";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
-import Toggle from "../toggle";
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
 import NoteHeader from "./NoteHeader"
 import NoteMarkdownTabs from "../noteMarkdownTabs/NoteMarkdownTabs";
 import SharePopUp from '../noteSharePopUp';
+import RightSettingsPanel from './RightSettingsPanel';
 import useCopyLink from "../../hooks/useCopyLink";
+import {ContainerStyles} from "./styles";
 
-const ContainerStyled = styled.div`
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-    max-width: 55em;
-    margin: 1em auto;
-    padding: 1em 1.25em 2em;
-    background-color: var(--color-background);
-    border-radius: var(--border-radius);
-    overflow: hidden;
+const GridContainerStyles = styled.div`
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-auto-rows: minmax(min-content, max-content);
+    gap: 10px;
+    width: 100%;
+    align-items: start;
+
+    @media (max-width: 768px) {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
 `;
 
-const ToggleControlsWrapperStyles = styled.div`
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    font-size: 0.9em;
+const LeftContainerStyles = styled(ContainerStyles)`
+    @media (max-width: 768px) {
+        width: 100%;
+    }
 `;
 
 const Note = () => {
     const copyLink = useCopyLink();
     const {actions, selectors} = useNoteContext();
     const [showShare, setShowShare] = useState(false);
-    const {editMode, isNew} = useNoteSelector(selectors.getStatus);
-    const {id, isPublic, isPinned} = useNoteSelector(selectors.getMeta);
+    const [showSettings, setShowSettings] = useState(true);
+    const {editMode} = useNoteSelector(selectors.getStatus);
+    const {id, isPublic} = useNoteSelector(selectors.getMeta);
     const {current} = useNoteSelector(selectors.getContent);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
@@ -87,6 +86,10 @@ const Note = () => {
         setShowShare((prev) => !prev);
     }, []);
 
+    const handleSettingsIconClick = useCallback(() => {
+        setShowSettings(prev => !prev);
+    }, []);
+
     const headerActions = useMemo(() => ({
         onSave: handleOnSave,
         onDelete: handleDelete,
@@ -94,47 +97,46 @@ const Note = () => {
         onTogglePin: handlePinToggle,
         onEdit: handleEdit,
         onCopyLink: handleCopyLink,
-        onShowShare: handleShowShare
+        onShowShare: handleShowShare,
+        onSettingsIconClick: handleSettingsIconClick
     }), [actions, handleCopyLink, handleShowShare]);
 
     return (
-        <ContainerStyled>
-            <NoteHeader actions={headerActions}/>
+        <GridContainerStyles>
+            <LeftContainerStyles>
+                <NoteHeader actions={headerActions}/>
 
-            {editMode && isNew && (<ToggleControlsWrapperStyles>
-                <Toggle checked={isPinned}
-                        onChange={actions.togglePinState}
-                        label={"Pin status"}/>
-                <Toggle checked={isPublic}
-                        onChange={actions.toggleVisibilityState}
-                        label={"Public visibility"}/>
-            </ToggleControlsWrapperStyles>)}
+                <EditableTitle
+                    title={current.title}
+                    onSave={useCallback((title) => actions.updateContent({title}), [actions.updateContent])}
+                    canEdit={editMode && canEdit}
+                />
 
-            <EditableTitle
-                title={current.title}
-                onSave={useCallback((title) => actions.updateContent({title}), [actions.updateContent])}
-                canEdit={editMode && canEdit}
-            />
+                <EditableTags
+                    tags={current.tags}
+                    onSave={useCallback((tags) => actions.updateContent({tags}), [actions.updateContent])}
+                    canEdit={editMode && canEdit}
+                />
 
-            <EditableTags
-                tags={current.tags}
-                onSave={useCallback((tags) => actions.updateContent({tags}), [actions.updateContent])}
-                canEdit={editMode && canEdit}
-            />
+                <NoteMarkdownTabs
+                    content={current.content}
+                    onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
+                    canEdit={editMode && canEdit}
+                />
 
-            <NoteMarkdownTabs
-                content={current.content}
-                onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
-                canEdit={editMode && canEdit}
-            />
+                {isOwner && <SharePopUp
+                    noteMeta={{id, isPublic}}
+                    onClose={handleShowShare}
+                    onVisibilityChange={onVisibilityChange}
+                    show={showShare}
+                />}
+            </LeftContainerStyles>
 
-            {isOwner && <SharePopUp
-                noteMeta={{id, isPublic}}
-                onClose={handleShowShare}
-                onVisibilityChange={onVisibilityChange}
-                show={showShare}
+            {isOwner && <RightSettingsPanel
+                show={showSettings}
+                onClose={() => setShowSettings(false)}
             />}
-        </ContainerStyled>
+        </GridContainerStyles>
     );
 }
 

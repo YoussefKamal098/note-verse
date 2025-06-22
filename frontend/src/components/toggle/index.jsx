@@ -26,6 +26,7 @@ const HiddenCheckbox = styled.input.attrs({type: 'checkbox'})`
 const ToggleTrack = styled.div`
     position: relative;
     width: 4em;
+    min-width: 4em;
     height: 2em;
     background-color: var(--color-background-primary);
     border: 2px solid var(--color-border-secondary);
@@ -59,13 +60,30 @@ const ToggleKnob = styled.div`
     }
 `;
 
-const LabelText = styled.span`
+const LabelContainer = styled.div`
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
     order: ${({$labelPosition}) => {
         return $labelPosition === 'left' ? -1 : 1;
     }};
+`;
+
+const LabelText = styled.span`
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 0.9em;
     font-weight: 600;
     transition: color 0.2s ease;
+`;
+
+const IconWrapper = styled.span`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25em;
 `;
 
 // Helper functions
@@ -89,6 +107,7 @@ const Toggle = ({
                     disabled = false,
                     dangerState = 'none', // 'on' | 'off' | 'none'
                     labelPosition = 'left', // 'left' | 'right'
+                    icon = null, // New icon prop
                     id,
                     'aria-label': ariaLabel,
                     'aria-labelledby': ariaLabelledBy,
@@ -127,6 +146,9 @@ const Toggle = ({
                 aria-describedby={ariaDescribedBy}
                 {...props}
             />
+
+            {icon && <IconWrapper>{icon}</IconWrapper>}
+
             <ToggleTrack>
                 <ToggleKnob
                     $checked={checked}
@@ -136,9 +158,11 @@ const Toggle = ({
                 />
             </ToggleTrack>
             {label && (
-                <LabelText id={`${toggleId}-label`} $labelPosition={labelPosition}>
-                    {label}
-                </LabelText>
+                <LabelContainer $labelPosition={labelPosition}>
+                    <LabelText id={`${toggleId}-label`} $labelPosition={labelPosition}>
+                        {label}
+                    </LabelText>
+                </LabelContainer>
             )}
         </ToggleContainer>
     );
@@ -155,6 +179,7 @@ Toggle.propTypes = {
     disabled: PropTypes.bool,
     dangerState: PropTypes.oneOf(['on', 'off', 'none']),
     labelPosition: PropTypes.oneOf(['left', 'right']),
+    icon: PropTypes.node, // New prop for the icon
     id: PropTypes.string,
     'aria-label': PropTypes.string,
     'aria-labelledby': PropTypes.string,

@@ -192,12 +192,29 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
             const controller = requestManager.createAbortController();
             try {
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: true}});
-
-                await noteService.updateNoteById(getState().id, {isPinned: !getState().isPinned}, {signal: controller.signal});
                 dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PIN});
 
+                await noteService.updateNoteById(getState().id, {isPinned: !getState().isPinned}, {signal: controller.signal});
                 notify.success(`Note ${getState().isPinned ? 'unPinned' : 'pinned'} successfully`);
             } catch (error) {
+                dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PIN});
+                handleError(error);
+            } finally {
+                dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: false}});
+                requestManager.removeAbortController(controller);
+            }
+        },
+
+        toggleVisibility: async () => {
+            const controller = requestManager.createAbortController();
+            try {
+                dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: true}});
+                dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PUBLIC});
+
+                await noteService.updateNoteById(getState().id, {isPublic: !getState().isPublic}, {signal: controller.signal});
+                notify.success(`Note ${getState().isPinned ? 'unPinned' : 'pinned'} successfully`);
+            } catch (error) {
+                dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PUBLIC});
                 handleError(error);
             } finally {
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: false}});

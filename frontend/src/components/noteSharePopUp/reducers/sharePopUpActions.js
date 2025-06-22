@@ -127,6 +127,13 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
             }
         },
 
+        updateGeneralAccessState: (isPublic) => {
+            dispatch({
+                type: ACTION_TYPES.UPDATE_GENERAL_ACCESS,
+                payload: isPublic
+            });
+        },
+
         updateNewCollaboratorRole: (role) => {
             dispatch({
                 type: ACTION_TYPES.SET_NEW_COLLABORATOR_ROLE,

@@ -15,6 +15,7 @@ const SharePopUpProvider = ({children, noteMeta}) => {
         noteId: noteMeta.id,
         isPublic: noteMeta.isPublic
     });
+
     const requestManager = useRequestManager();
     const {notify} = useToastNotification();
     const {user} = useAuth();
@@ -23,6 +24,10 @@ const SharePopUpProvider = ({children, noteMeta}) => {
     useEffect(() => {
         stateRef.current = state;
     }, [state]);
+
+    useEffect(() => {
+        actions.updateGeneralAccessState(noteMeta.isPublic);
+    }, [noteMeta.isPublic]);
 
     const actions = useMemo(() => {
         const getState = () => stateRef.current;

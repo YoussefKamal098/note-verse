@@ -40,6 +40,7 @@ const ButtonStyled = styled.button`
     opacity: ${(props) => props.disabled ? 0.5 : 1};
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
     background-color: ${(props) => BUTTON_PROPS[props.type].color};
+    box-shadow: var(--box-shadow-hoverable);
     transition: 0.3s ease;
 
     &:hover {
