@@ -29,7 +29,6 @@ const RightContainerStyles = styled(ContainerStyles)`
         transform: ${({$show}) => $show ? 'translateX(0)' : 'translateX(100%)'};
         transition: transform 0.3s ease;
         z-index: 1000;
-        grid-row: auto;
     }
 `;
 

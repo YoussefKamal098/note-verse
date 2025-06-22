@@ -2,7 +2,7 @@ import React, {useRef} from "react";
 import PropTypes from "prop-types";
 import {FadeInAnimation} from "../animations/ContainerAnimation";
 import {FaExclamationTriangle, FaInfoCircle} from "react-icons/fa";
-import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
+import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../buttons/Button";
 import {PopupContainer, PopUpOverlay} from "./ConfirmationPopupStyles";
 import {AnimatePresence} from "framer-motion";
 
@@ -76,9 +76,9 @@ const ConfirmationPopup = ({
                         </span>
                             {confirmationMessage}
                         </div>
-                        <ButtonsContainerStyled className="controlling-buttons">
+                        <ButtonsContainerStyles className="controlling-buttons">
                             {renderButtons(type, onConfirm, onCancel)}
-                        </ButtonsContainerStyled>
+                        </ButtonsContainerStyles>
                     </PopupContainer>
                 </FadeInAnimation>
             </PopUpOverlay>)}

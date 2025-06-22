@@ -52,7 +52,7 @@ const ButtonStyled = styled.button`
     }
 `;
 
-const ButtonsContainerStyled = styled.div`
+const ButtonsContainerStyles = styled.div`
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -84,5 +84,5 @@ Button.propTypes = {
     icon: PropTypes.elementType,
 };
 
-export {BUTTON_TYPE, ButtonsContainerStyled};
+export {BUTTON_TYPE, ButtonsContainerStyles};
 export default Button;

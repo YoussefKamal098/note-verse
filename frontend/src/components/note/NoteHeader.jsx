@@ -6,11 +6,11 @@ import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
 import BackHomeButton from "../buttons/BackHomeButton";
 import NoteMenu from "../menus/noteMenu";
 import UserProfileWithMeta from "./UserProfileWithMeta";
-import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../buttons/Button";
+import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../buttons/Button";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 
 
-const HeaderWrapperStyled = styled.div`
+const HeaderWrapperStyles = styled.div`
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -20,19 +20,19 @@ const HeaderWrapperStyled = styled.div`
     margin-bottom: 1em;
 `
 
-const HeaderLeftPartContainerStyled = styled.div`
+const HeaderLeftPartContainerStyles = styled.div`
     display: flex;
     align-items: center;
     gap: 0.25em
 `
 
-const HeaderRightPartContainerStyled = styled.div`
+const HeaderRightPartContainerStyles = styled.div`
     display: flex;
     align-items: center;
     gap: 0.25em
 `
 
-const SettingsIconWrapper = styled.div`
+const SettingsIcon = styled(TbSettings)`
     font-size: 0.9em;
     display: flex;
     align-items: center;
@@ -58,8 +58,8 @@ const NoteHeader = ({actions}) => {
     const {isPinned, isPublic, createdAt} = useNoteSelector(selectors.getMeta);
 
     return (
-        <HeaderWrapperStyled>
-            <HeaderLeftPartContainerStyled>
+        <HeaderWrapperStyles>
+            <HeaderLeftPartContainerStyles>
                 <BackHomeButton/>
                 <UserProfileWithMeta
                     firstname={owner?.firstname}
@@ -69,12 +69,12 @@ const NoteHeader = ({actions}) => {
                     isPublic={isPublic}
                     loading={initLoading}
                 />
-            </HeaderLeftPartContainerStyled>
+            </HeaderLeftPartContainerStyles>
 
-            <HeaderRightPartContainerStyled>
+            <HeaderRightPartContainerStyles>
                 {isNew || editMode || hasChanges ? (
                     <TranslateTransitionContainer keyProp={"note_save_discard"}>
-                        <ButtonsContainerStyled>
+                        <ButtonsContainerStyles>
                             <Button
                                 type={BUTTON_TYPE.SECONDARY}
                                 onClick={actions.onDiscard}
@@ -89,7 +89,7 @@ const NoteHeader = ({actions}) => {
                             >
                                 Save
                             </Button>
-                        </ButtonsContainerStyled>
+                        </ButtonsContainerStyles>
                     </TranslateTransitionContainer>
                 ) : (
                     <TranslateTransitionContainer
@@ -111,13 +111,11 @@ const NoteHeader = ({actions}) => {
                     aria-label="settings"
                     sx={{color: 'var(--color-text)'}}
                 >
-                    <SettingsIconWrapper>
-                        <TbSettings/>
-                    </SettingsIconWrapper>
+                    <SettingsIcon/>
                 </IconButton>}
-            </HeaderRightPartContainerStyled>
+            </HeaderRightPartContainerStyles>
 
-        </HeaderWrapperStyled>
+        </HeaderWrapperStyles>
     );
 }
 

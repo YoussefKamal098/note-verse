@@ -1,6 +1,6 @@
 import React from "react";
 import {WidthTransitionContainer} from "../../../animations/ContainerAnimation";
-import Button, {BUTTON_TYPE, ButtonsContainerStyled} from "../../../buttons/Button";
+import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../../../buttons/Button";
 import {FooterContainerStyles} from "./styles";
 import {useSharePopUp, useSharePopUpSelector} from "../../hooks/useSharePopUp";
 
@@ -29,7 +29,7 @@ const Footer = ({inputRef}) => {
         <FooterContainerStyles>
             <WidthTransitionContainer>
                 {newCollaboratorsCount > 0 ? (
-                    <ButtonsContainerStyled>
+                    <ButtonsContainerStyles>
                         <Button
                             type={BUTTON_TYPE.DANGER}
                             onClick={onCancel}
@@ -44,7 +44,7 @@ const Footer = ({inputRef}) => {
                         >
                             Send
                         </Button>
-                    </ButtonsContainerStyled>
+                    </ButtonsContainerStyles>
                 ) : (
                     <Button
                         key="done-button"
