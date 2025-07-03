@@ -244,7 +244,7 @@ class UserService {
      *
      * @param {string} userId - The ID of the user to update
      * @param {string} fileId - unique identifier of the File document from storage service
-     * @returns {Promise<string>} Updated fileId
+     * @returns {Promise<Readonly<Object>>} The complete updated user object
      * @throws {AppError} If:
      * - User doesn't exist (404)
      * - File doesn't exist (404)
@@ -252,12 +252,10 @@ class UserService {
      */
     async updateAvatar(userId, fileId) {
         try {
-            const updatedUser = await this.#userRepository.findByIdAndUpdate(
+            return await this.#userRepository.findByIdAndUpdate(
                 userId,
                 {avatar: fileId}
             );
-
-            return updatedUser?.avatar; // Returns the fileId string
         } catch (error) {
             throw new AppError(
                 statusMessages.AVATAR_UPDATE_FAILED,

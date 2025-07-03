@@ -18,7 +18,7 @@ const NoteCardHeader = React.memo(({note, onTogglePin, onDelete, loading}) => {
             textOverflow: 'ellipsis',
             display: 'block',
             width: '100%',
-            fontSize: '0.9rem',
+            fontSize: '16px',
             lineHeight: 1.5,
         },
         '& .MuiCardHeader-subheader': {

@@ -6,6 +6,7 @@ const routesPaths = Object.freeze({
     HOME: '/home',
     PROFILE: '/profile',
     NOTE: (id) => `/notes/${id ? id : ":id"}`,
+    NOTE_VERSION: (id) => `/versions/${id ? id : ":id"}`,
     ERROR: '/error',
     NOT_FOUND: '*'
 });

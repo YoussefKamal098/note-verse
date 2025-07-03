@@ -1,0 +1,146 @@
+/**
+ * prism.js default theme for JavaScript, CSS and HTML
+ * Based on dabblet (http://dabblet.com)
+ * @author Lea Verou
+ * Modified with prism-prefix class prefixes
+ */
+
+code[class*="prism-prefix-language-"],
+pre[class*="prism-prefix-language-"] {
+    color: black;
+    background: none;
+    text-shadow: 0 1px white;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 1em;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="prism-prefix-language-"]::-moz-selection,
+pre[class*="prism-prefix-language-"] ::-moz-selection,
+code[class*="prism-prefix-language-"]::-moz-selection,
+code[class*="prism-prefix-language-"] ::-moz-selection {
+    text-shadow: none;
+    background: #b3d4fc;
+}
+
+pre[class*="prism-prefix-language-"]::selection,
+pre[class*="prism-prefix-language-"] ::selection,
+code[class*="prism-prefix-language-"]::selection,
+code[class*="prism-prefix-language-"] ::selection {
+    text-shadow: none;
+    background: #b3d4fc;
+}
+
+@media print {
+    code[class*="prism-prefix-language-"],
+    pre[class*="prism-prefix-language-"] {
+        text-shadow: none;
+    }
+}
+
+/* Code blocks */
+pre[class*="prism-prefix-language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+}
+
+:not(pre) > code[class*="prism-prefix-language-"],
+pre[class*="prism-prefix-language-"] {
+    background: #f5f2f0;
+}
+
+/* Inline code */
+:not(pre) > code[class*="prism-prefix-language-"] {
+    padding: .1em;
+    border-radius: .3em;
+    white-space: normal;
+}
+
+.prism-prefix-token.comment,
+.prism-prefix-token.prolog,
+.prism-prefix-token.doctype,
+.prism-prefix-token.cdata {
+    color: slategray;
+}
+
+.prism-prefix-token.punctuation {
+    color: #999;
+}
+
+.prism-prefix-token.namespace {
+    opacity: .7;
+}
+
+.prism-prefix-token.property,
+.prism-prefix-token.tag,
+.prism-prefix-token.boolean,
+.prism-prefix-token.number,
+.prism-prefix-token.constant,
+.prism-prefix-token.symbol,
+.prism-prefix-token.deleted {
+    color: #905;
+}
+
+.prism-prefix-token.selector,
+.prism-prefix-token.attr-name,
+.prism-prefix-token.string,
+.prism-prefix-token.char,
+.prism-prefix-token.builtin,
+.prism-prefix-token.inserted {
+    color: #690;
+}
+
+.prism-prefix-token.operator,
+.prism-prefix-token.entity,
+.prism-prefix-token.url,
+.prism-prefix-language-css .prism-prefix-token.string,
+.prism-prefix-style .prism-prefix-token.string {
+    color: #9a6e3a;
+    /* This background color was intended by the author of this theme. */
+    background: hsla(0, 0%, 100%, .5);
+}
+
+.prism-prefix-token.atrule,
+.prism-prefix-token.attr-value,
+.prism-prefix-token.keyword {
+    color: #07a;
+}
+
+.prism-prefix-token.function,
+.prism-prefix-token.class-name {
+    color: #DD4A68;
+}
+
+.prism-prefix-token.regex,
+.prism-prefix-token.important,
+.prism-prefix-token.variable {
+    color: #e90;
+}
+
+.prism-prefix-token.important,
+.prism-prefix-token.bold {
+    font-weight: bold;
+}
+
+.prism-prefix-token.italic {
+    font-style: italic;
+}
+
+.prism-prefix-token.entity {
+    cursor: help;
+}

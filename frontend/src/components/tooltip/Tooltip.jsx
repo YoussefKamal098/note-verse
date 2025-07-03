@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from "react";
-import {StyledArrow, StyledTooltipWrapper} from "./TooltipStyled";
-import PropTypes from "prop-types";
 import ReactDOM from "react-dom";
-import {useGlobalSettings} from "../../contexts/GlobalSettingsContext";
+import PropTypes from "prop-types";
+import {useGlobalSettings} from "@/contexts/GlobalSettingsContext";
+import {StyledArrow, StyledTooltipWrapper} from "./TooltipStyled";
 
 const Tooltip = ({title, children, position = "bottom", targetRect}) => {
     const [show, setShow] = useState(false);

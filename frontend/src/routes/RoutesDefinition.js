@@ -11,6 +11,7 @@ const ProfilePage = React.lazy(() => import('../pages/ProfilePage'));
 const LoginPage = React.lazy(() => import('../pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('../pages/RegisterPage'));
 const NotePage = React.lazy(() => import('../pages/NotePage'));
+const NoteVersionPage = React.lazy(() => import('../pages/NoteVersionPage'));
 const NotFoundPage = React.lazy(() => import('../pages/NotFoundPage'));
 const OTPVerificationPage = React.lazy(() => import('../pages/OTPVerificationPage'));
 const GoogleCallbackAuthPage = React.lazy(() => import('../pages/GoogleCallbackAuthPage'));
@@ -21,6 +22,7 @@ const RoutesDefinition = [
     {path: routesPaths.HOME, element: <PrivateRoute><HomePage/></PrivateRoute>},
     {path: '/', element: <Navigate to={routesPaths.HOME} replace/>},
     {path: routesPaths.NOTE(":id"), element: <PrivateRoute><NotePage/></PrivateRoute>},
+    {path: routesPaths.NOTE_VERSION(":id"), element: <PrivateRoute><NoteVersionPage/></PrivateRoute>},
     {path: routesPaths.ERROR, element: <GeneralErrorPage/>},
     {path: routesPaths.NOT_FOUND, element: <NotFoundPage/>},
     {path: routesPaths.VERIFY_ACCOUNT, element: <OTPVerificationPage/>},

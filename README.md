@@ -29,7 +29,7 @@ note search, filtering, and CRUD operations.
 - **Search**: Full-text search for notes.
 - **Tagging**: Add tags to notes for better organization.
 - **Pinning**: Pin important notes for quick access.
-- **Pagination**: Helps users navigate through a large list of notes by breaking the list into multiple pages.
+- **Index**: Helps users navigate through a large list of notes by breaking the list into multiple pages.
 
 ---
 
@@ -340,7 +340,7 @@ notes_app/
 │   │   │   ├── noteSharPopUp/     # Component for sharing notes with other users
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
-│   │   │   ├── pagination/        # Pagination component module.
+│   │   │   ├── pagination/        # Index component module.
 │   │   │   ├── profileImageUploader/           # This folder contains React components for profile image uploading and editing.
 │   │   │   ├── progressiveImage/               # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes

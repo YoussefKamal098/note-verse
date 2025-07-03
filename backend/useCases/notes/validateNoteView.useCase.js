@@ -7,20 +7,20 @@ const resources = require('../../enums/resources.enum');
 class ValidateNoteViewUseCase {
     /**
      * @private
-     * @type {import('../repositories/note.repository').NoteRepository}
+     * @type {NoteRepository}
      */
     #noteRepo;
 
     /**
      * @private
-     * @type {import('../repositories/permission.repository').PermissionRepository}
+     * @type {PermissionRepository}
      */
     #permissionRepo;
 
     /**
      * @param {Object} dependencies
-     * @param {import('../repositories/note.repository').NoteRepository} dependencies.noteRepo
-     * @param {import('../repositories/permission.repository').PermissionRepository} dependencies.permissionRepo
+     * @param {NoteRepository} dependencies.noteRepo
+     * @param {PermissionRepository} dependencies.permissionRepo
      */
     constructor({noteRepo, permissionRepo}) {
         this.#noteRepo = noteRepo;

@@ -5,22 +5,23 @@ const asyncRequestHandler = require('../utils/asyncHandler');
 const cacheKeys = require('../utils/cacheKeys');
 const {createCacheMiddleware, clearCache, clearCachePattern} = require('../middlewares/cache.middleware');
 const validateRequestMiddlewares = require('../middlewares/validateRequest.middleware');
+const paginationQuerySchema = require("../schemas/paginationQuery.schema");
 const noteCreationSchema = require("../schemas/noteCreation.schema");
 const notesQuerySchema = require("../schemas/notesQuery.schema");
 const grantPermissionsSchema = require('../schemas/grantPermissions.schema');
-const updatePermissionSchema = require('../schemas/updatePermission.schema');
 const grantedPermissionsQuerySchema = require('../schemas/grantedPermissionsQuery.schema');
 const container = require('../container');
 const {
-    validateNoteUpdatePermission,
     validateNoteViewPermission,
     validateNoteOwnership
 } = require('../middlewares/note.permissionValidation.middleware');
 
 const router = express.Router({mergeParams: true});
-const validateNoteUpdatePermissionMiddleware = container.build(validateNoteUpdatePermission);
-const validateNoteViewPermissionMiddleware = container.build(validateNoteViewPermission);
-const validateNoteOwnershipMiddleware = container.build(validateNoteOwnership);
+const validateNoteViewPermissionMiddleware = container.build(validateNoteViewPermission)();
+const validateNoteOwnershipMiddleware = container.build(validateNoteOwnership)({
+    noteIdName: 'noteId',
+    locations: ['params']
+});
 const api = makeClassInvoker(NotesController);
 
 // Middleware to clear caches for a single note and the user’s notes list
@@ -47,7 +48,7 @@ router.post(
     asyncRequestHandler(api('create'))
 );
 
-// Get paginated notes for a user
+// Get paginated notes for an authenticated user
 router.get(
     '/',
     asyncRequestHandler(validateRequestMiddlewares(notesQuerySchema, {isQuery: true})),
@@ -66,7 +67,6 @@ router.get(
 // Update a note by ID
 router.patch(
     '/:noteId',
-    asyncRequestHandler(validateNoteUpdatePermissionMiddleware),
     asyncRequestHandler(clearNotesCaches),
     asyncRequestHandler(api('updateNoteById'))
 );
@@ -86,28 +86,27 @@ router.post(
     asyncRequestHandler(api('grantPermissions'))
 );
 
-router.delete(
-    '/:noteId/permissions/:userId',
-    asyncRequestHandler(validateNoteOwnershipMiddleware),
-    asyncRequestHandler(api('revokePermission'))
-);
-
-router.patch(
-    '/:noteId/permissions/:userId',
-    asyncRequestHandler(validateNoteOwnershipMiddleware),
-    validateRequestMiddlewares(updatePermissionSchema),
-    asyncRequestHandler(api('updatePermission'))
-);
-
-router.get(
-    '/:noteId/permissions/:userId',
-    asyncRequestHandler(api('getUserPermission'))
-);
-
 router.get(
     '/:noteId/permissions',
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
     validateRequestMiddlewares(grantedPermissionsQuerySchema, {isQuery: true}),
     asyncRequestHandler(api('getNotePermissions'))
+);
+
+// Get commit history for a note
+router.get(
+    '/:noteId/history',
+    asyncRequestHandler(validateNoteViewPermissionMiddleware),
+    asyncRequestHandler(validateRequestMiddlewares(paginationQuerySchema, {isQuery: true})),
+    asyncRequestHandler(api('getCommitHistory'))
+);
+
+// Get contributors for a note
+router.get(
+    '/:noteId/contributors',
+    asyncRequestHandler(validateNoteViewPermissionMiddleware),
+    asyncRequestHandler(validateRequestMiddlewares(paginationQuerySchema, {isQuery: true})),
+    asyncRequestHandler(api('getContributors'))
 );
 
 module.exports = router;

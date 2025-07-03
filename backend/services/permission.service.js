@@ -1,8 +1,4 @@
-const AppError = require('../errors/app.error');
-const httpCodes = require('../constants/httpCodes');
-const statusMessages = require('../constants/statusMessages');
-const {deepFreeze} = require('shared-utils/obj.utils');
-const dbErrorCodes = require("../constants/dbErrorCodes");
+const statusMessages = require("../constants/statusMessages");
 
 /**
  * Service for managing permissions with transaction support.
@@ -15,106 +11,33 @@ class PermissionService {
      * @type {PermissionRepository}
      */
     #permissionRepo;
-    /**
-     * @private
-     * @type {UserRepository}
-     */
-    #userRepo;
-    /**
-     * @private
-     * @type {IUnitOfWork}
-     */
-    #uow;
 
     /**
-     * @param {PermissionRepository} permissionRepo - Repository for permission operations.
-     * @param {UserRepository} userRepo - Repository for user operations.
-     * @param {IUnitOfWork} uow - Unit of Work for transaction management.
+     * @private
+     * @type {BaseTransactionService}
      */
-    constructor(permissionRepo, userRepo, uow) {
+    #transactionService;
+
+    /**
+     * @private
+     * @type {ResourceUserCombiner}
+     */
+    #resourceUserCombiner;
+
+    /**
+     * @param {Object} dependencies
+     * @param {PermissionRepository} dependencies.permissionRepo
+     * @param {BaseTransactionService} dependencies.transactionService
+     * @param {ResourceUserCombiner} dependencies.resourceUserCombiner
+     */
+    constructor({
+                    permissionRepo,
+                    transactionService,
+                    resourceUserCombiner
+                }) {
         this.#permissionRepo = permissionRepo;
-        this.#userRepo = userRepo;
-        this.#uow = uow;
-    }
-
-    /**
-     * @private
-     * Executes a transaction with proper error handling
-     * @param {Function} operation - The operation to perform within the transaction
-     * @returns {Promise<any>} The result of the operation
-     * @throws {AppError} When the operation fails
-     */
-    async #executeTransaction(operation) {
-        const session = await this.#uow.begin();
-        try {
-            const result = await operation(session);
-            await this.#uow.commit(session);
-            return result;
-        } catch (err) {
-            await this.#uow.rollback(session);
-            if (err.code === dbErrorCodes.DUPLICATE_KEY) {
-                throw new AppError(
-                    err.message,
-                    httpCodes.CONFLICT.code,
-                    httpCodes.CONFLICT.name
-                );
-            }
-
-            throw new AppError(
-                statusMessages.PERMISSION_OPERATION_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
-        }
-    }
-
-    /**
-     * @private
-     * Combines permission data with user data and freezes the result
-     * @param {Object} permission - The permission data
-     * @param {Object|null} user - The user data or null
-     * @returns {Readonly<Object>} The combined and frozen result
-     */
-    #combinePermissionWithUser(permission, user) {
-        const {userId: _, ...permissionData} = permission;
-        const result = {
-            ...permissionData,
-            user: user ? deepFreeze(user) : null
-        };
-        return deepFreeze(result);
-    }
-
-    /**
-     * @private
-     * Combines an array of permissions with their corresponding users and freezes the result
-     * @param {ReadonlyArray<Object>} permissions - Array of permission data
-     * @param {ReadonlyArray<Object>} users - Array of user data
-     * @returns {Readonly<Array<Object>>} The combined and frozen result array
-     */
-    #combinePermissionsWithUsers(permissions, users) {
-        const result = permissions.map(permission => {
-            const user = users.find(u => u.id === permission.userId.toString());
-            return this.#combinePermissionWithUser(permission, user || null);
-        });
-
-        return deepFreeze(result);
-    }
-
-    /**
-     * @private
-     * Fetches users for permissions and combines them into a frozen result
-     * @param {ReadonlyArray<Object>} permissions - Array of permission data
-     * @param {Object} session - The database session
-     * @returns {Promise<Readonly<Array<Object>>>} Combined and frozen permissions with users
-     */
-    async #getPermissionsWithUsers(permissions, session) {
-        if (permissions.length === 0) {
-            return deepFreeze([]);
-        }
-
-        const userIds = [...new Set(permissions.map(p => p.userId))];
-        const users = await this.#userRepo.findByIds(userIds, {session});
-        return this.#combinePermissionsWithUsers(permissions, users).filter(u => u.user !== null);
+        this.#transactionService = transactionService;
+        this.#resourceUserCombiner = resourceUserCombiner;
     }
 
     /**
@@ -129,7 +52,7 @@ class PermissionService {
      * @throws {AppError} When creation fails.
      */
     async grantPermissions({userIds, resourceType, resourceId, role, grantedBy}) {
-        return this.#executeTransaction(async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
             return await this.#permissionRepo.grantPermissionsForUsers({
                 userIds,
                 resourceType,
@@ -137,7 +60,7 @@ class PermissionService {
                 role,
                 grantedBy
             }, session);
-        });
+        }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 
     /**
@@ -164,13 +87,13 @@ class PermissionService {
      * @throws {AppError} When update fails.
      */
     async updatePermissions({userId, resourceType, resourceId}, {role}) {
-        return this.#executeTransaction(async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
             return await this.#permissionRepo.updateUserPermissions({
                 userId,
                 resourceType,
                 resourceId
             }, {role}, session);
-        });
+        }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 
     /**
@@ -197,15 +120,15 @@ class PermissionService {
      * @returns {Promise<Array<Object>>} Array of { permission, user } objects
      */
     async getResourceUsers({resourceType, resourceId}, {limit = 10, page = 0} = {}) {
-        return this.#executeTransaction(async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
             const permissions = await this.#permissionRepo.getResourceUsers(
                 {resourceType, resourceId},
                 {limit, page},
                 session
             );
 
-            return this.#getPermissionsWithUsers(permissions, session);
-        });
+            return this.#resourceUserCombiner.combineWithUsers(permissions, {session});
+        }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 
     /**
@@ -218,7 +141,7 @@ class PermissionService {
      * @returns {Promise<Array<Object>>} Array of { permission, user } objects
      */
     async getPermissionsGrantedByUser(userId, resourceType, {limit = 10, page = 0} = {}) {
-        return this.#executeTransaction(async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
             const permissions = await this.#permissionRepo.getPermissionsGrantedByUser(
                 userId,
                 resourceType,
@@ -226,8 +149,8 @@ class PermissionService {
                 session
             );
 
-            return this.#getPermissionsWithUsers(permissions, session);
-        });
+            return this.#resourceUserCombiner.combineWithUsers(permissions, {session});
+        }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 }
 

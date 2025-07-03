@@ -4,7 +4,11 @@ import httpHeaders from "../constants/httpHeaders";
 const ENDPOINTS = {
     GET_USER: `/users/`,
     AVATAR_UPLOAD: (userId) => `/users/${userId}/avatar`,
-    GET_USER_GRANTED_PERMISSIONS: (userId) => `users/${userId}/granted-permissions`
+    GET_USER_GRANTED_PERMISSIONS: (userId) => `users/${userId}/granted-permissions`,
+    REVOKE_PERMISSION: (userId) => `/users/${userId}/permissions`,
+    UPDATE_PERMISSION: (userId) => `/users/${userId}/permissions`,
+    GET_USER_PERMISSION: (userId) => `/users/${userId}/permissions`,
+    GET_USER_COMMITS: (userId) => `/users/${userId}/commits`
 };
 
 /**
@@ -72,6 +76,62 @@ class UserService {
     }
 
     /**
+     * Revoke a user's permission for a specific note
+     * @param {string} userId - ID of user to revoke permission from
+     * @param {Object} params
+     * @param {string} params.noteId - The ID of the note
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with status code and data
+     * @throws {Error} If permission revocation fails
+     */
+    async revokePermission(userId, {noteId}, config = {}) {
+        return await this.#apiClient.delete(
+            ENDPOINTS.REVOKE_PERMISSION(userId),
+            {
+                ...config,
+                params: {noteId}
+            }
+        );
+    }
+
+    /**
+     * Update a user's permission for a specific note
+     * @param {string} userId - ID of user to update permission for
+     * @param {Object} params
+     * @param {string} params.noteId - The ID of the note
+     * @param {string} params.role - New permission role
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with status code and data
+     * @throws {Error} If permission update fails
+     */
+    async updatePermission(userId, {noteId, role}, config = {}) {
+        return await this.#apiClient.patch(
+            ENDPOINTS.UPDATE_PERMISSION(userId),
+            {role, noteId},
+            config
+        );
+    }
+
+    /**
+     * Get a user's permission for a specific note
+     * @param {string} userId - ID of user to get permission for
+     * @param {Object} params
+     * @param {string} params.noteId - The ID of the note
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with status code and data
+     * @throws {Error} If fetching permission fails
+     */
+    async getUserPermission(userId, {noteId}, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_USER_PERMISSION(userId),
+            {
+                ...config,
+                params: {noteId}
+            }
+        );
+    }
+
+    /**
      * Get all permissions granted by a specific user.
      * @param {string} userId - The ID of the user who granted permissions.
      * @param {Object} [queryParams={}] - Query parameters for pagination.
@@ -86,6 +146,27 @@ class UserService {
     async getPermissionsGrantedByUser(userId, queryParams = {}, config = {}) {
         return await this.#apiClient.get(
             ENDPOINTS.GET_USER_GRANTED_PERMISSIONS(userId),
+            {
+                ...config,
+                params: {...queryParams}
+            }
+        );
+    }
+
+    /**
+     * Get commits by a specific user with optional note filtering
+     * @param {string} userId - ID of the user
+     * @param {Object} queryParams={} - Query parameters
+     * @param {string} queryParams.noteId - Filter by specific note ID
+     * @param {number} [queryParams.page=0] - Page number (0-indexed)
+     * @param {number} [queryParams.limit=10] - Items per page
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with commits data
+     * @throws {Error} If fetching commits fails
+     */
+    async getUserCommits(userId, queryParams = {}, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_USER_COMMITS(userId),
             {
                 ...config,
                 params: {...queryParams}

@@ -5,10 +5,11 @@ import {IconButton} from '@mui/material';
 import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
 import BackHomeButton from "../buttons/BackHomeButton";
 import NoteMenu from "../menus/noteMenu";
-import UserProfileWithMeta from "./UserProfileWithMeta";
+import UserDetailsWithNoteMeta from "../userDetails/UserDetailsWithNoteMeta";
 import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../buttons/Button";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
-
+import useMediaSize from "@/hooks/useMediaSize";
+import {DEVICE_SIZES} from "@/constants/breakpoints";
 
 const HeaderWrapperStyles = styled.div`
     display: flex;
@@ -49,25 +50,24 @@ const SettingsIcon = styled(TbSettings)`
 
 const NoteHeader = ({actions}) => {
     const {selectors} = useNoteContext();
-
-    const {isNew, initLoading, isLoading, editMode} = useNoteSelector(selectors.getStatus);
+    const {isNew, isLoading, editMode} = useNoteSelector(selectors.getStatus);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
-    const {isPinned, isPublic, createdAt} = useNoteSelector(selectors.getMeta);
+    const {isPublic, createdAt} = useNoteSelector(selectors.getMeta);
+    const isMobile = useMediaSize(DEVICE_SIZES.tablet);
 
     return (
         <HeaderWrapperStyles>
             <HeaderLeftPartContainerStyles>
                 <BackHomeButton/>
-                <UserProfileWithMeta
+                <UserDetailsWithNoteMeta
                     firstname={owner?.firstname}
                     lastname={owner?.lastname}
                     createdAt={createdAt}
                     avatarUrl={owner?.avatarUrl}
                     isPublic={isPublic}
-                    loading={initLoading}
                 />
             </HeaderLeftPartContainerStyles>
 
@@ -93,20 +93,19 @@ const NoteHeader = ({actions}) => {
                     </TranslateTransitionContainer>
                 ) : (
                     <TranslateTransitionContainer
-                        keyProp={"note_memu"}
+                        keyProp={"note_menu"}
                     >
                         <NoteMenu
                             onDelete={!isNew && isOwner ? actions.onDelete : undefined}
-                            onTogglePin={!isNew && isOwner ? actions.onTogglePin : undefined}
                             onEdit={!isNew && canEdit ? actions.onEdit : undefined}
                             onCopyLink={!isNew ? actions.onCopyLink : undefined}
                             onShowShare={!isNew && isOwner ? actions.onShowShare : undefined}
-                            isPinned={isPinned}
+                            onShowCommitHistory={!isNew && !editMode ? actions.onShowCommitHistory : undefined}
                         />
                     </TranslateTransitionContainer>
                 )}
 
-                {isOwner && <IconButton
+                {isOwner && isMobile && <IconButton
                     onClick={actions.onSettingsIconClick}
                     aria-label="settings"
                     sx={{color: 'var(--color-text)'}}

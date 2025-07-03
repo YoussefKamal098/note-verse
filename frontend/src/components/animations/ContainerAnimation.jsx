@@ -26,11 +26,6 @@ const HeightTransitionContainer = ({children, keyProp}) => {
                     initial={{opacity: 0, height: 0}}
                     animate={{opacity: 1, height: "auto"}}
                     exit={{opacity: 0, height: 0}}
-                    // transition={{
-                    //     height: { type: "spring", stiffness: 100, damping: 25 },
-                    //     opacity: {duration: 0.3}
-                    // }}
-                    // style={{overflow: "hidden"}}
                     layout
                 >
                     {children}
@@ -49,11 +44,6 @@ const WidthTransitionContainer = ({children, keyProp}) => {
                     initial={{opacity: 0, width: 0}}
                     animate={{opacity: 1, width: "auto"}}
                     exit={{opacity: 0, width: 0}}
-                    transition={{
-                        // width: { type: "spring", stiffness: 100, damping: 25 },
-                        opacity: {duration: 0.5}
-                    }}
-                    // style={{overflow: "hidden"}}
                     layout
                 >
                     {children}
@@ -72,11 +62,6 @@ const TranslateTransitionContainer = ({children, keyProp}) => {
                     initial={{opacity: 0, x: 20}}
                     animate={{opacity: 1, x: 0}}
                     exit={{opacity: 0, x: 20}}
-                    // transition={{
-                    //     opacity: {duration: 0.5},
-                    //     width: {duration: 0}
-                    // }}
-                    // style={{overflow: "hidden"}}
                     layout
                 >
                     {children}
@@ -86,46 +71,111 @@ const TranslateTransitionContainer = ({children, keyProp}) => {
     );
 };
 
-const AnimatedListWidthChildrenFade = ({children}) => {
-    return (
-        <AnimatePresence>
-            {children.map((child) => (
-                <motion.div
-                    key={child.key}
-                    initial={{width: 0, opacity: 0, x: -20}}
-                    animate={{width: "auto", opacity: 1, x: 0}}
-                    exit={{width: 0, opacity: 0, x: 20}}
-                    transition={{
-                        width: {duration: 0.1},
-                        opacity: {duration: 0.3}
-                    }}
-                    layout
-                >
-                    {child}
-                </motion.div>
-            ))}
-        </AnimatePresence>
-    );
-}
-
-const AnimatedCardsTranslateChildrenFade = ({children}) => {
+const BaseAnimatedList = ({
+                              children,
+                              delay = true,
+                              delayAfter = 0,
+                              initial = {opacity: 0, x: -20},
+                              animate = {opacity: 1, x: 0},
+                              exit = {opacity: 0, x: 20},
+                              transition = {duration: 0.3},
+                              staggerDelay = 0.05,
+                              layout = true,
+                              ...props
+                          }) => {
     return (
         <AnimatePresence>
             {children.map((child, index) => (
                 <motion.div
                     key={child.key}
-                    initial={{opacity: 0, x: 20}}
-                    animate={{opacity: 1, x: 0}}
-                    exit={{opacity: 0, x: -20}}
-                    transition={{delay: index * 0.05, duration: 0.3}}
-                    layout
+                    initial={initial}
+                    animate={animate}
+                    exit={exit}
+                    transition={{
+                        ...transition,
+                        delay: delay && index >= delayAfter
+                            ? (index - delayAfter) * staggerDelay
+                            : 0,
+                    }}
+                    layout={layout}
+                    {...props}
                 >
                     {child}
                 </motion.div>
             ))}
         </AnimatePresence>
     );
-}
+};
+
+const AnimatedListWidthChildrenFade = ({children, delay, delayAfter}) => {
+    return (
+        <BaseAnimatedList
+            children={children}
+            delay={delay}
+            delayAfter={delayAfter}
+            initial={{width: 0, opacity: 0, x: -20}}
+            animate={{width: "auto", opacity: 1, x: 0}}
+            exit={{width: 0, opacity: 0, x: 20}}
+        />
+    );
+};
+
+const AnimatedCardsTranslateChildrenFade = ({children, delay, delayAfter}) => {
+    return (
+        <BaseAnimatedList
+            children={children}
+            delay={delay}
+            delayAfter={delayAfter}
+            initial={{opacity: 0, x: 20}}
+            animate={{opacity: 1, x: 0}}
+            exit={{opacity: 0, x: -20}}
+        />
+    );
+};
+
+const AnimatedTabSwitch = ({children, isActive}) => (
+    <AnimatePresence mode="wait">
+        <motion.div
+            key={children.key}
+            initial={{
+                opacity: 0,
+                x: isActive ? 50 : -50,
+                scale: 0.95,
+                rotate: isActive ? 2 : -2
+            }}
+            animate={{
+                opacity: 1,
+                x: 0,
+                scale: 1,
+                rotate: 0,
+                transition: {
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 20,
+                    velocity: 2
+                }
+            }}
+            exit={{
+                opacity: 0,
+                x: isActive ? -50 : 50,
+                scale: 0.95,
+                rotate: isActive ? -2 : 2,
+                transition: {
+                    duration: 0.15,
+                    ease: "easeIn"
+                }
+            }}
+            style={{
+                height: '100%',
+                width: '100%',
+                originX: 0.5,
+                originY: 0.5
+            }}
+        >
+            {children}
+        </motion.div>
+    </AnimatePresence>
+);
 
 
 export {
@@ -134,5 +184,6 @@ export {
     TranslateTransitionContainer,
     AnimatedListWidthChildrenFade,
     AnimatedCardsTranslateChildrenFade,
-    FadeInAnimation
+    FadeInAnimation,
+    AnimatedTabSwitch
 };

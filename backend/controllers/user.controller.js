@@ -2,6 +2,7 @@ const AppError = require('../errors/app.error');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require("../constants/statusMessages");
 const config = require("../config/config");
+const resources = require("../enums/resources.enum");
 
 /**
  * Controller for user-related operations.
@@ -12,22 +13,31 @@ class UserController {
      * @type {UserService}
      * @description The user service instance for handling user-related operations.
      */
-    #userService
+    #userService;
     /**
      * @private
      * @type {PermissionService}
      * @description The user service instance for handling permission-related operations.
      */
     #permissionService;
+    /**
+     * @private
+     * @type {VersionService}
+     * @description The user service instance for handling version-related operations.
+     */
+    #versionService;
 
     /**
      * Constructs a new UserController.
      * @param depndencies
      * @param {UserService} depndencies.userService - The user service instance.
-     * @param {PermissionService} depndencies.permissionService - The permission service instance.     */
-    constructor({userService, permissionService}) {
+     * @param {PermissionService} depndencies.permissionService - The permission service instance.
+     * @param {VersionService} depndencies.versionService - The version service instance.
+     * */
+    constructor({userService, permissionService, versionService}) {
         this.#userService = userService;
         this.#permissionService = permissionService;
+        this.#versionService = versionService;
     }
 
     /**
@@ -82,9 +92,8 @@ class UserController {
             return;
         }
 
-        const avatar = await this.#userService.updateAvatar(userId, req.files[0].fileId);
-
-        if (!avatar) {
+        const updatedUser = await this.#userService.updateAvatar(userId, req.files[0].fileId);
+        if (!updatedUser) {
             next(new AppError(
                 statusMessages.USER_NOT_FOUND,
                 httpCodes.NOT_FOUND.code,
@@ -92,7 +101,8 @@ class UserController {
             ));
         }
 
-        res.status(httpCodes.CREATED.code).json({avatarUrl: config.storage.constructFileUrl(avatar)});
+        req.updatedUser = updatedUser;
+        res.status(httpCodes.CREATED.code).json({avatarUrl: config.storage.constructFileUrl(updatedUser.avatar)});
     }
 
     /**
@@ -116,6 +126,108 @@ class UserController {
         );
 
         res.status(httpCodes.OK.code).json(permissions);
+    }
+
+    /**
+     * Updates permission for a specific user on a note.
+     * @param {import('express').Request} req - Express request object.
+     * @param {string} req.params.noteId - ID of the note.
+     * @param {string} req.params.userId - ID of the user whose permission to update.
+     * @param {Object} req.body - Permission data.
+     * @param {string} req.body.role - New permission role.
+     * @param {import('express').Response} res - Express response object.
+     * @returns {Promise<void>}
+     * @throws {AppError} If a permission isn't found (404).
+     */
+    async revokePermission(req, res) {
+        const {userId} = req.params;
+        const {noteId} = req.query;
+
+        const isDeleted = await this.#permissionService.revokePermission({
+            resourceType: resources.NOTE,
+            resourceId: noteId,
+            userId
+        });
+
+        if (!isDeleted) {
+            throw new AppError(
+                statusMessages.PERMISSION_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        res.status(httpCodes.OK.code).json({message: `Revoked permission successfully`});
+    }
+
+    async updatePermission(req, res) {
+        const {userId} = req.params;
+        const {role, noteId} = req.body;
+
+        const updatedPermission = await this.#permissionService.updatePermissions({
+            userId,
+            resourceType: resources.NOTE,
+            resourceId: noteId,
+        }, {role});
+
+        if (!updatedPermission) {
+            throw new AppError(
+                statusMessages.PERMISSION_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        res.status(httpCodes.OK.code).json({
+            id: updatedPermission.id,
+            userId: updatedPermission.userId,
+            role: updatedPermission.role
+        });
+    }
+
+    /**
+     * Gets permission for a specific user on a note.
+     * @param {import('express').Request} req - Express request object.
+     * @param {string} req.params.noteId - ID of the note.
+     * @param {string} req.params.userId - ID of the user whose permission to get.
+     * @param {import('express').Response} res - Express response object.
+     * @returns {Promise<void>}
+     * @throws {AppError} If permission not found (404).
+     */
+    async getUserPermission(req, res) {
+        const {userId} = req.params;
+        const {noteId} = req.query;
+
+        const permission = await this.#permissionService.getUserPermission({
+            userId,
+            resourceType: resources.NOTE,
+            resourceId: noteId
+        });
+
+        if (!permission) {
+            throw new AppError(
+                statusMessages.PERMISSION_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            );
+        }
+
+        res.status(httpCodes.OK.code).json(permission);
+    }
+
+    /**
+     * Get user commits for a specific note
+     */
+    async getUserCommits(req, res) {
+        const {userId} = req.params;
+        const {noteId, page = 0, limit = 10} = req.query;
+
+        const commits = await this.#versionService.getUserCommitsForNote(
+            {userId, noteId},
+            {page, limit}
+        );
+
+        res.status(httpCodes.OK.code).json(commits);
     }
 }
 

@@ -1,17 +1,11 @@
 const Joi = require('joi');
-const {isValidObjectId} = require("../utils/obj.utils");
+const objectIdSchema = require('./idKeyObject.schema')
 const roles = require("../enums/roles.enum");
 
 const grantPermissionsSchema = Joi.object({
-    userIds: Joi.array()
-        .items(
-            Joi.string().custom((value, helpers) => {
-                if (!isValidObjectId(value)) {
-                    return helpers.error('any.invalid');
-                }
-                return value;
-            }, 'ObjectId validation')
-        )
+    userIds: Joi.array().items(objectIdSchema().messages({
+        'any.invalid': 'Each userId must be a valid ObjectId'
+    }))
         .min(1)
         .max(25)
         .required()
@@ -31,7 +25,7 @@ const grantPermissionsSchema = Joi.object({
     message: Joi.when('notify', {
         is: true,
         then: Joi.string()
-            .min(25)
+            .min(0)
             .max(500)
             .required()
             .messages({

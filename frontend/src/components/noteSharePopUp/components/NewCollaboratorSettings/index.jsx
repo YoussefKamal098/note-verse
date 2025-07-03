@@ -40,6 +40,8 @@ const NewCollaboratorsSettings = () => {
                                 onChange={(e) => actions.updateMessage(e.target.value)}
                                 spellCheck={false}
                                 rows={10}
+                                minLength={10}
+                                maxLength={200}
                             />
                         )}
                     </HeightTransitionContainer>

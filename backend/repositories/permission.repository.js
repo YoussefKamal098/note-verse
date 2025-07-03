@@ -1,5 +1,6 @@
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
+const dbErrorCodes = require("../constants/dbErrorCodes");
 
 /**
  * Repository for managing Permission documents with transaction support
@@ -103,9 +104,12 @@ class PermissionRepository {
 
             return deepFreeze(this.#sanitizePermission(permissions.map(doc => doc.toObject())));
         } catch (error) {
-            if (error.code === 11000) {
-                throw new Error('Duplicate permission detected');
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                const conflictError = new Error('Duplicate permission detected');
+                conflictError.code = dbErrorCodes.DUPLICATE_KEY;
+                throw conflictError;
             }
+            
             console.error("Permission operation failed:", error);
             throw new Error(`Failed to process permissions: ${error.message}`);
         }

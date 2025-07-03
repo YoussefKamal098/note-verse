@@ -81,9 +81,9 @@ class UserRepository {
             ? config.storage.constructFileUrl(user.avatar)
             : user.authProvider?.avatarUrl;
 
-        if (user.authProvider) {
-            delete userWithAvatar.authProvider;
-        }
+        delete userWithAvatar?.authProvider;
+        delete userWithAvatar.provider;
+        delete userWithAvatar.avatar;
 
         return userWithAvatar;
     }
@@ -343,10 +343,13 @@ class UserRepository {
             let query = this.#userModel.findByIdAndUpdate(
                 convertToObjectId(userId),
                 {$set: updates},
-                {new: true, runValidators: true}
+                {
+                    new: true,
+                    runValidators: true
+                }
             ).select(projection);
 
-            query = this.#withAuthProvider(query);
+            if (session) query = query.session(session);
 
             const updatedUser = await query.lean();
             return this.#prepareUserDocument(updatedUser);
@@ -355,7 +358,6 @@ class UserRepository {
             throw new Error("Error updating user");
         }
     }
-
 
     /**
      * Finds and updates a user by email

@@ -6,7 +6,6 @@ import useDebounce from "../../hooks/useDebounce";
 import DynamicTabs from "../dynamicTabs/DynamicTabs";
 import PreviewTab from "./PreviewTab";
 import EditorTab from "./EditorTab";
-import '../../styles/customMarkdownEditor.css';
 
 const NoteMarkdownTabsWrapperStyled = styled.div`
     margin-top: 2em;
@@ -35,13 +34,13 @@ const NoteMarkdownTabs = ({content, canEdit, onContentChange}) => {
     }, [content]);
 
     // Editor change handlers
-    const handleOnChange = (newValue) => {
+    const handleOnChange = useCallback((newValue) => {
         setValue(newValue);
-    };
+    }, []);
 
-    const handleOnKeyUp = () => {
+    const handleOnKeyUp = useCallback(() => {
         debouncedContentUpdate(value);
-    };
+    }, [debouncedContentUpdate]);
 
     // Memoized content and tabs configuration
     const memoizedContent = useMemo(() => value, [value]);

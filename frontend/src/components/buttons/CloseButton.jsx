@@ -1,6 +1,8 @@
+import React from "react";
+
 import styled from "styled-components";
 import {CgClose} from "react-icons/cg";
-import React from "react";
+import Tooltip from "@/components/tooltip/Tooltip"
 
 const CloseButtonStyles = styled(CgClose)`
     display: flex;
@@ -10,7 +12,7 @@ const CloseButtonStyles = styled(CgClose)`
     background: transparent;
     border: none;
     font-size: 2rem;
-    color: var(--color-text);
+    color: var(--color-danger);
     padding: 0.25rem;
     transition: 0.3s ease;
     cursor: pointer;
@@ -23,11 +25,13 @@ const CloseButtonStyles = styled(CgClose)`
 
 const CloseButton = ({onClick, size = '2rem', ariaLabel = 'Close'}) => {
     return (
-        <CloseButtonStyles
-            onClick={onClick}
-            style={{fontSize: size}}
-            aria-label={ariaLabel}
-        />
+        <Tooltip title={ariaLabel}>
+            <CloseButtonStyles
+                onClick={onClick}
+                style={{fontSize: size}}
+                aria-label={ariaLabel}
+            />
+        </Tooltip>
     );
 };
 

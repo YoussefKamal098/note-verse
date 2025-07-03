@@ -29,7 +29,6 @@ export const CardStyles = styled.div`
     transition: box-shadow 0.2s;
     background-color: var(--color-background-primary);
     color: var(--color-text);
-    border: 2px solid var(--color-border);
     position: relative;
     border-radius: 10px;
     overflow: hidden;

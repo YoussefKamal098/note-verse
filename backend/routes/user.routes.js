@@ -7,12 +7,27 @@ const asyncRequestHandler = require('../utils/asyncHandler');
 const resolveMeIdentifier = require('../middlewares/resolveMeIdentifier.middleware');
 const {createUploadMiddleware} = require('../middlewares/fileUpload.middleware');
 const getUserQuerySchema = require('../schemas/getUserQuery.schema');
+const updatePermissionSchema = require('../schemas/updatePermission.schema');
+const userCommitsQuerySchema = require('../schemas/userCommitsQuery.schema');
+const idSchema = require('../schemas/idObject.schema');
 const validateRequestMiddlewares = require('../middlewares/validateRequest.middleware');
 const verifyAuthUserOwnershipMiddleware = require('../middlewares/verifyAuthUserOwnership.middleware');
+const {
+    validateNoteOwnership,
+    validateNoteViewPermission
+} = require("../middlewares/note.permissionValidation.middleware");
 const UserController = require('../controllers/user.controller');
 const grantedPermissionsQuerySchema = require("../schemas/grantedPermissionsQuery.schema");
 
 const router = express.Router();
+const validateNoteOwnershipMiddleware = container.build(validateNoteOwnership)({
+    noteIdName: 'noteId',
+    locations: ['query']
+});
+const validateNoteViewPermissionMiddleware = container.build(validateNoteViewPermission)({
+    noteIdField: 'noteId',
+    noteIdLocation: 'query'
+});
 const api = makeClassInvoker(UserController);
 
 const uploadUserImageMiddleWare = createUploadMiddleware(
@@ -30,12 +45,12 @@ const userCacheMiddleware = createCacheMiddleware({
 const clearUserCaches = async (req, res, next) => {
     res.on('finish', async () => {
         try {
-            const userService = container.resolve('userService');
-            const user = await userService.findById(req.params.userId);
-            await Promise.all([
-                clearCache(cacheKeys.userProfileById(user.id)),
-                clearCache(cacheKeys.userProfileByEmail(user.email))
-            ]);
+            if (req.updatedUser) {
+                await Promise.all([
+                    clearCache(cacheKeys.userProfileById(req.updatedUser.id)),
+                    clearCache(cacheKeys.userProfileByEmail(req.updatedUser.email))
+                ]);
+            }
         } catch (error) {
             console.error("Post-response cache clear failed", error);
         }
@@ -57,10 +72,39 @@ router.patch('/:userId/avatar',
     asyncRequestHandler(api('uploadUserAvatar'))
 );
 
+router.delete(
+    '/:userId/permissions',
+    validateRequestMiddlewares(idSchema({fieldName: "noteId"}), {isQuery: true}),
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
+    asyncRequestHandler(api('revokePermission'))
+);
+
+router.patch(
+    '/:userId/permissions',
+    validateRequestMiddlewares(updatePermissionSchema),
+    asyncRequestHandler(validateNoteOwnershipMiddleware),
+    asyncRequestHandler(api('updatePermission'))
+);
+
+router.get(
+    '/:userId/permissions',
+    validateRequestMiddlewares(idSchema({fieldName: "noteId"}), {isQuery: true}),
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
+    asyncRequestHandler(api('getUserPermission'))
+);
+
 router.get(
     '/:userId/granted-permissions',
     validateRequestMiddlewares(grantedPermissionsQuerySchema, {isQuery: true}),
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(api('getPermissionsGrantedByUser'))
+);
+
+router.get(
+    '/:userId/commits',
+    asyncRequestHandler(validateRequestMiddlewares(userCommitsQuerySchema, {isQuery: true})),
+    asyncRequestHandler(validateNoteViewPermissionMiddleware),
+    asyncRequestHandler(api('getUserCommits'))
 );
 
 module.exports = router;

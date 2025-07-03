@@ -1,50 +1,75 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
-import {useConfirmation} from "../../contexts/ConfirmationContext";
+import {useConfirmation} from "@/contexts/ConfirmationContext";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
 import EditableTags from "../tags/EditableTags";
 import EditableTitle from "../title/EditableTitle";
 import NoteHeader from "./NoteHeader"
 import NoteMarkdownTabs from "../noteMarkdownTabs/NoteMarkdownTabs";
 import SharePopUp from '../noteSharePopUp';
+import ContributorsList from "@/components/contributorsList";
 import RightSettingsPanel from './RightSettingsPanel';
+import CommitHistory from "@/components/infiniteScrollListsPopUp/CommitHistory";
+import Contributor from "@/components/infiniteScrollListsPopUp/Contributor";
+import UserContributionHistory from "@/components/infiniteScrollListsPopUp/UserContributionHistory";
 import useCopyLink from "../../hooks/useCopyLink";
 import {ContainerStyles} from "./styles";
+import useMediaSize from "@/hooks/useMediaSize";
+import {DEVICE_SIZES} from "@/constants/breakpoints";
+import routesPaths from "@/constants/routesPaths";
+import CommitMessagePopup from "@/components/commitMessagePopup";
 
 const GridContainerStyles = styled.div`
     display: grid;
+    grid-template-areas: ${({$showTop}) => $showTop ?
+            `"top right"
+             "left right"` :
+            `"left right"
+             "left right"`
+    };
     grid-template-columns: 1fr auto;
-    grid-auto-rows: minmax(min-content, max-content);
+    grid-template-rows: auto 1fr;
     gap: 10px;
     width: 100%;
     align-items: start;
+`;
 
-    @media (max-width: 768px) {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
+const TopContainerStyles = styled(ContainerStyles)`
+    grid-area: top;
+    padding-bottom: 1.5em;
 `;
 
 const LeftContainerStyles = styled(ContainerStyles)`
-    @media (max-width: 768px) {
-        width: 100%;
-    }
+    grid-area: left;
 `;
 
 const Note = () => {
+    const navigate = useNavigate();
     const copyLink = useCopyLink();
+    const isMobile = useMediaSize(DEVICE_SIZES.tablet);
     const {actions, selectors} = useNoteContext();
     const [showShare, setShowShare] = useState(false);
-    const [showSettings, setShowSettings] = useState(true);
-    const {editMode} = useNoteSelector(selectors.getStatus);
+    const [commitHistoryOpen, setCommitHistoryOpen] = useState(false);
+    const [contributorsOpen, setContributorsOpen] = useState(false);
+    const [userContributionHistoryOpen, setUserContributionHistoryOpen] = useState(false);
+    const [currentUserContributionHistoryId, setCurrentUserContributionHistoryId] = useState(null);
+    const [commitMessageOpen, setCommitMessageOpen] = useState(false);
+    const [showSettings, setShowSettings] = useState(!isMobile);
+    const {editMode, isNew} = useNoteSelector(selectors.getStatus);
     const {id, isPublic} = useNoteSelector(selectors.getMeta);
     const {current} = useNoteSelector(selectors.getContent);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
+    const isContentChange = useNoteSelector(selectors.isContentChange);
 
     const {showConfirmation} = useConfirmation();
+
+    useEffect(() => {
+        if (!isMobile) setShowSettings(true);
+        else setShowSettings(false);
+    }, [isMobile]);
 
     const handleDelete = useCallback(() => {
         showConfirmation({
@@ -66,12 +91,17 @@ const Note = () => {
         actions.updateVisibilityState(visibility);
     }, [actions.updateVisibilityState]);
 
-    const handlePinToggle = useCallback(async () => {
-        await actions.togglePin();
-    }, [actions.togglePin]);
-
     const handleOnSave = useCallback(async () => {
-        await actions.persistNote();
+        if (isContentChange && !isNew) {
+            setCommitMessageOpen(true);
+        } else {
+            await actions.persistNote();
+        }
+    }, [actions.persistNote]);
+
+    const handleOnCommitSave = useCallback(async (message) => {
+        setCommitMessageOpen(false);
+        await actions.persistNote({commitMessage: message});
     }, [actions.persistNote]);
 
     const handleEdit = useCallback(() => {
@@ -90,19 +120,52 @@ const Note = () => {
         setShowSettings(prev => !prev);
     }, []);
 
+    const handleShowCommitHistory = useCallback(() => {
+        setCommitHistoryOpen(prev => !prev);
+    }, []);
+
+    const handleShowContributors = useCallback(() => {
+        setContributorsOpen(prev => !prev);
+    }, []);
+
     const headerActions = useMemo(() => ({
         onSave: handleOnSave,
         onDelete: handleDelete,
         onDiscard: handleDiscard,
-        onTogglePin: handlePinToggle,
         onEdit: handleEdit,
         onCopyLink: handleCopyLink,
         onShowShare: handleShowShare,
-        onSettingsIconClick: handleSettingsIconClick
+        onSettingsIconClick: handleSettingsIconClick,
+        onShowCommitHistory: handleShowCommitHistory
     }), [actions, handleCopyLink, handleShowShare]);
 
+    const handleContributorClick = useCallback((userId) => {
+        setContributorsOpen(false);
+        setCurrentUserContributionHistoryId(userId);
+        setUserContributionHistoryOpen(true);
+    }, []);
+
+    const handleCommitClick = useCallback((id) => navigate(routesPaths.NOTE_VERSION(id)), [])
+
+    const handleClick = useCallback((userId) => {
+        if (userId === 'overflow') {
+            handleShowContributors();
+        } else {
+            setCurrentUserContributionHistoryId(userId);
+            setUserContributionHistoryOpen(true);
+        }
+    }, []);
+
     return (
-        <GridContainerStyles>
+        <GridContainerStyles $showTop={!isNew && !editMode}>
+            {!isNew && !editMode && <TopContainerStyles>
+                <ContributorsList
+                    noteId={id}
+                    maxVisible={1}
+                    onAvatarClick={handleClick}
+                />
+            </TopContainerStyles>}
+
             <LeftContainerStyles>
                 <NoteHeader actions={headerActions}/>
 
@@ -123,14 +186,39 @@ const Note = () => {
                     onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
                     canEdit={editMode && canEdit}
                 />
-
-                {isOwner && <SharePopUp
-                    noteMeta={{id, isPublic}}
-                    onClose={handleShowShare}
-                    onVisibilityChange={onVisibilityChange}
-                    show={showShare}
-                />}
             </LeftContainerStyles>
+
+            {isOwner && <SharePopUp
+                noteMeta={{id, isPublic}}
+                onClose={handleShowShare}
+                onVisibilityChange={onVisibilityChange}
+                show={showShare}
+            />}
+
+            <CommitHistory
+                noteId={id}
+                isOpen={commitHistoryOpen}
+                onItemClick={handleCommitClick}
+                onClose={handleShowCommitHistory}
+            />
+            <Contributor
+                noteId={id}
+                isOpen={contributorsOpen}
+                onItemClick={handleContributorClick}
+                onClose={handleShowContributors}
+            />
+            <UserContributionHistory
+                userId={currentUserContributionHistoryId}
+                noteId={id}
+                isOpen={userContributionHistoryOpen}
+                onItemClick={handleCommitClick}
+                onClose={() => setUserContributionHistoryOpen(false)}
+            />
+            <CommitMessagePopup
+                isOpen={commitMessageOpen}
+                onClose={() => setCommitMessageOpen(false)}
+                onSave={handleOnCommitSave}
+            />
 
             {isOwner && <RightSettingsPanel
                 show={showSettings}

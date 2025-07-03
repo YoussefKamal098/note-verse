@@ -20,6 +20,9 @@ module.exports = container => {
             new (require('../services/storage/b2storage-engine'))(B2StorageConfig)
         ).singleton(),
 
+        transactionService: asClass(require('../services/helpers/baseTransaction.service')).singleton(),
+        resourceUserCombiner: asClass(require('../services/helpers/userResourceCombiner.service')).singleton(),
+
         userService: asFunction(({passwordHasherService, userRepo, cacheService}) =>
             new (require('../services/user.service'))(passwordHasherService, userRepo, cacheService)
         ).singleton(),
@@ -32,8 +35,28 @@ module.exports = container => {
             new (require('../services/session.service'))(sessionRepo)
         ).singleton(),
 
-        permissionService: asFunction(({permissionRepo, userRepo, uow}) =>
-            new (require('../services/permission.service'))(permissionRepo, userRepo, uow)
+        permissionService: asFunction(({
+                                           permissionRepo,
+                                           transactionService,
+                                           resourceUserCombiner
+                                       }) =>
+            new (require('../services/permission.service'))({
+                permissionRepo,
+                transactionService,
+                resourceUserCombiner
+            })
+        ).singleton(),
+
+        versionService: asFunction(({
+                                        versionRepo,
+                                        transactionService,
+                                        resourceUserCombiner
+                                    }) =>
+            new (require('../services/version.service'))({
+                versionRepo,
+                transactionService,
+                resourceUserCombiner,
+            })
         ).singleton(),
 
         jwtAuthService: asFunction(({userService, sessionService}) =>

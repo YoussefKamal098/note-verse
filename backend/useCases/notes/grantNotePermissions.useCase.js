@@ -8,33 +8,34 @@ const {FRONTEND_ROUTES} = require('../../constants/frontendUrls');
 class GrantNotePermissionsUseCase {
     /**
      * @private
-     * @type {import('../repositories/permission.repository').PermissionRepository}
+     * @type {PermissionRepository}
      */
     #permissionRepo;
 
     /**
      * @private
-     * @type {import('../repositories/user.repository').UserRepository}
+     * @type {UserRepository}
      */
     #userRepo;
 
     /**
      * @private
-     * @type {import('../repositories/note.repository').NoteRepository}
+     * @type {NoteRepository}
      */
     #noteRepo;
 
     /**
      * @private
-     * @type {import('../mediators/email.mediator').EmailMediator}
+     * @type {EmailMediator}
      */
     #emailMediator;
 
     /**
      * @private
-     * @type {import('../unit-of-work/uow.interface').IUnitOfWork}
+     * @type {BaseTransactionService}
      */
-    #uow;
+    #transactionService;
+    ;
 
     /**
      * @param {Object} dependencies
@@ -42,14 +43,20 @@ class GrantNotePermissionsUseCase {
      * @param {UserRepository} dependencies.userRepo
      * @param {NoteRepository} dependencies.noteRepo
      * @param {EmailMediator} dependencies.emailMediator
-     * @param {IUnitOfWork} dependencies.uow
      */
-    constructor({permissionRepo, userRepo, noteRepo, emailMediator, uow}) {
+
+    constructor({
+                    permissionRepo,
+                    userRepo,
+                    noteRepo,
+                    emailMediator,
+                    transactionService
+                }) {
         this.#permissionRepo = permissionRepo;
         this.#userRepo = userRepo;
         this.#noteRepo = noteRepo;
         this.#emailMediator = emailMediator;
-        this.#uow = uow;
+        this.#transactionService = transactionService;
     }
 
     /**
@@ -65,74 +72,71 @@ class GrantNotePermissionsUseCase {
      * @throws {AppError} For authorization failures
      */
     async execute({grantedBy, resourceId, userIds, role, message = '', notify = true}) {
-        const session = await this.#uow.begin();
+        return this.#transactionService.executeTransaction(
+            async (session) => {
+                // 1. Validate all users exist first
+                const existingUsers = await this.#validateUsersExist(userIds, session);
 
-        try {
-            // 1. Validate all users exist first
-            const existingUsers = await this.#validateUsersExist(userIds, session);
-
-            // 1. Validate granter permissions
-            const granterPermission = await this.#permissionRepo.getUserPermission(
-                {userId: grantedBy, resourceType: resources.NOTE, resourceId},
-                session
-            );
-
-            // 2. Get resource and granter details
-            const [note, granter] = await Promise.all([
-                this.#noteRepo.findById(resourceId, session),
-                this.#userRepo.findById(grantedBy, {session})
-            ]);
-
-            if (!note) {
-                throw new AppError(
-                    statusMessages.NOTE_NOT_FOUND,
-                    httpCodes.NOT_FOUND.code,
-                    httpCodes.NOT_FOUND.name
-                );
-            }
-
-            if (!this.#isOwner({userId: grantedBy, note, permission: granterPermission})) {
-                throw new AppError(
-                    statusMessages.PERMISSION_DENIED,
-                    httpCodes.FORBIDDEN.code,
-                    httpCodes.FORBIDDEN.name
-                );
-            }
-
-            // 3. Process permissions
-            const permissions = await this.#permissionRepo.grantPermissionsForUsers({
-                userIds,
-                resourceType: resources.NOTE,
-                resourceId,
-                role,
-                grantedBy
-            }, session);
-
-            // 4. Send notifications if enabled
-            if (notify) {
-                await this.#sendNotifications({
-                    granter,
-                    resourceId,
-                    note,
-                    users: existingUsers,
-                    role,
-                    message,
+                // 2. Validate granter permissions
+                const granterPermission = await this.#permissionRepo.getUserPermission(
+                    {userId: grantedBy, resourceType: resources.NOTE, resourceId},
                     session
-                });
+                );
+
+                // 3. Get resource and granter details
+                const [note, granter] = await Promise.all([
+                    this.#noteRepo.findById(resourceId, session),
+                    this.#userRepo.findById(grantedBy, {session})
+                ]);
+
+                if (!note) {
+                    throw new AppError(
+                        statusMessages.NOTE_NOT_FOUND,
+                        httpCodes.NOT_FOUND.code,
+                        httpCodes.NOT_FOUND.name
+                    );
+                }
+
+                if (!this.#isOwner({userId: grantedBy, note, permission: granterPermission})) {
+                    throw new AppError(
+                        statusMessages.PERMISSION_DENIED,
+                        httpCodes.FORBIDDEN.code,
+                        httpCodes.FORBIDDEN.name
+                    );
+                }
+
+                // 3. Process permissions
+                const permissions = await this.#permissionRepo.grantPermissionsForUsers({
+                    userIds,
+                    resourceType: resources.NOTE,
+                    resourceId,
+                    role,
+                    grantedBy
+                }, session);
+
+                // 4. Send notifications if enabled
+                if (notify) {
+                    await this.#sendNotifications({
+                        granter,
+                        resourceId,
+                        note,
+                        users: existingUsers,
+                        role,
+                        message: message || {
+                            [roles.VIEWER]: 'You now have view-only access to this note',
+                            [roles.EDITOR]: 'You can now view and edit this note',
+                        }[role],
+                        session
+                    });
+                }
+
+                return permissions;
+            },
+            {
+                message: statusMessages.PERMISSION_GRANT_FAILED,
+                conflictMessage: statusMessages.PERMISSIONS_GRANT_CONFLICT
             }
-
-            await this.#uow.commit(session);
-            return permissions;
-        } catch (error) {
-            await this.#uow.rollback(session);
-
-            if (error instanceof AppError) throw error;
-            throw new AppError(
-                statusMessages.PERMISSION_GRANT_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
-        }
+        );
     }
 
 

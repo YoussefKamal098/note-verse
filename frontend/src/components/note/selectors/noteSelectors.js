@@ -26,6 +26,9 @@ export const createNoteSelectors = () => {
         ),
         hasChanges: createSelector([selectBase], state =>
             !deepEqual(state.originalContent, state.currentContent)
+        ),
+        isContentChange: createSelector([selectBase], state =>
+            state.originalContent.content !== state.currentContent.content
         )
     };
 };

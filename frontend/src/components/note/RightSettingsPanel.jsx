@@ -2,21 +2,24 @@ import React, {useRef} from 'react';
 import styled from 'styled-components';
 import {MdPublic, MdVpnLock} from "react-icons/md";
 import {RiPushpin2Fill, RiUnpinLine} from "react-icons/ri";
+import {TbEditCircle, TbEditCircleOff, TbSettingsSpark} from "react-icons/tb";
 import CloseButton from "../buttons/CloseButton";
 import Toggle from "../toggle";
 import useOutsideClick from '../../hooks/useOutsideClick'
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
-import useIsMobile from "../../hooks/useIsMobile";
+import useMediaSize from "../../hooks/useMediaSize";
 import {ContainerStyles} from "./styles";
+import {DEVICE_SIZES} from "@/constants/breakpoints";
+import {media} from '@/utils/mediaQueries';
 
 const RightContainerStyles = styled(ContainerStyles)`
-    grid-row: span 2;
-    width: fit-content;
+    grid-area: right;
     max-width: ${({$show}) => $show ? '275px' : '0'};
     ${({$show}) => !$show && "padding-right: 0;padding-left: 0;"}
+    transform: 0 0;
     transition: max-width 0.3s ease, padding 0.5s ease;
 
-    @media (max-width: ${props => props.$mobileSize}px) {
+    ${media.tablet} {
         position: fixed;
         top: 0;
         right: 0;
@@ -35,34 +38,53 @@ const RightContainerStyles = styled(ContainerStyles)`
 const HeaderStyles = styled.div`
     display: flex;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
-    flex-direction: row-reverse;
+`
+
+const Title = styled.h2`
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
+    font-size: 1.25em;
+    font-weight: 600;
+    color: var(--color-text);
+`
+
+const SettingsIcon = styled(TbSettingsSpark)`
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--color-primary);
 `
 
 const SettingsContainerStyles = styled.div`
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.5em;
     font-size: 0.9em;
 `;
 
-const RightSettingsPanel = ({show, onClose, mobileSize = 768}) => {
+const RightSettingsPanel = ({show, onClose}) => {
     const {actions, selectors} = useNoteContext();
     const {isNew} = useNoteSelector(selectors.getStatus);
     const {isPublic, isPinned} = useNoteSelector(selectors.getMeta);
     const panelRef = useRef(null);
-    const isMobile = useIsMobile(mobileSize);
+    const isMobile = useMediaSize(DEVICE_SIZES.tablet);
 
     useOutsideClick(panelRef, () => {
         if (isMobile && show) onClose();
     });
 
     return (
-        <RightContainerStyles $show={show} $mobileSize={mobileSize} ref={panelRef}>
-            {isMobile && <HeaderStyles>
-                <CloseButton onClick={onClose}/>
-            </HeaderStyles>}
+        <RightContainerStyles $show={show} ref={panelRef}>
+            <HeaderStyles>
+                <Title>
+                    Settings
+                    <SettingsIcon/>
+                </Title>
+                {isMobile && <CloseButton onClick={onClose}/>}
+            </HeaderStyles>
 
             <SettingsContainerStyles>
                 <Toggle
@@ -78,6 +100,13 @@ const RightSettingsPanel = ({show, onClose, mobileSize = 768}) => {
                     label={"Public visibility"}
                     labelPosition={"right"}
                     icon={isPublic ? <MdPublic/> : <MdVpnLock/>}
+                />
+                <Toggle
+                    checked={isPublic}
+                    onChange={isNew ? actions.toggleVisibilityState : actions.toggleVisibility}
+                    label={"Open for Edits"}
+                    labelPosition={"right"}
+                    icon={isPublic ? < TbEditCircle/> : < TbEditCircleOff/>}
                 />
             </SettingsContainerStyles>
         </RightContainerStyles>

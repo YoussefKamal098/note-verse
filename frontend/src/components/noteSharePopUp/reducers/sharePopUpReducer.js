@@ -27,7 +27,7 @@ export const sharePopUpReducer = produce((draft, action) => {
                 if (collaborator.role === role) {
                     draft.updatedCollaborators.delete(id);
                 } else {
-                    draft.updatedCollaborators.set(id, collaborator);
+                    draft.updatedCollaborators.set(id, {...collaborator, role});
                 }
 
                 if (draft.removedCollaborators.has(id)) {

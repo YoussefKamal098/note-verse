@@ -3,154 +3,153 @@ const statusMessages = require('../constants/statusMessages');
 const AppError = require('../errors/app.error');
 
 /**
- * Factory function that creates middleware to validate note update permissions and data
- * @module Middleware/NoteValidation
- * @param {Object} dependencies - Required dependencies
- * @param {ValidateNoteUpdateUseCase} dependencies.validateNoteUpdateUseCase - The use case instance for validating note updates
- * @returns {Function} Express middleware function that validates note update permissions and data
- *
- * @example
- * // Usage in route:
- * router.patch('/:noteId',
- *   validateNoteUpdatePermission({ validateNoteUpdateUseCase }),
- *   notesController.updateNoteById
- * );
- */
-const validateNoteUpdatePermission = ({validateNoteUpdateUseCase}) => {
-    /**
-     * Express middleware to validate note update permissions and sanitize input
-     * @function
-     * @async
-     * @param {import('express').Request} req - Express request object
-     * @param {Object} req.params - Route parameters
-     * @param {string} req.params.noteId - The ID of the note to update
-     * @param {string} req.userId - The authenticated user's ID
-     * @param {Object} req.body - The update data payload
-     * @param {string} [req.body.title] - New title for the note
-     * @param {string[]} [req.body.tags] - New tags for the note
-     * @param {string} [req.body.content] - New content for the note
-     * @param {boolean} [req.body.isPinned] - New pinned status for the note
-     * @param {boolean} [req.body.isPublic] - New visibility status for the note
-     * @param {import('express').Response} res - Express response object
-     * @param {import('express').NextFunction} next - Express next middleware function
-     * @throws {AppError} 404 - NOTE_NOT_FOUND if the note doesn't exist
-     * @throws {AppError} 403 - PERMISSION_DENIED if user lacks update permissions
-     * @throws {AppError} 400 - VALIDATION_ERROR if update data fails validation
-     * @throws {AppError} 500 - INTERNAL_SERVER_ERROR for unexpected errors
-     */
-    return async (req, res, next) => {
-        const {noteId} = req.params;
-        const userId = req.userId;
-        const updateData = req.body;
-
-        try {
-            req.body = await validateNoteUpdateUseCase.execute({
-                userId,
-                noteId,
-                updateData
-            });
-            next();
-        } catch (error) {
-            next(error);
-        }
-    };
-};
-
-/**
  * Factory function that creates middleware to validate note view permissions
  * @module Middleware/NoteValidation
  * @param {Object} dependencies - Required dependencies
- * @param {import('../use-cases/validate-note-view.use-case')} dependencies.validateNoteViewUseCase - The use case instance for validating note views
- * @returns {Function} Express middleware function that validates note view permissions
+ * @param {ValidateNoteViewUseCase} dependencies.validateNoteViewUseCase - The use case instance for validating note views
+ * @returns {Function} Function that accepts options and returns Express middleware
  *
  * @example
- * // Usage in route:
+ * // Basic usage (default noteId in params)
  * router.get('/:noteId',
- *   validateNoteViewPermission({ validateNoteViewUseCase }),
+ *   validateNoteViewPermission({ validateNoteViewUseCase })(),
+ *   notesController.findNoteById
+ * );
+ *
+ * // Custom note ID location
+ * router.post('/view',
+ *   validateNoteViewPermission({ validateNoteViewUseCase })({
+ *     noteIdLocation: 'body',
+ *     noteIdField: 'targetNoteId'
+ *   }),
  *   notesController.findNoteById
  * );
  */
 const validateNoteViewPermission = ({validateNoteViewUseCase}) => {
     /**
-     * Express middleware to validate note viewing permissions
-     * @function
-     * @async
-     * @param {import('express').Request} req - Express request object
-     * @param {Object} req.params - Route parameters
-     * @param {string} req.params.noteId - The ID of the note to view
-     * @param {string} req.userId - The authenticated user's ID
-     * @param {import('express').Response} res - Express response object
-     * @param {import('express').NextFunction} next - Express next middleware function
-     * @throws {AppError} 404 - NOTE_NOT_FOUND if the note doesn't exist
-     * @throws {AppError} 403 - PERMISSION_DENIED if user lacks view permissions
-     * @throws {AppError} 500 - INTERNAL_SERVER_ERROR for unexpected errors
+     * Options configuration
+     * @param {Object} [options] - Configuration options
+     * @param {string} [options.noteIdField='noteId'] - Name of the note ID field
+     * @param {string} [options.noteIdLocation='params'] - Where to find note ID ('params', 'body', or 'query')
+     * @returns {Function} Express middleware function
      */
-    return async (req, res, next) => {
-        const {noteId} = req.params;
-        const userId = req.userId;
+    return (options = {}) => {
+        const {
+            noteIdField = 'noteId',
+            noteIdLocation = 'params'
+        } = options;
 
-        try {
-            req.note = await validateNoteViewUseCase.execute({userId, noteId});
-            next();
-        } catch (error) {
-            next(error);
-        }
+        /**
+         * Express middleware to validate note viewing permissions
+         * @function
+         * @async
+         * @param {import('express').Request} req - Express request object
+         * @param {import('express').Response} res - Express response object
+         * @param {import('express').NextFunction} next - Express next middleware function
+         * @throws {AppError} 404 - NOTE_NOT_FOUND if the note doesn't exist
+         * @throws {AppError} 403 - PERMISSION_DENIED if user lacks view permissions
+         * @throws {AppError} 500 - INTERNAL_SERVER_ERROR for unexpected errors
+         */
+        return async (req, res, next) => {
+            const userId = req.userId;
+            const noteId = req[noteIdLocation]?.[noteIdField];
+
+            if (!userId || !noteId) {
+                return next(new AppError(
+                    httpCodes.BAD_REQUEST.message,
+                    httpCodes.BAD_REQUEST.code,
+                    httpCodes.BAD_REQUEST.name
+                ));
+            }
+
+            try {
+                req.note = await validateNoteViewUseCase.execute({userId, noteId});
+                next();
+            } catch (error) {
+                next(error);
+            }
+        };
     };
 };
 
 /**
- * Factory function that creates middleware to validate note ownership
- * @module Middleware/NoteValidation
- * @param {Object} dependencies - Required dependencies
- * @param {import('../services/note.service')} dependencies.noteService - The note service instance
- * @returns {Function} Express middleware function that validates note ownership
+ * Creates a note ownership validator middleware factory
+ * @function validateNoteOwnership
+ * @param {Object} dependencies - Required services
+ * @param {NoteService} dependencies.noteService - Required services
+ * @returns {Function} Configured middleware factory function
  *
  * @example
- * // Usage in route:
- * router.delete('/:noteId',
- *   validateNoteOwnership({ noteService }),
- *   notesController.deleteNoteById
- * );
+ * // Basic setup
+ * const validator = createNoteOwnershipValidator({ noteService });
  */
 const validateNoteOwnership = ({noteService}) => {
     /**
-     * Express middleware to validate note ownership
-     * @function
-     * @async
-     * @param {import('express').Request} req - Express request object
-     * @param {Object} req.params - Route parameters
-     * @param {string} req.params.noteId - The ID of the note to verify ownership
-     * @param {string} req.userId - The authenticated user's ID
-     * @param {import('express').Response} res - Express response object
-     * @param {import('express').NextFunction} next - Express next middleware function
-     * @throws {AppError} 404 - NOTE_NOT_FOUND if the note doesn't exist
-     * @throws {AppError} 403 - NOTE_OWNER_REQUIRED if user is not the note owner
-     * @throws {AppError} 500 - INTERNAL_SERVER_ERROR for unexpected errors
+     * Creates configured middleware instances
+     * @param {Object} [options] - Configuration options
+     * @param {string} options.noteIdName - noteId field name
+     * @param {string[]} options.loactions - noteId location, ('params', 'query', 'body')
+     * @returns {Function} Configured middleware function
+     *
+     * @example
+     * // Creates validator that checks req.query.id
+     * const queryValidator = validator({
+     *   noteIdName: 'id',
+     *   locations: ['query']
+     * });
      */
-    return async (req, res, next) => {
-        try {
-            const {noteId} = req.params;
-            const userId = req.userId;
+    return (options = {}) => {
+        const {
+            noteIdName = 'noteId',
+            locations = ['params', 'query', 'body']
+        } = options;
 
-            const note = await noteService.findNoteById(noteId);
+        return async (req, res, next) => {
+            try {
+                // 1. Locate note ID
+                let noteId = null;
+                for (const location of locations) {
+                    if (req[location]?.[noteIdName] !== undefined) {
+                        noteId = req[location][noteIdName];
+                        break;
+                    }
+                }
+                if (!noteId) {
+                    throw new AppError(
+                        statusMessages.NOTE_NOT_FOUND,
+                        httpCodes.BAD_REQUEST.code,
+                        httpCodes.BAD_REQUEST.name
+                    );
+                }
 
-            if (!note || note.userId !== userId) {
-                return next(new AppError(
-                    statusMessages.NOTE_OWNER_REQUIRED,
-                    httpCodes.FORBIDDEN.code
-                ));
+                // 2. Verify ownership
+                const note = await noteService.findNoteById(noteId);
+                if (!note) {
+                    throw new AppError(
+                        statusMessages.NOTE_NOT_FOUND,
+                        httpCodes.NOT_FOUND.code,
+                        httpCodes.NOT_FOUND.name
+                    );
+                }
+
+                if (note.userId !== req.userId) {
+                    throw new AppError(
+                        statusMessages.NOTE_OWNER_REQUIRED,
+                        httpCodes.FORBIDDEN.code,
+                        httpCodes.FORBIDDEN.name
+                    );
+                }
+
+                // 3. Attach to request
+                req.note = note;
+                next();
+            } catch (error) {
+                next(error);
             }
-
-            req.note = note;
-            next();
-        } catch (error) {
-            next(error);
-        }
+        };
     };
 };
-
 module.exports = {
-    validateNoteUpdatePermission,
     validateNoteViewPermission,
     validateNoteOwnership
 };

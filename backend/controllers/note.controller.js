@@ -23,6 +23,24 @@ class NotesController {
      * @description UseCase for Grant permissions
      */
     #grantNotePermissionsUseCase
+    /**
+     * @private
+     * @type {CreateNoteUseCase}
+     * @description UseCase for Create note
+     */
+    #createNoteUseCase
+    /**
+     * @private
+     * @type {UpdateNoteUseCase}
+     * @description UseCase for Update note
+     */
+    #updateNoteUseCase
+    /**
+     * @private
+     * @type {VersionService}
+     * @descriptionService for handling note versions operations.
+     */
+    #versionService
 
     /**
      * Constructs a new NotesController.
@@ -30,11 +48,22 @@ class NotesController {
      * @param {NoteService} dependencies.noteService - Note service instance.
      * @param {PermissionService} dependencies.permissionService - Permission service instance.
      * @param {GrantNotePermissionsUseCase} dependencies.grantNotePermissionsUseCase - Grant permissions UseCase
+     * @param {CreateNoteUseCase} dependencies.createNoteUseCase - Create note UseCase
+     * @param {UpdateNoteUseCase} dependencies.updateNoteUseCase - Update note UseCase
      * */
-    constructor({noteService, permissionService, grantNotePermissionsUseCase}) {
+    constructor({
+                    noteService, permissionService,
+                    grantNotePermissionsUseCase,
+                    createNoteUseCase,
+                    updateNoteUseCase,
+                    versionService
+                }) {
         this.#noteService = noteService;
         this.#permissionService = permissionService;
         this.#grantNotePermissionsUseCase = grantNotePermissionsUseCase;
+        this.#createNoteUseCase = createNoteUseCase;
+        this.#updateNoteUseCase = updateNoteUseCase;
+        this.#versionService = versionService;
     }
 
     /**
@@ -61,7 +90,7 @@ class NotesController {
             isPublic
         } = req.body;
 
-        const newNote = await this.#noteService.create({
+        const newNote = await this.#createNoteUseCase.execute({
             userId,
             title,
             tags,
@@ -69,6 +98,7 @@ class NotesController {
             isPinned,
             isPublic
         });
+
         res.status(httpCodes.CREATED.code).json(newNote);
     }
 
@@ -99,14 +129,19 @@ class NotesController {
      */
     async updateNoteById(req, res) {
         const {noteId} = req.params;
-        const {title, tags, content, isPinned, isPublic} = req.body;
+        const {title, tags, content, isPinned, isPublic, commitMessage} = req.body;
 
-        const updatedNote = await this.#noteService.updateNoteById(noteId, {
-            title,
-            tags,
-            content,
-            isPinned,
-            isPublic
+        const {note: updatedNote} = await this.#updateNoteUseCase.execute({
+            userId: req.userId,
+            noteId,
+            commitMessage,
+            updateData: {
+                title,
+                tags,
+                content,
+                isPinned,
+                isPublic
+            }
         });
 
         if (!updatedNote) {
@@ -116,7 +151,6 @@ class NotesController {
                 httpCodes.NOT_FOUND.name
             );
         }
-
 
         res.status(httpCodes.OK.code).json(updatedNote);
     }
@@ -201,91 +235,6 @@ class NotesController {
     }
 
     /**
-     * Updates permission for a specific user on a note.
-     * @param {import('express').Request} req - Express request object.
-     * @param {string} req.params.noteId - ID of the note.
-     * @param {string} req.params.userId - ID of the user whose permission to update.
-     * @param {Object} req.body - Permission data.
-     * @param {string} req.body.role - New permission role.
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<void>}
-     * @throws {AppError} If a permission isn't found (404).
-     */
-    async revokePermission(req, res) {
-        const {noteId, userId} = req.params;
-
-        const isDeleted = await this.#permissionService.revokePermission({
-            resourceType: resources.NOTE,
-            resourceId: noteId,
-            userId
-        });
-
-        if (!isDeleted) {
-            throw new AppError(
-                statusMessages.PERMISSION_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        res.status(httpCodes.OK.code).json({message: `Revoked permission successfully`});
-    }
-
-    async updatePermission(req, res) {
-        const {noteId, userId} = req.params;
-        const {role} = req.body;
-
-        const updatedPermission = await this.#permissionService.updatePermissions({
-            userId,
-            resourceType: resources.NOTE,
-            resourceId: noteId,
-        }, {role});
-
-        if (!updatedPermission) {
-            throw new AppError(
-                statusMessages.PERMISSION_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        res.status(httpCodes.OK.code).json({
-            id: updatedPermission.id,
-            userId: updatedPermission.userId,
-            role: updatedPermission.role
-        });
-    }
-
-    /**
-     * Gets permission for a specific user on a note.
-     * @param {import('express').Request} req - Express request object.
-     * @param {string} req.params.noteId - ID of the note.
-     * @param {string} req.params.userId - ID of the user whose permission to get.
-     * @param {import('express').Response} res - Express response object.
-     * @returns {Promise<void>}
-     * @throws {AppError} If permission not found (404).
-     */
-    async getUserPermission(req, res) {
-        const {noteId, userId} = req.params;
-
-        const permission = await this.#permissionService.getUserPermission({
-            userId,
-            resourceType: resources.NOTE,
-            resourceId: noteId
-        });
-
-        if (!permission) {
-            throw new AppError(
-                statusMessages.PERMISSION_NOT_FOUND,
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
-        }
-
-        res.status(httpCodes.OK.code).json(permission);
-    }
-
-    /**
      * Gets all permissions for a specific note.
      * @param {import('express').Request} req - Express request object.
      * @param {string} req.params.noteId - ID of the note.
@@ -305,6 +254,36 @@ class NotesController {
         }, {page, limit});
 
         res.status(httpCodes.OK.code).json(users);
+    }
+
+    /**
+     * Get commit history for a note
+     */
+    async getCommitHistory(req, res) {
+        const {noteId} = req.params;
+        const {page = 0, limit = 10} = req.query;
+
+        const history = await this.#versionService.getCommitHistory(
+            {noteId},
+            {page, limit}
+        );
+
+        res.status(httpCodes.OK.code).json(history);
+    }
+
+    /**
+     * Get contributors for a note
+     */
+    async getContributors(req, res) {
+        const {noteId} = req.params;
+        const {page = 0, limit = 10} = req.query;
+
+        const contributors = await this.#versionService.getContributors(
+            {noteId},
+            {page, limit}
+        );
+
+        res.status(httpCodes.OK.code).json(contributors);
     }
 }
 

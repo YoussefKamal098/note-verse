@@ -7,10 +7,9 @@ const ENDPOINTS = {
     UPDATE_USER_NOTE_BY_ID: (noteId) => `/notes/${noteId}`,
     DELETE_USER_NOTE_BY_ID: (noteId) => `/notes/${noteId}`,
     GRANT_NOTE_PERMISSIONS: (noteId) => `/notes/${noteId}/permissions`,
-    REVOKE_NOTE_PERMISSION: (noteId, userId) => `/notes/${noteId}/permissions/${userId}`,
-    UPDATE_NOTE_PERMISSION: (noteId, userId) => `/notes/${noteId}/permissions/${userId}`,
-    GET_NOTE_USER_PERMISSION: (noteId, userId) => `/notes/${noteId}/permissions/${userId}`,
-    GET_NOTE_PERMISSIONS: (noteId) => `/notes/${noteId}/permissions`
+    GET_NOTE_PERMISSIONS: (noteId) => `/notes/${noteId}/permissions`,
+    GET_COMMIT_HISTORY: (noteId) => `/notes/${noteId}/history`,
+    GET_CONTRIBUTORS: (noteId) => `/notes/${noteId}/contributors`,
 };
 
 class NoteService {
@@ -73,22 +72,24 @@ class NoteService {
     }
 
     /**
-     * Update a specific note by ID.
-     * @param {string} noteId - The ID of the note.
-     * @param {Object} params - The updated note details.
-     * @param {string} [params.title] - Updated title of the note.
-     * @param {string} [params.content] - Updated content of the note.
-     * @param {string[]} [params.tags] - Updated tags for the note.
-     * @param {boolean} [params.isPinned] - Updated pin status of the note.
-     * @param {boolean} [params.isPublic] - Updated public visibility
-     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * Update a specific note by ID with version tracking.
+     * @param {Object} params - Update parameters
+     * @param {string} params.noteId - The ID of the note to update
+     * @param {string} [params.commitMessage] - Description of changes for version history
+     * @param {Object} updateFields - Fields to update
+     * @param {string} [updateFields.title] - New title for the note (optional)
+     * @param {string} [updateFields.content] - New content for the note (optional)
+     * @param {string[]} [updateFields.tags] - New tags for the note (optional)
+     * @param {boolean} [updateFields.isPinned] - New pin status (optional)
+     * @param {boolean} [updateFields.isPublic] - New visibility status (optional)
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request configuration
      * @returns {Promise<Object>} Response with status code and data.
      * @throws {Error} If note update fails.
      */
-    async updateNoteById(noteId, {title, content, tags, isPinned, isPublic} = {}, config = {}) {
+    async updateNoteById({noteId, commitMessage}, {title, content, tags, isPinned, isPublic} = {}, config = {}) {
         return await this.#apiClient.patch(
             ENDPOINTS.UPDATE_USER_NOTE_BY_ID(noteId),
-            {title, content, tags, isPinned, isPublic},
+            {title, content, tags, isPinned, isPublic, commitMessage},
             config
         );
     }
@@ -125,54 +126,6 @@ class NoteService {
     }
 
     /**
-     * Revoke permissions for a note from multiple users.
-     * @param {string} noteId - The ID of the note.
-     * @param {string} userId - ID of user to revoke permission from.
-     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
-     * @returns {Promise<Object>} Response with status code and data.
-     * @throws {Error} If permission revocation fails.
-     */
-    async revokePermission(noteId, userId, config = {}) {
-        return await this.#apiClient.delete(
-            ENDPOINTS.REVOKE_NOTE_PERMISSION(noteId, userId),
-            config
-        );
-    }
-
-    /**
-     * Update permission for a specific user on a note.
-     * @param {string} noteId - The ID of the note.
-     * @param {string} userId - The ID of the user whose permission to update.
-     * @param {Object} params - Permission data.
-     * @param {string} params.role - New permission role.
-     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
-     * @returns {Promise<Object>} Response with status code and data.
-     * @throws {Error} If permission update fails.
-     */
-    async updatePermission(noteId, userId, {role}, config = {}) {
-        return await this.#apiClient.patch(
-            ENDPOINTS.UPDATE_NOTE_PERMISSION(noteId, userId),
-            {role},
-            config
-        );
-    }
-
-    /**
-     * Get permission for a specific user on a note.
-     * @param {string} noteId - The ID of the note.
-     * @param {string} userId - The ID of the user whose permission to get.
-     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
-     * @returns {Promise<Object>} Response with status code and data.
-     * @throws {Error} If fetching permission fails.
-     */
-    async getUserPermission(noteId, userId, config = {}) {
-        return await this.#apiClient.get(
-            ENDPOINTS.GET_NOTE_USER_PERMISSION(noteId, userId),
-            config
-        );
-    }
-
-    /**
      * Get all permissions for a specific note.
      * @param {string} noteId - The ID of the note.
      * @param {Object} [queryParams={}] - Query parameters for pagination.
@@ -188,6 +141,46 @@ class NoteService {
             {
                 ...config,
                 params: {...queryParams}
+            }
+        );
+    }
+
+    /**
+     * Get commit history for a note with pagination
+     * @param {string} noteId - The ID of the note
+     * @param {Object} [queryParams={}] - Pagination and filtering options
+     * @param {number} [queryParams.page=0] - Page number (0-indexed)
+     * @param {number} [queryParams.limit=10] - Items per page
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with commit history data
+     * @throws {Error} If fetching history fails
+     */
+    async getCommitHistory(noteId, queryParams = {}, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_COMMIT_HISTORY(noteId),
+            {
+                ...config,
+                params: {...queryParams}
+            }
+        );
+    }
+
+    /**
+     * Get contributors for a note with pagination
+     * @param {string} noteId - The ID of the note
+     * @param {Object} [queryParams={}] - Pagination options
+     * @param {number} [queryParams.page=0] - Page number (0-indexed)
+     * @param {number} [queryParams.limit=10] - Items per page
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with contributors data
+     * @throws {Error} If fetching contributors fails
+     */
+    async getContributors(noteId, queryParams = {}, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_CONTRIBUTORS(noteId),
+            {
+                ...config,
+                params: queryParams
             }
         );
     }

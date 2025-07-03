@@ -1,9 +1,10 @@
 import React from "react";
 import ReactPaginate from 'react-paginate';
+import "./styles.css";
 import {IoIosArrowBack, IoIosArrowForward} from "react-icons/io";
 import {IoEllipsisHorizontalSharp} from "react-icons/io5";
 
-const Pagination = ({totalPages, currentPage, onPageChange, isDisabled}) => {
+const Index = ({totalPages, currentPage, onPageChange, isDisabled}) => {
     if (totalPages <= 0) return <></>;
 
     return (
@@ -27,4 +28,4 @@ const Pagination = ({totalPages, currentPage, onPageChange, isDisabled}) => {
     );
 };
 
-export default Pagination;
+export default Index;

@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from "styled-components";
 import MarkdownEditor from "@uiw/react-markdown-editor";
-import {useTheme} from "../../contexts/ThemeContext";
+import '@uiw/react-markdown-editor/markdown-editor.css';
+import "./customMarkdownStyles.css";
+import {useTheme} from "@/contexts/ThemeContext";
 
 const EditorStyled = styled(MarkdownEditor)`
     font-size: 0.9em !important;
@@ -9,22 +11,32 @@ const EditorStyled = styled(MarkdownEditor)`
     font-weight: 700 !important;
 `;
 
-const EditorTab = React.memo(({content, onChange, onKeyUp}) => {
+const EditorTab = ({
+                       content,
+                       onChange,
+                       onKeyUp,
+                       showToolbar = true,
+                       disable = false
+                       , ...props
+                   }) => {
     const {theme} = useTheme();
 
     return (
-        <div data-color-mode={theme}>
+        <div data-color-mode={theme} style={{height: "100%"}}>
             <EditorStyled
+                {...props}
                 value={content}
                 placeholder="Enter your markdown content here..."
                 onChange={onChange}
                 onKeyUp={onKeyUp}
                 onPaste={onKeyUp}
+                showToolbar={showToolbar}
+                editable={!disable}
                 enablePreview={false}
             />
         </div>
 
     );
-});
+};
 
 export default React.memo(EditorTab);

@@ -21,8 +21,8 @@ const Footer = ({inputRef}) => {
     }
 
     const onSend = async () => {
-        await actions.saveChanges();
-        inputRef.current?.resetInput?.();
+        const isSuccess = await actions.saveChanges();
+        if (isSuccess) inputRef.current?.resetInput?.();
     }
 
     return (

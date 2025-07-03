@@ -16,4 +16,4 @@ const NotePage = () => {
     );
 };
 
-export default React.memo(NotePage);
+export default NotePage;

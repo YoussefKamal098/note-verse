@@ -1,14 +1,8 @@
 const Joi = require('joi');
-const {isValidObjectId} = require('../utils/obj.utils');
+const objectIdSchema = require('./idKeyObject.schema')
 
 const getUserQuerySchema = Joi.object({
-    id: Joi.string().custom((value, helpers) => {
-        if (value === 'me') return value;  // Accept "me" as valid
-        if (!isValidObjectId(value)) {
-            return helpers.error('any.invalid');
-        }
-        return value;
-    }, 'ObjectId validation or "me"'),
+    id: objectIdSchema({allowMe: true}).description('User ID or "me" for current user'),
     email: Joi.string().email()
 }).xor('id', 'email')  // Requires exactly one of id or email
     .messages({

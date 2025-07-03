@@ -27,4 +27,8 @@ const formatSocialDate = (date) => {
     }
 };
 
-export {formatSocialDate};
+const formatDateTime = (dateString) => {
+    return format(new Date(dateString), "MMMM d, yyyy, h:mm a");
+};
+
+export {formatSocialDate, formatDateTime};

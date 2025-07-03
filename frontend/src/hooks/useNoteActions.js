@@ -1,6 +1,6 @@
 import {useNavigate} from "react-router-dom";
 import routesPaths from "../constants/routesPaths";
-import {useToastNotification} from "../contexts/ToastNotificationsContext";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import noteService from "../api/noteService";
 import cacheService from "../services/cacheService";
 
@@ -12,7 +12,7 @@ const useNoteActions = (noteId, setLoading) => {
         setLoading?.(true);
 
         try {
-            await noteService.updateNoteById(noteId, {isPinned, tags, title, content});
+            await noteService.updateNoteById({noteId}, {isPinned, tags, title, content});
 
             notify.success(`Note updated successfully.`);
 

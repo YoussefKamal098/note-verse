@@ -1,5 +1,5 @@
 .md-editor {
-    max-height: 100vh;
+    height: 100%;
     overflow-y: auto;
 }
 
@@ -16,13 +16,17 @@
 .md-editor .cm-editor,
 .md-editor .cm-content,
 .md-editor .cm-gutter,
+.md-editor .md-editor-content-editor,
+.md-editor .md-editor-inner,
 .md-editor .md-editor-toolbar-warp {
+    height: 100%;
     background-color: var(--color-background-primary);
 }
 
 .md-editor .cm-content,
 .wmde-markdown {
-    min-height: 50vh;
+    height: 100%;
+    min-height: 200px;
 }
 
 .md-editor .cm-content .cm-placeholder {

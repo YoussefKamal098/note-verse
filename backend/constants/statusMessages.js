@@ -45,6 +45,17 @@ const statusMessages = Object.freeze({
     NOTE_ACCESS_CHECK_FAILED: 'Failed to check note access permissions',
     NOTE_OWNER_REQUIRED: 'Only the note owner can perform this action',
 
+
+    // =======================
+    // Version-related errors
+    // =======================
+    VERSION_OPERATION_FAILED: "Version operation failed. Please check your permissions and try again.",
+    VERSION_RESTORE_FAILED: "Restore version operation failed. Please check your permissions and try again.",
+    VERSION_NOT_FOUND: "The version you requested does not exist.",
+    VERSION_CONFLICT: "Note modified by another user. Please refresh and try again.",
+    VERSION_RESTORE_CONFLICT: "Version restore conflict detected. Please refresh and try again.",
+    VERSION_ACCESS_CHECK_FAILED: "Failed to check version access permissions",
+    VERSION_ALREADY_CURRENT: "The version you're trying to restore is already the current version. No changes were made.",
     // =======================
     // Authentication errors
     // =======================
@@ -110,6 +121,7 @@ const statusMessages = Object.freeze({
     PERMISSION_NOT_FOUND: "Permission not found. The requested permission does not exist or was revoked.",
     PERMISSION_DENIED: "Access denied. You don't have permission to perform this action.",
     MISSING_RESOURCE_ID: 'The resource ID is required but was not provided.',
+    PERMISSIONS_GRANT_CONFLICT: 'Grant Permissions conflict happened, please try again later.',
 
     // =======================
     // General errors
@@ -119,6 +131,7 @@ const statusMessages = Object.freeze({
     CORS_NOT_ALLOWED: "Cross-Origin Resource Sharing (CORS) is not allowed from this origin. Access to the requested resource has been denied.",
     REQUEST_TIMEOUT: "The server took too long to respond. Please try again later.",
     TOO_MANY_REQUESTS: "You have made too many requests in a short period. Please try again later.",
+    OPERATION_FAILED: "Operation failed. Please check your permissions and try again."
 
 });
 

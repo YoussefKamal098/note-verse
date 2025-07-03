@@ -7,6 +7,7 @@ module.exports = container => {
         userModel: asValue(require('../models/user.model')),
         authProviderModel: asValue(require('../models/authProvider.model')),
         sessionModel: asValue(require('../models/session.model')),
+        versionModel: asValue(require('../models/version.model')),
         fileModel: asValue(require('../models/file.model'))
     });
 };

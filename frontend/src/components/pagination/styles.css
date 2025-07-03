@@ -7,12 +7,7 @@
     flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
-    margin: 2em;
-    padding: 0.5em;
-    box-shadow: var(--box-shadow);
-    border-radius: var(--border-radius);
-    background-color: var(--color-background);
-    border: var(--border-width) solid var(--color-border-secondary);
+    padding: 6px 5px !important;
     animation: scale-out 0.3s ease-in-out;
     transform-origin: center;
     gap: 0.4em;
@@ -30,10 +25,10 @@
 .pagination .page-item {
     width: 1.9em;
     height: 1.9em;
-    border-radius: calc(var(--border-radius) / 2);
+    border-radius: 7px;
     text-decoration: none;
     color: var(--color-placeholder);
-    border: var(--border-width) solid var(--color-border-secondary);
+    border: 2px solid var(--color-border-secondary);
     box-shadow: var(--box-shadow);
     cursor: pointer;
     overflow: hidden;
@@ -54,8 +49,8 @@
 .pagination .page-item:hover,
 .pagination .page-item:has(.page-link:focus),
 .pagination .page-item.active {
-    background-color: var(--color-accent);
-    border-color: var(--color-accent);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
     color: var(--color-background);
 }
 

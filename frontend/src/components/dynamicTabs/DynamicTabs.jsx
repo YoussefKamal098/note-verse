@@ -39,10 +39,8 @@ function DynamicTabs({
     // Render Tab List
     const renderTabsList = () => {
         return tabs.map((tab, index) => (
-            <Tab>
-                <TranslateTransitionContainer
-                    key={`tab-${index}`}
-                >
+            <Tab key={`tab-${index}`}>
+                <TranslateTransitionContainer key={`tab-animation-${index}`}>
                     <TitleWrapperStyled>
                         <div className="tab-icon" aria-hidden="true"> {tab.icon}</div>
                         <span className="tab-title">{tab.title}</span>

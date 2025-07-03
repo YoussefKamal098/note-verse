@@ -1,6 +1,7 @@
 import React, {useMemo} from "react";
 import {MdDeleteForever} from "react-icons/md";
 import {LuPencilLine} from "react-icons/lu";
+import {TbHistoryToggle} from "react-icons/tb";
 import {FaLink} from "react-icons/fa6";
 import {BsPersonFillAdd} from "react-icons/bs";
 import {RiPushpin2Fill, RiUnpinLine} from "react-icons/ri";
@@ -14,6 +15,7 @@ const NoteMenu = ({
                       onEdit,
                       onCopyLink,
                       onShowShare,
+                      onShowCommitHistory,
                       isPinned,
                   }) => {
     const menuOptions = useMemo(() => ([
@@ -42,18 +44,24 @@ const NoteMenu = ({
             disabled: !onCopyLink
         },
         {
+            text: "Commit History",
+            icon: <TbHistoryToggle/>,
+            action: onShowCommitHistory,
+            disabled: !onShowCommitHistory
+        },
+        {
             text: "Share",
             icon: <BsPersonFillAdd/>,
             action: onShowShare,
             disabled: !onShowShare
-        },
-
+        }
     ].filter(option => !option.disabled)), [
         onDelete,
         onTogglePin,
         onEdit,
         onCopyLink,
         onShowShare,
+        onShowCommitHistory,
         isPinned
     ]);
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {HttpStatusMessages} from '../constants/httpStatus';
+import {HttpStatusMessages} from '@/constants/httpStatus';
 import httpHeaders from '../constants/httpHeaders';
 import {isServerErrorStatus} from 'shared-utils/http.utils';
 import {time, timeUnit} from 'shared-utils/date.utils';

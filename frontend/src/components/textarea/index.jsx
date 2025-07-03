@@ -17,27 +17,40 @@ const FloatingLabelTextArea = ({
                                    maxLength = 500,
                                    value = "",
                                    onChange,
+                                   onError,
                                    ...props
                                }) => {
     const [focused, setFocused] = useState(false);
     const [error, setError] = useState(null);
     const charCount = value?.length || 0;
 
+    const setErrorMessage = (value) => {
+        if (value.length > maxLength) {
+            setError(`Maximum ${maxLength} characters allowed`);
+        } else if (value.length < minLength) {
+            setError(`Minimum ${minLength} characters required`);
+        } else {
+            setError(null);
+        }
+    }
+
     useEffect(() => {
         setFocused(!!value);
+        setErrorMessage(value);
     }, []);
+
+    useEffect(() => {
+        if (onError) {
+            onError(error);
+        }
+    }, [error, onError]);
+
 
     const handleChange = (e) => {
         const newValue = e.target.value;
 
         // Validate length
-        if (newValue.length > maxLength) {
-            setError(`Maximum ${maxLength} characters allowed`);
-        } else if (newValue.length < minLength) {
-            setError(`Minimum ${minLength} characters required`);
-        } else {
-            setError(null);
-        }
+        setErrorMessage(newValue);
 
         // Propagate change if valid or under max
         if (newValue.length <= maxLength) {

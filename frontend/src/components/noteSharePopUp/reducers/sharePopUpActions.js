@@ -107,7 +107,7 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
                 });
 
                 await noteService.updateNoteById(
-                    getState().noteId,
+                    {noteId: getState().noteId},
                     {isPublic},
                     {signal: controller.signal}
                 );
@@ -196,9 +196,9 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
 
                 if (remove && removedCollaborators.size > 0) {
                     operations.push(...Array.from(removedCollaborators).map(collaboratorId =>
-                        noteService.revokePermission(
-                            noteId,
+                        userService.revokePermission(
                             collaboratorId,
+                            {noteId},
                             {signal: controller.signal}
                         )
                     ));
@@ -206,10 +206,9 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
 
                 if (update && updatedCollaborators.size > 0) {
                     operations.push(...Array.from(updatedCollaborators.values()).map(collaborator =>
-                        noteService.updatePermission(
-                            noteId,
+                        userService.updatePermission(
                             collaborator.id,
-                            {role: collaborator.role},
+                            {noteId, role: collaborator.role},
                             {signal: controller.signal}
                         )
                     ));
@@ -234,6 +233,8 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
                     });
                     notify.success('Collaborators updated successfully');
                 }
+
+                return true;
             } catch (error) {
                 handleError(error);
             } finally {

@@ -5,7 +5,7 @@ import {BsThreeDots} from "react-icons/bs";
 import {TiTickOutline} from "react-icons/ti";
 import {CSSTransition, TransitionGroup} from "react-transition-group";
 import useOutsideClick from "../../hooks/useOutsideClick";
-import useIsMobile from "../../hooks/useIsMobile";
+import useMediaSize from "../../hooks/useMediaSize";
 import useMobileDrag from "../../hooks/useMobileDrag";
 import {
     DynamicMenuContainerStyled,
@@ -33,7 +33,7 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
     const observersRef = useRef(new Set());
     const triggerRef = useRef(null);
     const optionsRef = useRef(null);
-    const isMobile = useIsMobile(mobileSize);
+    const isMobile = useMediaSize(mobileSize);
 
     const {
         dragOffset,

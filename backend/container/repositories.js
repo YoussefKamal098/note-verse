@@ -15,6 +15,9 @@ module.exports = container => {
         sessionRepo: asFunction(({sessionModel}) =>
             new (require('../repositories/session.repository'))(sessionModel)
         ).singleton(),
+        versionRepo: asFunction(({versionModel}) =>
+            new (require('../repositories/version.repository'))(versionModel)
+        ).singleton(),
 
         fileRepo: asFunction(({fileModel}) =>
             new (require('../repositories/file.repository'))(fileModel)

@@ -19,11 +19,11 @@
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "object-sizeof": "^2.6.5",
+    "prismjs": "^1.30.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-animate-height": "^3.2.3",
     "react-avatar-editor": "^13.0.2",
-    "react-datepicker": "^8.3.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^5.0.0",
     "react-fast-compare": "^3.2.2",
@@ -41,6 +41,7 @@
     "react-tabs": "^6.0.2",
     "react-toastify": "^10.0.6",
     "react-transition-group": "^4.4.5",
+    "react-window": "^1.8.11",
     "remark-gfm": "^4.0.1",
     "reselect": "^5.1.1",
     "shared-utils": "file:../shared-utils",
@@ -57,9 +58,9 @@
     }
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -81,6 +82,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@craco/craco": "^7.1.0",
+    "@types/node": "^24.0.4",
+    "raw-loader": "^4.0.2"
   }
 }

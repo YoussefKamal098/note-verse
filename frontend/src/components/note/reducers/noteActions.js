@@ -1,12 +1,12 @@
-import {roles} from "../../../constants/roles";
+import {roles} from "@/constants/roles";
+import routesPaths from "@/constants/routesPaths";
+import {API_CLIENT_ERROR_CODES} from '@/api/apiClient';
+import noteService from '@/api/noteService';
+import userService from '@/api/userService';
+import cacheService from '@/services/cacheService';
 import {ACTION_TYPES} from "../constants/actionTypes";
 import {DEFAULT_CONTENT, NEW_NOTE_KEY} from "../constants/noteConstants";
-import {API_CLIENT_ERROR_CODES} from '../../../api/apiClient';
 import {getContentChanges} from "./noteReducer";
-import noteService from '../../../api/noteService';
-import userService from '../../../api/userService';
-import cacheService from '../../../services/cacheService';
-import routesPaths from "../../../constants/routesPaths";
 
 export const createNoteActions = (dispatch, getState, dependencies) => {
     const {navigate, notify, validateNote, requestManager, user} = dependencies;
@@ -52,7 +52,7 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 if (user?.id === note.userId) {
                     userRole = roles.OWNER;
                 } else {
-                    const result = await noteService.getUserPermission(noteId, user?.id, {signal: controller.signal})
+                    const result = await userService.getUserPermission(user?.id, {noteId}, {signal: controller.signal})
                     userRole = result.data.role;
                 }
 
@@ -118,7 +118,7 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
             }
         },
 
-        persistNote: async () => {
+        persistNote: async ({commitMessage} = {}) => {
             const controller = requestManager.createAbortController();
 
             try {
@@ -134,7 +134,10 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                         isPinned,
                         isPublic
                     }, {signal: controller.signal})
-                    : await noteService.updateNoteById(getState().id, changes, {signal: controller.signal});
+                    : await noteService.updateNoteById({
+                        noteId: getState().id,
+                        ...(commitMessage ? {commitMessage} : {})
+                    }, changes, {signal: controller.signal});
 
                 const savedNote = result.data;
 
@@ -194,7 +197,7 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: true}});
                 dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PIN});
 
-                await noteService.updateNoteById(getState().id, {isPinned: !getState().isPinned}, {signal: controller.signal});
+                await noteService.updateNoteById({noteId: getState().id}, {isPinned: !getState().isPinned}, {signal: controller.signal});
                 notify.success(`Note ${getState().isPinned ? 'unPinned' : 'pinned'} successfully`);
             } catch (error) {
                 dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PIN});
@@ -211,7 +214,7 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: true}});
                 dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PUBLIC});
 
-                await noteService.updateNoteById(getState().id, {isPublic: !getState().isPublic}, {signal: controller.signal});
+                await noteService.updateNoteById({noteId: getState().id}, {isPublic: !getState().isPublic}, {signal: controller.signal});
                 notify.success(`Note ${getState().isPinned ? 'unPinned' : 'pinned'} successfully`);
             } catch (error) {
                 dispatch({type: ACTION_TYPES.NOTE.TOGGLE_PUBLIC});
