@@ -2,7 +2,7 @@ import React, {useRef} from 'react';
 import styled from 'styled-components';
 import {MdPublic, MdVpnLock} from "react-icons/md";
 import {RiPushpin2Fill, RiUnpinLine} from "react-icons/ri";
-import {TbEditCircle, TbEditCircleOff, TbSettingsSpark} from "react-icons/tb";
+import {TbSettingsSpark} from "react-icons/tb";
 import CloseButton from "../buttons/CloseButton";
 import Toggle from "../toggle";
 import useOutsideClick from '../../hooks/useOutsideClick'
@@ -100,13 +100,6 @@ const RightSettingsPanel = ({show, onClose}) => {
                     label={"Public visibility"}
                     labelPosition={"right"}
                     icon={isPublic ? <MdPublic/> : <MdVpnLock/>}
-                />
-                <Toggle
-                    checked={isPublic}
-                    onChange={isNew ? actions.toggleVisibilityState : actions.toggleVisibility}
-                    label={"Open for Edits"}
-                    labelPosition={"right"}
-                    icon={isPublic ? < TbEditCircle/> : < TbEditCircleOff/>}
                 />
             </SettingsContainerStyles>
         </RightContainerStyles>

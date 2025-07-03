@@ -228,63 +228,62 @@ NOTES_PER_PAGE=10
 
 ### Routes
 
-### File Management API
-
-The following routes are used for file operations:
+### 🎥 File Management API (`file.routes.js`)
 
 | HTTP Method | Endpoint               | Description                         |
 |-------------|------------------------|-------------------------------------|
 | `GET`       | `api/v1/files/:fileId` | Retrieve a specific file by its ID. |
 
-#### Notes API
+#### 📝 Notes API (`note.routes.js`)
 
-<small>
-<i>
-Note: Planning to separate permission routes into dedicated '/permissions'
-endpoints in upcoming commit for better RESTful design and maintainability.
-The current nested routes under '/notes' will be deprecated in favor of:
+| HTTP Method | Endpoint                            | Description                                                                          |
+|-------------|-------------------------------------|--------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/notes`                      | Create a new note for the authenticated user.                                        |
+| `GET`       | `api/v1/notes`                      | Retrieve paginated notes for the authenticated user with optional query parameters.  |
+| `GET`       | `api/v1/notes/:noteId`              | Retrieve a specific note by its ID for the specified user. Requires view permission. |
+| `PATCH`     | `api/v1/notes/:noteId`              | Update a specific note by its ID for the specified user. Requires edit permission.   |
+| `DELETE`    | `api/v1/notes/:noteId`              | Delete a specific note by its ID for the specified user. Requires ownership.         |
+| `POST`      | `api/v1/notes/:noteId/permissions`  | Grant permissions for a note. Requires ownership.                                    |
+| `GET`       | `api/v1/notes/:noteId/permissions`  | Get all permissions for a note with pagination. Requires ownership.                  |
+| `GET`       | `api/v1/notes/:noteId/history`      | Get paginated commit history of a note. Requires view permission.                    |
+| `GET`       | `api/v1/notes/:noteId/contributors` | Get paginated list of contributors for a note. Requires view permission.             |
 
-- /permissions/notes/:noteId
-- /permissions/notes/:noteId/users/:userId
-  </small>
-  </i>
+### 🕒 Version API (`version.routes.js`)
 
-The following routes are used for managing notes:
+| HTTP Method | Endpoint                             | Description                                                              |
+|-------------|--------------------------------------|--------------------------------------------------------------------------|
+| `GET`       | `api/v1/versions/:versionId`         | Get metadata for a specific version of a note. Requires view permission. |
+| `GET`       | `api/v1/versions/:versionId/content` | Get the content of a specific version. Requires view permission.         |
+| `POST`      | `api/v1/versions/:versionId/restore` | Restore the note to the specified version. Requires note ownership.      |
 
-| HTTP Method | Endpoint                                   | Description                                                                     |
-|-------------|--------------------------------------------|---------------------------------------------------------------------------------|
-| `POST`      | `api/v1/notes`                             | Create a new note for the specified user.                                       |
-| `GET`       | `api/v1/notes`                             | Retrieve paginated notes for the specified user with optional query parameters. |
-| `GET`       | `api/v1/notes/:noteId`                     | Retrieve a specific note by its ID for the specified user.                      |
-| `PATCH`     | `api/v1/notes/:noteId`                     | Update a specific note by its ID for the specified user.                        |
-| `DELETE`    | `api/v1/notes/:noteId`                     | Delete a specific note by its ID for the specified user.                        |
-| `POST`      | `api/v1/notes/:noteId/permissions`         | Grant permissions for a note. Requires ownership.                               |
-| `DELETE`    | `api/v1/notes/:noteId/permissions/:userId` | Revoke permission for a user. Requires ownership.                               |
-| `PATCH`     | `api/v1/notes/:noteId/permissions/:userId` | Update permission level for a user. Requires ownership.                         |
-| `GET`       | `api/v1/notes/:noteId/permissions/:userId` | Get specific user's permission for a note.                                      |
-| `GET`       | `api/v1/notes/:noteId/permissions`         | Get all permissions for a note with pagination.                                 |
+#### 🔐 Auth API (`auth.routes.js`)
 
-#### User and Authentication API
+| HTTP Method | Endpoint                      | Description                                                                                                                                                                      |
+|-------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/auth/register`        | Register a new user and send an OTP code to the provided email for verification                                                                                                  |
+| `POST`      | `api/v1/auth/login`           | Log in an existing user                                                                                                                                                          |
+| `POST`      | `api/v1/auth/logout`          | Log out the currently logged-in user                                                                                                                                             |
+| `POST`      | `api/v1/auth/refresh`         | Refresh the access token using the stored JWT in the cookie in browser                                                                                                           |
+| `POST`      | `api/v1/auth/verify_email`    | Verify the user's email address using the provided OTP code                                                                                                                      |
+| `POST`      | `api/v1/auth/google`          | Initiates the Google OAuth 2.0 authentication process (redirects to Google's consent screen)                                                                                     |
+| `POST`      | `api/v1/auth/google/callback` | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                               |
+| `GET`       | `api/v1/csrf-tokens`          | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks. |
 
-The following routes are used for user management and authentication:
+#### 👤 User API (`user.routes.js`)
 
 | HTTP Method | Endpoint                                   | Description                                                                                                                                                                                                                                                                 |
 |-------------|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `POST`      | `api/v1/auth/register`                     | Register a new user and send an OTP code to the provided email for verification                                                                                                                                                                                             |
-| `POST`      | `api/v1/auth/login`                        | Log in an existing user                                                                                                                                                                                                                                                     |
-| `POST`      | `api/v1/auth/logout`                       | Log out the currently logged-in user                                                                                                                                                                                                                                        |
-| `POST`      | `api/v1/auth/refresh`                      | Refresh the access token using the stored JWT in the cookie in browser                                                                                                                                                                                                      |
-| `POST`      | `api/v1/auth/verify_email`                 | Verify the user's email address using the provided OTP code                                                                                                                                                                                                                 |
-| `POST`      | `api/v1/auth/google`                       | Initiates the Google OAuth 2.0 authentication process (redirects to Google's consent screen)                                                                                                                                                                                |
-| `POST`      | `api/v1/auth/google/callback`              | Handles the OAuth 2.0 callback from Google, exchanges authorization code for user data, and authenticates the user                                                                                                                                                          |
-| `GET`       | `api/v1/csrf-tokens`                       | This endpoint generates a new CSRF token and returns it in the response.<br/>The token is used to protect subsequent requests against cross-site request forgery (CSRF) attacks.                                                                                            |
 | `GET`       | `api/v1/users`                             | Retrieve a user's profile. You can query by either:<br>- `id`: The user's unique identifier<br>- `email`: The user's email address<br>- `"me"` as a query parameter: Resolves to the authenticated user's profile<br><br>*Response is cached for performance optimization.* |
 | `PATCH`     | `api/v1/users/:userId/avatar`              | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
-| `GET`       | `api/v1/users/:userId/granted-permissions` | Get permissions granted by user with pagination.                                                                                                                                                                                                                            |
+| `GET`       | `api/v1/users/:userId/granted-permissions` | Get permissions granted by authenticated user with pagination                                                                                                                                                                                                               |
+| `GET`       | `api/v1/users/:userId/commits`             | Get user’s note commit history. Requires note view permission.                                                                                                                                                                                                              |
+| `GET`       | `api/v1/users/:userId/permissions`         | Get a authenticated user's permission on a note.                                                                                                                                                                                                                            |
+| `PATCH`     | `api/v1/users/:userId/permissions`         | Update a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
+| `DELETE`    | `api/v1/users/:userId/permissions`         | Revoke a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
 
 ---
 
-## Folder and File Structure
+## 📂 Folder and File Structure
 
 ### Project Structure
 
@@ -306,11 +305,12 @@ notes_app/
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── schemas/                   # Validation schemas for request payloads using Joi
 │   ├── services/                  # Service layer for business logic and external integrations
+│   │   ├── helpers/               # Service-specific utilities.
 │   │   ├── storage/               # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
 │   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
 │   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
 │   ├── unitOfWork/                # Unit of Work pattern implementation for transactional operations
-│   ├── useCases/                  # Business use cases and application logic      
+│   ├── useCases/                  # Business use cases and application logic    
 │   ├── utils/                     # Utility functions for various tasks
 │   ├── .nvmrc                     # Node.js version specification .nvmrc  
 │   ├── serverInitializer.js       # Responsible for initializing the server by setting up middleware, routing, and other core configurations for the application.
@@ -325,14 +325,24 @@ notes_app/
 │   │   │   ├── animations/        # Components for handling animations
 │   │   │   ├── buttons/           # Button components (e.g., delete, pin)
 │   │   │   ├── checkBox/          # Custom checkbox components
-│   │   │   ├── collaboratorsInput/# Input component for managing note collaborators insertion       
+│   │   │   ├── collaboratorsInput/ # Input component for managing note collaborators insertion       
+│   │   │   ├── collapsibleSections/  # Expandable/collapsible content sections      
+│   │   │   ├── commitMessagePopup/   # Modal for entering commit messages   
 │   │   │   ├── common/            # Common reusable components (e.g., loader, pagination)
 │   │   │   ├── confirmationPopup/ # Component for handling confirmation popups (e.g., for delete actions)
+│   │   │   ├── contributorsList/  # Display component for showing note contributors
+│   │   │   ├── counter/           # counter components
+│   │   │   ├── diffViewer/        # Side-by-side diff visualization (code/text comparisons)
+│   │   │   ├── dragabbleContainer/  # Draggable container
 │   │   │   ├── dynamicTabs/       # Component for rendering dynamic tabs (e.g., for navigation or content categorization)
 │   │   │   ├── editPopUp/         # Component for rendering dynamic editor popUp (e.g., for tags and title)
 │   │   │   ├── errors/            # Contains components for handling and displaying errors.
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
+│   │   │   ├── infiniteScrollListPopUp/  # Modal with infinite-scrolling list       
+│   │   │   ├── infiniteScrollListsPopUp/ # Modals with infinite-scrolling list                  
+│   │   │   ├── infiniteScrollLoader/     # Loading indicators for infinite scroll       
 │   │   │   ├── menus/             # Menu components (e.g. UserMenu, NoteMenu, etc.)
+│   │   │   ├── modal/             # Modal dialog system (portals, focus management)
 │   │   │   ├── navbar/            # Navigation bar components
 │   │   │   ├── note/              # Components related to note display and creation
 │   │   │   ├── noteCards/         # Components for displaying notes
@@ -341,15 +351,20 @@ notes_app/
 │   │   │   ├── notifications/     # Components for displaying notifications
 │   │   │   ├── otp/               # This folder contains React components related to OTP (One-Time Password) verification.
 │   │   │   ├── pagination/        # Index component module.
-│   │   │   ├── profileImageUploader/           # This folder contains React components for profile image uploading and editing.
-│   │   │   ├── progressiveImage/               # This folder contains React components for progressive image loading (from placeholder to high-res images).
+│   │   │   ├── popUpTap/           # Popup component with tap-to-close behavior
+│   │   │   ├── previewPopUpTap/   # Content preview popup with tap interactions     
+│   │   │   ├── profileImageUploader/   # This folder contains React components for profile image uploading and editing.
+│   │   │   ├── progressiveImage/       # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── selection/         # Custom selection/dropdown components
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── texterea/          # Custom textarea components with enhanced features   
 │   │   │   ├── title/             # Components for managing title on notes
 │   │   │   ├── toggle/            # Custom Toggle switch components
+│   │   │   ├── toggleGroup/       # Radio button group and toggle group components
 │   │   │   ├── tooltip/           # Directory containing Tooltip component for displaying hoverable tooltips.
+│   │   │   ├── userDetails/       # User profile display components    
+│   │   │   ├── version/           # Version comparison and display components
 │   │   ├── config/                # The 'config' directory contains configuration files that manage various frontend settings, such as environment variables
 │   │   ├── constants/             # Contains constants used throughout the application, such as HTTP codes and status messages.
 │   │   ├── contexts/              # React contexts for managing global state
@@ -365,6 +380,8 @@ notes_app/
 │   │   ├── index.js               # React app entry point (rendering the app)
 │   │   ├── reportWebVitals.js     # For measuring performance in the app
 │   ├── .nvmrc                     # Node.js version specification .nvmrc
+│   ├── craco.config.json          # CRACO configuration for extending CRA webpack    
+│   ├── jsconfig.json              # JavaScript path aliases and compiler options
 │   ├── package.json               # Node.js package manager file for frontend dependencies
 ├── shared-utils/                  # Contains shared utility functions and modules used across both frontend and backend applications. This folder includes reusable logic, helper functions, and other tools designed to be used consistently throughout the project for code modularity and maintainability.
 ├── .gitignore                     # Git ignore file (e.g., node_modules, .env, build files)
@@ -414,20 +431,15 @@ notes_app/
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
 
-### 8. **Version History / Note History**
-
-- Implement a **note history/version control** feature to track changes over time. Users can view past versions of a
-  note and restore them if needed. This feature can be especially useful for collaborative environments.
-
-### 9. **Data Encryption (Security)**
+### 8. **Data Encryption (Security)**
 
 - Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
   This will help improve the app's security and protect user privacy.
 
-### 10. **Notification System**
+### 9. **Notification System**
 
 - Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
-  their notes or account.
+  their notes or account, using Socket.IO for real-time notifications.
 
 ---
 

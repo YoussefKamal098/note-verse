@@ -16,9 +16,7 @@ const CommitHeader = styled.div`
     display: flex;
     align-items: center;
     gap: 5px;
-    //border-bottom: 1px solid var(--color-border);
     padding: 10px 10px 0;
-    //margin-bottom: 5px;
 `
 
 const CommitIconStyles = styled(IoGitCommit)`
