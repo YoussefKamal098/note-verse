@@ -1,7 +1,6 @@
 const AppError = require('../errors/app.error');
 const httpCodes = require('../constants/httpCodes');
 const statusMessages = require("../constants/statusMessages");
-const config = require("../config/config");
 const resources = require("../enums/resources.enum");
 
 /**
@@ -102,7 +101,7 @@ class UserController {
         }
 
         req.updatedUser = updatedUser;
-        res.status(httpCodes.CREATED.code).json({avatarUrl: config.storage.constructFileUrl(updatedUser.avatar)});
+        res.status(httpCodes.CREATED.code).json({avatarUrl: updatedUser.avatarUrl});
     }
 
     /**
