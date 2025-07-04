@@ -2,6 +2,9 @@ import React from 'react';
 import styled from 'styled-components';
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-preview/markdown.css';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import './customMarkdownStyles.css';
 import extractTextFromChildren from "@/utils/extractTextFromChildren";
 import Mermaid from '@/components/mermaid';
@@ -23,6 +26,8 @@ const PreviewTab = ({content, ...props}) => {
         <div {...props} data-color-mode={theme}>
             <PreviewStyles
                 source={content}
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
                 components={{
                     code({node, inline, className = '', children, ...props}) {
                         const match = /language-(\w+)/.exec(className || '');

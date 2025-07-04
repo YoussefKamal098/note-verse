@@ -28,7 +28,7 @@ note search, filtering, and CRUD operations.
 ### 📝 Core Functionality
 
 - **📄 Full CRUD Operations**: Create, Read, Update, and Delete notes
-- **✏️ Rich Markdown Editor**:  Support for code blocks, tables, and Mermaid diagrams
+- **✏️ Rich Markdown Editor**: Support for **code blocks**, **tables**, **LaTeX**, and **Mermaid** diagrams
 - **🔍 Advanced Search**: Full-text search with tag and date filters
 - **🏷️ Tag Management**: tags with filtering
 - **📌 Note Pinning**: Pin important notes to top
