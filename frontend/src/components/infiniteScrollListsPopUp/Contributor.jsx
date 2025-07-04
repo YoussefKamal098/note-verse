@@ -3,9 +3,12 @@ import {FaUsers} from "react-icons/fa";
 import InfiniteScrollList from '@/components/infiniteScrollListPopUp';
 import UserDetailsWithContributions from "@/components/userDetails/UserDetailsWithContributions";
 import {ListItem} from "./styles";
+import {useAuth} from "@/contexts/AuthContext";
 import noteService from "@/api/noteService";
 
 const ContributorInfiniteScrollList = ({noteId, isOpen = false, onItemClick, onClose}) => {
+    const {user} = useAuth();
+
     const fetchContributors = useCallback(async (page, pageSize) => {
         const result = await noteService.getContributors(noteId, {page, limit: pageSize});
         return result.data.contributors;
@@ -19,6 +22,7 @@ const ContributorInfiniteScrollList = ({noteId, isOpen = false, onItemClick, onC
                 avatarUrl={contributor.user.avatarUrl}
                 lastContributed={contributor.lastCommitAt}
                 contributions={contributor.commitCount}
+                showYouBadge={user.id === contributor.user.id}
             />
         </ListItem>
     ), []);

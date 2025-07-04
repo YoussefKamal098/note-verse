@@ -4,13 +4,15 @@ import {formatDateTime} from "@/utils/date";
 import Avatar from "../../common/Avatar";
 import * as S from "../styles";
 import * as UserContributionS from "./styles";
+import Badge from "@/components/common/Badge";
 
 const UserDetailsWithContributions = ({
                                           firstname,
                                           lastname,
                                           avatarUrl,
+                                          showYouBadge = false,
                                           lastContributed,
-                                          contributions,
+                                          contributions
                                       }) => {
     return (
         <UserContributionS.ContributionUserCard>
@@ -23,6 +25,7 @@ const UserDetailsWithContributions = ({
                     {contributions !== undefined && (
                         <UserContributionS.ContributionBadge>{contributions}</UserContributionS.ContributionBadge>
                     )}
+                    {showYouBadge && <Badge label={"you"}/>}
                 </S.UserName>
                 <S.MetaInfo>
                     <UserContributionS.ContributionInfo>

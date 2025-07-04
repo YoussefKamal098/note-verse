@@ -4,9 +4,12 @@ import UserDetailsWithVersionMeta from "@/components/userDetails/UserDetailsWith
 import Tooltip from "@/components/tooltip/Tooltip";
 import InfiniteScrollList from '@/components/infiniteScrollListPopUp';
 import {ListItem} from "./styles";
+import {useAuth} from "@/contexts/AuthContext";
 import noteService from "@/api/noteService";
 
 const CommitHistory = ({noteId, isOpen = false, onItemClick, onClose}) => {
+    const {user} = useAuth();
+
     const fetchCommits = useCallback(async (page, pageSize) => {
         const result = await noteService.getCommitHistory(noteId, {page, limit: pageSize});
         return result.data;
@@ -21,6 +24,7 @@ const CommitHistory = ({noteId, isOpen = false, onItemClick, onClose}) => {
                     avatarUrl={commit.user.avatarUrl}
                     createdAt={commit.createdAt}
                     commitMessage={commit.message}
+                    showYouBadge={user.id === commit.user.id}
                 />
             </Tooltip>
         </ListItem>

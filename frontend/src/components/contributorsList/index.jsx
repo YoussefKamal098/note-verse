@@ -7,6 +7,8 @@ import noteService from "@/api/noteService";
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
+import Badge from "@/components/common/Badge";
+import {useAuth} from "@/contexts/AuthContext";
 
 const ContributorsContainer = styled.div`
     display: flex;
@@ -110,14 +112,21 @@ const NoContributorsMessage = styled.div`
     color: var(--color-placeholder);
     opacity: 0.5;
     font-weight: 600;
-    font-size: 0.75em;
+    font-size: 0.9em;
 `;
+
+const TooltipTitle = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 5px;
+`
 
 const ContributorsList = ({
                               noteId,
                               maxVisible = 5,
                               onAvatarClick
                           }) => {
+    const {user} = useAuth();
     const notify = useToastNotification();
     const [isLoading, setIsLoading] = useState(true);
     const [contributorsData, setContributorsData] = useState({
@@ -173,7 +182,13 @@ const ContributorsList = ({
                                         $order={visibleContributors.length - index}
                                         onClick={() => onAvatarClick?.(contributor.user.id)}
                                     >
-                                        <Tooltip title={`${contributor.user.firstname} ${contributor.user.lastname}`}>
+                                        <Tooltip title={
+                                            <TooltipTitle>
+                                                {contributor.user.firstname} {contributor.user.lastname}
+                                                {user.id === contributor.user.id &&
+                                                    <Badge style={{fontSize: "0.75em"}} label={"you"}/>}
+                                            </TooltipTitle>
+                                        }>
                                             <Avatar avatarUrl={contributor.user.avatarUrl}/>
                                         </Tooltip>
                                     </AvatarWrapper>

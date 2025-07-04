@@ -30,6 +30,9 @@ export const UserDetails = styled.div`
 `;
 
 export const UserName = styled.span`
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-size: 0.9375em;
     color: var(--color-text);
 `;

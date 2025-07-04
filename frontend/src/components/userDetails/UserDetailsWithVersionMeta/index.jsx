@@ -2,6 +2,7 @@ import React from "react";
 import "react-loading-skeleton/dist/skeleton.css";
 import {formatDateTime} from "@/utils/date";
 import Avatar from "../../common/Avatar";
+import Badge from '@/components/common/Badge';
 import * as S from "../styles";
 import * as UserVersionS from "./styles";
 
@@ -10,6 +11,7 @@ const UserDetailsWithVersionMeta = ({
                                         lastname,
                                         avatarUrl,
                                         createdAt,
+                                        showYouBadge = false,
                                         commitMessage,
                                     }) => {
     return (
@@ -20,11 +22,12 @@ const UserDetailsWithVersionMeta = ({
             <UserVersionS.VersionUserDetails>
                 <S.UserName>
                     {firstname && lastname &&
-                        <>
+                        <div>
                             Made by <S.NameHighlight>{firstname}</S.NameHighlight> {' '}
                             <S.NameHighlight>{lastname}</S.NameHighlight>
-                        </>
+                        </div>
                     }
+                    {showYouBadge && <Badge label={"you"}/>}
                 </S.UserName>
                 <S.MetaInfo>
                     {createdAt && formatDateTime(createdAt)}

@@ -23,13 +23,48 @@ note search, filtering, and CRUD operations.
 
 ---
 
-## Features
+## ✨ Features
 
-- **Note CRUD**: Create, Read, Update, and Delete notes.
-- **Search**: Full-text search for notes.
-- **Tagging**: Add tags to notes for better organization.
-- **Pinning**: Pin important notes for quick access.
-- **Index**: Helps users navigate through a large list of notes by breaking the list into multiple pages.
+### 📝 Core Functionality
+
+- **📄 Full CRUD Operations**: Create, Read, Update, and Delete notes
+- **✏️ Rich Markdown Editor**:  Support for code blocks, tables, and Mermaid diagrams
+- **🔍 Advanced Search**: Full-text search with tag and date filters
+- **🏷️ Tag Management**: tags with filtering
+- **📌 Note Pinning**: Pin important notes to top
+
+### 🔄 Version Control
+
+- **🕒 Version History**: Track all changes to notes
+- **🔄 Version Restoration**: Revert to previous versions
+- **📝 Commit Messages**: Document changes with commit notes
+- **🔍 Diff Viewer**: Side-by-side comparison of versions
+
+### 👥 Collaboration
+
+- **👤 User Permissions**: View/Edit/Admin access levels
+- **👀 Contributor Tracking**: See who made changes
+- **📨 Sharing System**: Invite others via email
+
+### 🔐 Authentication
+
+- **🔑 JWT Auth**: Secure token-based authentication
+- **📧 Email Verification**: OTP verification system
+- **🌐 Google OAuth**: Social login integration
+- **🔄 Token Refresh**: Automatic session renewal
+
+### 🎨 UI/UX
+
+- **✨ Animated Transitions**: Smooth UI interactions
+- **📱 Responsive Design**: Mobile-friendly layout
+- **🌙 Dark Mode**: Eye-friendly theme option
+
+### 🛠️ Technical Features
+
+- **📊 Pagination**: Handle large note collections
+- **⚡ Redis Caching**: Improved performance
+- **📁 File Attachments**: Store images and documents
+- **🛡️ CSRF Protection**: Secure form submissions
 
 ---
 

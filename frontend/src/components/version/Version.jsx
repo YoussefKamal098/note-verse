@@ -2,6 +2,7 @@ import React, {useCallback, useState} from 'react';
 import styled from 'styled-components';
 import {useTheme} from '@/contexts/ThemeContext';
 import useCopyLink from "@/hooks/useCopyLink";
+import {AnimatedTabSwitch} from "@/components/animations/ContainerAnimation"
 import DiffViewer from "@/components/diffViewer";
 import PreviewPopupTap from "@/components/previewPopupTap";
 import Header from "./Header";
@@ -50,7 +51,9 @@ const Version = () => {
             />
             <Header user={version.user} version={version} actions={headerActions}/>
             <CommitMessage message={version.commitMessage}/>
-            <DiffViewer diffs={{diff: version.patch}} showHeader={false} theme={theme}/>
+            <AnimatedTabSwitch>
+                <DiffViewer diffs={{diff: version.patch}} showHeader={false} theme={theme}/>
+            </AnimatedTabSwitch>
         </PageContainer>
     );
 };

@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-preview/markdown.css';
 import './customMarkdownStyles.css';
+import extractTextFromChildren from "@/utils/extractTextFromChildren";
+import Mermaid from '@/components/mermaid';
 import {useTheme} from "@/contexts/ThemeContext";
 
 const PreviewStyles = styled(MarkdownPreview)`
@@ -19,7 +21,25 @@ const PreviewTab = ({content, ...props}) => {
 
     return (
         <div {...props} data-color-mode={theme}>
-            <PreviewStyles source={content}/>
+            <PreviewStyles
+                source={content}
+                components={{
+                    code({node, inline, className = '', children, ...props}) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        const code = extractTextFromChildren(children).trim();
+
+                        if (match?.[1] === 'mermaid') {
+                            return <Mermaid theme={theme} chart={code}/>;
+                        }
+
+                        return (
+                            <code className={className} {...props}>
+                                {children}
+                            </code>
+                        );
+                    },
+                }}
+            />
         </div>
     )
 };

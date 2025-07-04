@@ -8,6 +8,8 @@ import UserDetailsWithVersionMeta from "@/components/userDetails/UserDetailsWith
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import {ListItem} from "./styles";
 import userService from "@/api/userService";
+import Badge from "@/components/common/Badge";
+import {useAuth} from "@/contexts/AuthContext";
 
 const AvatarWrapper = styled.div`
     position: relative;
@@ -29,13 +31,21 @@ const AvatarWrapper = styled.div`
     overflow: hidden;
 `;
 
+const UserWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 5px;
+`
+
 const TitleWrapper = styled.div`
     display: flex;
     align-items: center;
+    min-width: max-content;
     gap: 10px;
 `
 
 const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, onClose}) => {
+    const {user: authUser} = useAuth();
     const notify = useToastNotification();
     const infiniteScrollRef = useRef(null);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -80,11 +90,14 @@ const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, o
         user ?
             <TitleWrapper>
                 Contributions of User
-                <Tooltip title={isUserLoading ? "loading..." : `${user.firstname} ${user.lastname}`}>
-                    <AvatarWrapper>
-                        <Avatar avatarUrl={user.avatarUrl} isLoading={isUserLoading}/>
-                    </AvatarWrapper>
-                </Tooltip>
+                <UserWrapper>
+                    <Tooltip title={isUserLoading ? "loading..." : `${user.firstname} ${user.lastname}`}>
+                        <AvatarWrapper>
+                            <Avatar avatarUrl={user.avatarUrl} isLoading={isUserLoading}/>
+                        </AvatarWrapper>
+                    </Tooltip>
+                    {authUser.id === userId && <Badge label={"you"}/>}
+                </UserWrapper>
             </TitleWrapper> : ""
     ), [user, isUserLoading]);
 

@@ -65,3 +65,7 @@
     background-color: var(--color-border);
     border-radius: 25px;
 }
+
+.wmde-markdown .language-mermaid {
+    padding: 5px 10px;
+}
