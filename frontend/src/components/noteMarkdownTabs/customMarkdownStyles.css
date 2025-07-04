@@ -66,6 +66,6 @@
     border-radius: 25px;
 }
 
-.wmde-markdown .language-mermaid {
-    padding: 5px 10px;
+.wmde-markdown pre, code {
+    min-height: 100px;
 }

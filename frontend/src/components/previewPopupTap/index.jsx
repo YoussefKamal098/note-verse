@@ -1,11 +1,13 @@
-import React, {useMemo} from 'react';
+import React, {Suspense, useMemo} from 'react';
 import {HiOutlineWrenchScrewdriver} from "react-icons/hi2";
 import {FcReadingEbook} from "react-icons/fc";
 import {AnimatedTabSwitch} from "@/components/animations/ContainerAnimation";
 import PopUpTap from '@/components/popUpTap';
-import PreviewTab from "../noteMarkdownTabs/PreviewTab";
-import EditorTab from "../noteMarkdownTabs/EditorTab";
+import Loader from "@/components/common/Loader";
 import styled from "styled-components";
+
+const PreviewTab = React.lazy(() => import("../noteMarkdownTabs/PreviewTab"));
+const EditorTab = React.lazy(() => import("../noteMarkdownTabs/EditorTab"));
 
 const BookIcon = styled(FcReadingEbook)`
     font-size: 0.9em;
@@ -41,19 +43,23 @@ const PreviewPopupTap = ({
             headerButtons={headerButtons}
         >
             <AnimatedTabSwitch isActive={contentTabActive}>
-                {contentTabActive ?
-                    <EditorTab
-                        key={"editor-popUp-tap"}
-                        content={content}
-                        showToolbar={false}
-                        disable={true}
-                    /> :
-                    <PreviewTab
-                        content={content}
-                        key={"preview--opUp-tap"}
-                    />
-                }
+                <div key={contentTabActive ? 'editor-tab' : 'preview-tab'}>
+                    <Suspense fallback={<Loader isAbsolute={true}/>}>
+                        {contentTabActive ? (
+                            <EditorTab
+                                content={content}
+                                showToolbar={false}
+                                disable={true}
+                            />
+                        ) : (
+                            <PreviewTab
+                                content={content}
+                            />
+                        )}
+                    </Suspense>
+                </div>
             </AnimatedTabSwitch>
+
         </PopUpTap>
     );
 };

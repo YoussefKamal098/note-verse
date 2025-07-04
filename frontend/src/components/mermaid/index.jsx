@@ -2,11 +2,13 @@ import React, {useEffect, useState} from 'react';
 import styled from "styled-components";
 import {MermaidDiagram} from '@lightenna/react-mermaid-diagram';
 
-const Error = styled.pre`
+const Error = styled.div`
+    padding: 10px;
     color: var(--color-danger);
     font-family: "Quicksand", "Poppins", sans-serif !important;
     font-weight: 600;
-    white-space: pre-wrap;
+    white-space: wrap;
+    word-break: break-word;
 `
 
 const Container = styled.div`

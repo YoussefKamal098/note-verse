@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react';
+import React, {Suspense} from 'react';
 import styled from 'styled-components';
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-preview/markdown.css';
@@ -7,37 +7,12 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import 'katex/contrib/mhchem';
 import './customMarkdownStyles.css';
-import extractTextFromChildren from "@/utils/extractTextFromChildren";
-import Mermaid from '@/components/mermaid';
 import {useTheme} from "@/contexts/ThemeContext";
+import extractTextFromChildren from "@/utils/extractTextFromChildren";
+import Loader from "@/components/common/Loader";
 
-import functionPlot from 'function-plot';
-
-const FunctionGraph = ({equation}) => {
-    const ref = useRef(null);
-
-    useEffect(() => {
-        if (!ref.current) return;
-
-        try {
-            functionPlot({
-                target: ref.current,
-                width: 500,
-                height: 300,
-                grid: true,
-                data: [{
-                    fn: equation,
-                    graphType: 'polyline',
-                }],
-                disableZoom: false,
-            });
-        } catch (err) {
-            ref.current.innerHTML = "Invalid equation";
-        }
-    }, [equation]);
-
-    return <div ref={ref}/>;
-};
+const Mermaid = React.lazy(() => import('@/components/mermaid'));
+const Graph = React.lazy(() => import('@/components/graph'));
 
 const PreviewStyles = styled(MarkdownPreview)`
     padding: 1em 2em 3em;
@@ -63,11 +38,18 @@ const PreviewTab = ({content, ...props}) => {
                         const code = extractTextFromChildren(children).trim();
 
                         if (match?.[1] === 'mermaid') {
-                            return <Mermaid theme={theme} chart={code}/>;
+                            return (
+                                <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
+                                    <Mermaid theme={theme} chart={code}/>
+                                </Suspense>
+                            );
                         }
-
                         if (match?.[1] === 'graph') {
-                            return <FunctionGraph equation={code}/>;
+                            return (
+                                <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
+                                    <Graph expressions={code}/>
+                                </Suspense>
+                            );
                         }
 
                         return (

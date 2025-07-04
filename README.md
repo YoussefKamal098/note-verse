@@ -374,10 +374,12 @@ notes_app/
 │   │   │   ├── editPopUp/         # Component for rendering dynamic editor popUp (e.g., for tags and title)
 │   │   │   ├── errors/            # Contains components for handling and displaying errors.
 │   │   │   ├── forms/             # Form components (login, registration, input fields)
+│   │   │   ├── graph/             # Graph rendering components (e.g. function plots)
 │   │   │   ├── infiniteScrollListPopUp/  # Modal with infinite-scrolling list       
 │   │   │   ├── infiniteScrollListsPopUp/ # Modals with infinite-scrolling list                  
 │   │   │   ├── infiniteScrollLoader/     # Loading indicators for infinite scroll       
 │   │   │   ├── menus/             # Menu components (e.g. UserMenu, NoteMenu, etc.)
+│   │   │   ├── mermaid/           # Mermaid diagram renderer and utilities  
 │   │   │   ├── modal/             # Modal dialog system (portals, focus management)
 │   │   │   ├── navbar/            # Navigation bar components
 │   │   │   ├── note/              # Components related to note display and creation
