@@ -162,7 +162,7 @@
 }
 
 @media (max-width: 550px) {
-    * {
+    .App {
         font-size: 12px;
     }
 

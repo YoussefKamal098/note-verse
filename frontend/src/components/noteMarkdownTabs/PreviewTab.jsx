@@ -1,5 +1,6 @@
 import React, {Suspense} from 'react';
 import styled from 'styled-components';
+import {motion} from 'framer-motion';
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-preview/markdown.css';
 import remarkMath from 'remark-math';
@@ -49,18 +50,41 @@ const createCodeRenderer = (theme) => ({node, inline, className = '', children, 
     return <code className={className} {...props}>{children}</code>;
 };
 
+const imageRenderer = ({src, alt}) => (
+    <motion.img
+        src={src}
+        alt={alt}
+        initial={{opacity: 0}}
+        animate={{opacity: 1}}
+        transition={{duration: 0.3}}
+        style={{
+            borderRadius: '10px',
+            maxWidth: '100%',
+            height: 'auto',
+            display: 'block',
+            margin: '0.5rem 0'
+        }}
+    />
+);
 
 const PreviewTab = ({content, ...props}) => {
     const {theme} = useTheme();
     const codeRenderer = createCodeRenderer(theme);
 
+    const {style = {}, ...restProps} = props;
+    const {padding, ...restStyle} = style;
+
     return (
-        <div {...props} data-color-mode={theme}>
+        <div {...restProps} style={restStyle} data-color-mode={theme}>
             <PreviewStyles
+                style={{...(padding ? {padding: padding} : {})}}
                 source={content}
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[[rehypeKatex, {throwOnError: false}]]}
-                components={{code: codeRenderer}}
+                components={{
+                    code: codeRenderer,
+                    img: imageRenderer
+                }}
             />
         </div>
     )
