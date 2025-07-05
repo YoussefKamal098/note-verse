@@ -30,7 +30,7 @@ note search, filtering, and CRUD operations.
 - **📄 Full CRUD Operations**: Create, Read, Update, and Delete notes
 - **✏️ Rich Markdown Editor**: Support for **code blocks**, **tables**, **LaTeX**, **chemical equations**, **graphs**,
   and **Mermaid** diagrams
-- **🔍 Advanced Search**: Full-text search with tag and date filters
+- **🔍 Advanced Search**: Full-text search with tag
 - **🏷️ Tag Management**: tags with filtering
 - **📌 Note Pinning**: Pin important notes to top
 
@@ -43,7 +43,7 @@ note search, filtering, and CRUD operations.
 
 ### 👥 Collaboration
 
-- **👤 User Permissions**: View/Edit/Admin access levels
+- **👤 User Permissions**: View/Edit access levels
 - **👀 Contributor Tracking**: See who made changes
 - **📨 Sharing System**: Invite others via email
 

@@ -21,6 +21,7 @@
     "katex": "^0.16.22",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
+    "mathjs": "^14.5.3",
     "mermaid": "^11.8.0",
     "object-sizeof": "^2.6.5",
     "prismjs": "^1.30.0",

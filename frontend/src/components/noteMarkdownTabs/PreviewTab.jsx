@@ -23,8 +23,36 @@ const PreviewStyles = styled(MarkdownPreview)`
     background-color: transparent !important;
 `;
 
+// Custom Code Block Renderer
+const createCodeRenderer = (theme) => ({node, inline, className = '', children, ...props}) => {
+    const match = /language-(\w+)/.exec(className || '');
+    const code = extractTextFromChildren(children).trim();
+
+    if (!match) {
+        return <code className={className} {...props}>{children}</code>;
+    }
+
+    const language = match[1];
+    const components = {
+        mermaid: <Mermaid theme={theme} chart={code}/>,
+        graph: <Graph expressions={code}/>
+    };
+
+    if (components[language]) {
+        return (
+            <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
+                {components[language]}
+            </Suspense>
+        );
+    }
+
+    return <code className={className} {...props}>{children}</code>;
+};
+
+
 const PreviewTab = ({content, ...props}) => {
     const {theme} = useTheme();
+    const codeRenderer = createCodeRenderer(theme);
 
     return (
         <div {...props} data-color-mode={theme}>
@@ -32,33 +60,7 @@ const PreviewTab = ({content, ...props}) => {
                 source={content}
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[[rehypeKatex, {throwOnError: false}]]}
-                components={{
-                    code({node, inline, className = '', children, ...props}) {
-                        const match = /language-(\w+)/.exec(className || '');
-                        const code = extractTextFromChildren(children).trim();
-
-                        if (match?.[1] === 'mermaid') {
-                            return (
-                                <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
-                                    <Mermaid theme={theme} chart={code}/>
-                                </Suspense>
-                            );
-                        }
-                        if (match?.[1] === 'graph') {
-                            return (
-                                <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
-                                    <Graph expressions={code}/>
-                                </Suspense>
-                            );
-                        }
-
-                        return (
-                            <code className={className} {...props}>
-                                {children}
-                            </code>
-                        );
-                    },
-                }}
+                components={{code: codeRenderer}}
             />
         </div>
     )
