@@ -84,13 +84,7 @@ git clone https://github.com/YoussefKamal098/note_app.git
    cd note-app
 ```
 
-2. Install dependencies:
-
-```shell script
-npm install
-```
-
-3. Set up the environment variables:
+2. Set up the environment variables:
     - Create a new `.env` file in the root directory.
     - Add the following variables:
 
