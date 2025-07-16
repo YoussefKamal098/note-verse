@@ -222,8 +222,8 @@ NOTES_PER_PAGE=10
       npm install -g serve
       serve -s build
       ```
-    - **Option B:** Integrate the frontend with your Express backend by adding middleware to serve static files. For
-      example, add the following to your Express app:
+    - **Option B:** Integrate the frontend with Express backend by adding middleware to serve static files. For
+      example, add the following to Express app:
       ```js
       const path = require('path');
       // Serve static files from the React app
