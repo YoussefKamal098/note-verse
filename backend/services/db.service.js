@@ -7,7 +7,7 @@ const connectDB = async () => {
         await mongoose.connect(config.mongoUri, {
             maxPoolSize: config.dbPoolSize.max,
             minPoolSize: config.dbPoolSize.min,
-            serverSelectionTimeoutMS: 5000, // 5 seconds in milliseconds
+            serverSelectionTimeoutMS: 30000, // 30 seconds in milliseconds
             socketTimeoutMS: 45000, // 45 seconds in milliseconds
             autoIndex: false,
             directConnection: false

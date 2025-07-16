@@ -12,21 +12,22 @@ const CloseButtonStyles = styled(CgClose)`
     background: transparent;
     border: none;
     font-size: 2rem;
-    color: var(--color-danger);
+    color: ${({$color}) => $color};
     padding: 0.25rem;
     transition: 0.3s ease;
     cursor: pointer;
 
     &:hover {
         color: var(--color-background);
-        background-color: var(--color-danger);
+        background-color: ${({$color}) => $color};
     }
 `;
 
-const CloseButton = ({onClick, size = '2rem', ariaLabel = 'Close'}) => {
+const CloseButton = ({onClick, size = '2rem', color = "var(--color-danger)", ariaLabel = 'Close'}) => {
     return (
         <Tooltip title={ariaLabel}>
             <CloseButtonStyles
+                $color={color}
                 onClick={onClick}
                 style={{fontSize: size}}
                 aria-label={ariaLabel}

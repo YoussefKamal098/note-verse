@@ -89,9 +89,5 @@ const sessionSchema = new Schema(
 sessionSchema.index({userId: 1, ip: 1, browserName: 1, osName: 1, deviceType: 1}, {unique: true});
 
 const Session = mongoose.model('Session', sessionSchema);
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    Session.createIndexes().catch((err) => console.error('Error creating Session indexes:', err));
-});
 
 module.exports = Session;

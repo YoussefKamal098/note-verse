@@ -15,6 +15,7 @@ const AvatarContainer = styled.div`
     align-items: center;
     justify-content: center;
     background-color: var(--color-background);
+    font-weight: 600;
 
     span {
         display: flex;
@@ -48,6 +49,12 @@ const StyledIcon = styled(LuUser)`
 `;
 
 const Avatar = ({avatarUrl, isLoading = false}) => {
+    const [imageError, setImageError] = React.useState(false);
+
+    const handleImageError = () => {
+        setImageError(true);
+    };
+
     if (isLoading) {
         return (
             <AvatarContainer>
@@ -58,7 +65,15 @@ const Avatar = ({avatarUrl, isLoading = false}) => {
 
     return (
         <AvatarContainer>
-            {avatarUrl ? <StyledAvatar src={avatarUrl} alt="User Avatar"/> : <StyledIcon/>}
+            {avatarUrl && !imageError ? (
+                <StyledAvatar
+                    src={avatarUrl}
+                    alt="User Avatar"
+                    onError={handleImageError}
+                />
+            ) : (
+                <StyledIcon/>
+            )}
         </AvatarContainer>
     );
 };

@@ -51,9 +51,4 @@ permissionSchema.index({grantedBy: 1, resourceType: 1, updatedAt: -1, createdAt:
 
 const Permission = mongoose.model('Permission', permissionSchema);
 
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    Permission.createIndexes().catch((err) => console.error('Error creating Permission indexes:', err));
-});
-
 module.exports = Permission;

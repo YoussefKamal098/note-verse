@@ -211,6 +211,35 @@ class UserRepository {
     }
 
     /**
+     * Merges a user-provided projection with default exclusions (e.g., password).
+     * Supports both object and string projection formats.
+     *
+     * @private
+     * @param {Object|string} base - The original projection (object or space-delimited string).
+     * @param {Object} defaults - Default projection to merge in (e.g., { password: 0 }).
+     * @returns {Object} The merged projection object.
+     */
+    #mergeProjection(base, defaults) {
+        if (!base) return defaults;
+
+        if (typeof base === 'string') {
+            // Convert string to object and merge
+            const fields = base.split(/\s+/).filter(Boolean);
+            const projectionObj = {};
+
+            for (const field of fields) {
+                const key = field.replace(/^-/, '');
+                projectionObj[key] = field.startsWith('-') ? 0 : 1;
+            }
+
+            return {...projectionObj, ...defaults};
+        }
+
+        // Object case: merge with defaults
+        return {...base, ...defaults};
+    }
+
+    /**
      * Creates or updates a local email/password user document with OTP verification handling.
      *
      * This method performs a findOneAndUpdate operation with upsert enabled to either update an existing
@@ -313,10 +342,9 @@ class UserRepository {
         if (!isValidObjectId(userId)) return null;
 
         try {
-            let query = this.#userModel
-                .findById(convertToObjectId(userId))
-                .select(projection);
+            let query = this.#userModel.findById(convertToObjectId(userId))
 
+            if (projection) query = query.select(projection)
             if (session) query = query.session(session);
 
             const user = await this.#withAuthProvider(query).lean();
@@ -393,7 +421,7 @@ class UserRepository {
      * @param {Array<string>} userIds - Array of user IDs to find
      * @param {Object} [options] - Options
      * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
-     * @param {Object} [options.projection] - Fields to include/exclude
+     * @param {Object | string} [options.projection] - Fields to include/exclude
      * @returns {Promise<ReadonlyArray<Readonly<Object>>>} Array of user documents
      */
     async findByIds(userIds, {session = null, projection = {}} = {}) {
@@ -406,12 +434,13 @@ class UserRepository {
 
         try {
             let query = this.#userModel.find({_id: {$in: objectIds}})
-                .select(projection);
+
+            // Normalize and merge projections
+            const normalizedProjection = this.#mergeProjection(projection, {password: 0});
+            if (normalizedProjection) query.select(normalizedProjection);
 
             query = this.#withAuthProvider(query);
-            if (session) {
-                query = query.session(session);
-            }
+            if (session) query = query.session(session);
 
             const users = await query.lean();
             return users.map(user => this.#prepareUserDocument(user));

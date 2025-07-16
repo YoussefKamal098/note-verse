@@ -1,9 +1,10 @@
+require('module-alias/register');
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
-const corsOptions = require('./config/corsOptions');
+const corsOptions = require('@/config/corsOptions');
 const config = require('./config/config');
 const asyncRequestHandler = require('./utils/asyncHandler');
 const handleError = require('./middlewares/errorHandler.middleware');
@@ -15,6 +16,7 @@ const {scopePerRequest} = require('awilix-express');
 const container = require('./container');
 const loggerService = require('./services/logger.service');
 const routes = require('./routes/index');
+const shutdownHandler = require('./utils/shutdownHandler');
 
 const app = express();
 
@@ -52,6 +54,21 @@ app.use('/api/v1', routes);
 app.use(notFoundMiddleware);
 // Middleware to handle application-wide errors and send error responses
 app.use(handleError);
+
+process.on('SIGINT', async () => {
+    await shutdownHandler();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    await shutdownHandler();
+    process.exit(0);
+});
+
+process.on('SIGQUIT', async () => {
+    await shutdownHandler();
+    process.exit(0);
+});
 
 startServer({server: app, port: config.port})
     .then(() => console.log('Server started successfully'));

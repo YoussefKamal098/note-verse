@@ -1,13 +1,16 @@
 import {useEffect} from "react";
 
-const useOutsideClick = (ref, callback, additionalTargets = []) => {
+const useOutsideClick = (ref, callback, additionalTargetRefs = [], excludeTargetRefs = []) => {
     useEffect(() => {
         const handleClickOutside = (event) => {
-            // If event.target is within any of the additional targets, call callback.
-            const clickedOnAdditional = additionalTargets.some(
-                (target) => target && event.target === target
-            );
-            if (clickedOnAdditional) {
+            const excludeEls = excludeTargetRefs.map(r => r?.current).filter(Boolean);
+            const additionalEls = additionalTargetRefs.map(r => r?.current).filter(Boolean);
+
+            const isExcluded = excludeEls.some(el => el && (event.target === el || el.contains(event.target)));
+            if (isExcluded) return;
+
+            const isOnAdditional = additionalEls.some(el => el && (event.target === el));
+            if (isOnAdditional) {
                 callback();
                 return;
             }
@@ -22,7 +25,7 @@ const useOutsideClick = (ref, callback, additionalTargets = []) => {
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [ref, callback, additionalTargets]);
+    }, [ref, callback, additionalTargetRefs, excludeTargetRefs]);
 };
 
 export default useOutsideClick;

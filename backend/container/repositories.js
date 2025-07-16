@@ -18,6 +18,9 @@ module.exports = container => {
         versionRepo: asFunction(({versionModel}) =>
             new (require('../repositories/version.repository'))(versionModel)
         ).singleton(),
+        notificationRepo: asFunction(({notificationModel}) =>
+            new (require('../repositories/notification.repository'))(notificationModel)
+        ).singleton(),
 
         fileRepo: asFunction(({fileModel}) =>
             new (require('../repositories/file.repository'))(fileModel)

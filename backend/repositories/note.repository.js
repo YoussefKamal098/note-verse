@@ -1,4 +1,4 @@
-const NotePaginatorService = require("../services/notePaginatorService");
+const NotePaginatorService = require("@/services/helpers/notePaginatorService");
 const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
 
@@ -45,7 +45,10 @@ class NoteRepository {
      * @returns {Object} The sanitized note object.
      */
     #sanitizeNoteMongoObject(note) {
-        return {...sanitizeMongoObject(note), userId: note.userId.toString()};
+        return {
+            ...sanitizeMongoObject(note),
+            ...(note.userId ? {userId: note.userId.toString()} : {})
+        };
     }
 
     /**
@@ -105,18 +108,24 @@ class NoteRepository {
      *
      * @param {string} noteId - The ID of the note.
      * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
-     * @returns {Promise<Readonly<Object|null>>} The note document, deep-frozen, or null if not found.
+     * @param {Object|string} [projection] - Fields to include from note
+     * @returns {Promise<Readonly<OutputNote|null>>} The note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the query.
      */
-    async findById(noteId, session = null) {
+    async findById(noteId, session = null, projection = null) {
         if (!isValidObjectId(noteId)) return null;
 
         try {
-            const note = await this.#model.findById(convertToObjectId(noteId)).session(session).lean();
+            const query = this.#model.findById(convertToObjectId(noteId)).lean();
+            if (projection) query.select(projection);
+            if (session) query.session(session);
+
+            const note = await query.exec();
+
             return note ? deepFreeze(this.#sanitizeNoteMongoObject(note)) : null;
         } catch (error) {
             console.error("Error finding note by ID:", error);
-            throw new Error("Error finding note by ID");
+            throw new Error("Failed to find note by ID");
         }
     }
 
@@ -226,6 +235,35 @@ class NoteRepository {
         } catch (error) {
             console.error("Error fetching notes:", error);
             throw new Error("Error fetching notes");
+        }
+    }
+
+    /**
+     * Finds multiple notes by their IDs with optional projection
+     * @param {Array<string>} noteIds - Array of note IDs to find
+     * @param {Object} [options] - Options
+     * @param {Object|string} [options.projection] - MongoDB projection to select specific fields
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
+     * @returns {Promise<Readonly<Array<Readonly<OutputNote>>>>} Array of note documents (empty if none found)
+     */
+    async findByIds(noteIds, {projection = null, session = null} = {}) {
+        if (!Array.isArray(noteIds)) return deepFreeze([]);
+
+        const validIds = noteIds
+            .filter(id => isValidObjectId(id))
+            .map(id => convertToObjectId(id));
+
+        if (validIds.length === 0) return deepFreeze([]);
+
+        try {
+            const query = this.#model.find({_id: {$in: validIds}}).session(session);
+            if (projection) query.select(projection);
+
+            const notes = await query.lean();
+            return deepFreeze(notes.map(note => this.#sanitizeNoteMongoObject(note)));
+        } catch (error) {
+            console.error("Error finding notes by IDs:", error);
+            throw new Error("Error finding notes by IDs");
         }
     }
 }

@@ -56,6 +56,22 @@ const statusMessages = Object.freeze({
     VERSION_RESTORE_CONFLICT: "Version restore conflict detected. Please refresh and try again.",
     VERSION_ACCESS_CHECK_FAILED: "Failed to check version access permissions",
     VERSION_ALREADY_CURRENT: "The version you're trying to restore is already the current version. No changes were made.",
+
+
+    // =======================
+    // Notification-related errors
+    // =======================
+    NOTIFICATION_CREATION_FAILED: 'Failed to create notification',
+    NOTIFICATIONS_CREATION_FAILED: 'Failed to create notifications',
+    NOTIFICATION_CONFLICT: 'Notification already exists',
+    NOTIFICATION_RETRIEVAL_FAILED: 'Failed to retrieve notifications',
+    NOTIFICATION_MARK_READ_FAILED: 'Failed to mark notification as read',
+    NOTIFICATIONS_MARK_READ_FAILED: 'Failed to mark notifications as read',
+    NOTIFICATION_UNREAD_COUNT_FAILED: 'Failed to get unread notification count',
+    INVALID_NOTIFICATION_RECIPIENT: 'Invalid notification recipient',
+    NOTIFICATION_NOT_FOUND: 'Notification not found',
+    MAX_RETRIES_EXCEEDED: 'Maximum retry attempts exceeded',
+
     // =======================
     // Authentication errors
     // =======================

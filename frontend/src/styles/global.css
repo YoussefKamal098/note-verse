@@ -12,6 +12,7 @@
     --color-accent-light: #79ec79; /* Green (Accent) */
     --color-accent-dark-light: #46b846; /* Dark Green */
     --color-text-light: #333;
+    --color-text-light-darker: #1b1e1f;
     --color-border-light: #ccc;
     --color-border-secondary-light: var(--color-background-light);
     --color-placeholder-light: #888;
@@ -33,6 +34,7 @@
     --color-danger-dark: #e95849;
     --color-secondary-dark: #b1aba1;
     --color-text-dark: #c8c3bc;
+    --color-text-dark-lighter: #f9f9f9;
     --color-placeholder-dark: #9d9488;
     --color-border-dark: #3e4446;
     --color-border-secondary-dark: var(--color-border-dark);
@@ -74,6 +76,7 @@
     --color-danger: var(--color-danger-light);
     --color-danger-hover: var(--color-danger-dark-light);
     --color-text: var(--color-text-light);
+    --color-text-light: var(--color-text-light-darker);
     --color-border: var(--color-border-light);
     --color-border-secondary: var(--color-border-secondary-light);
     --color-placeholder: var(--color-placeholder-light);
@@ -103,6 +106,7 @@
     --color-danger: var(--color-danger-dark);
     --color-danger-hover: var(--color-danger-dark-light);
     --color-text: var(--color-text-dark);
+    --color-text-light: var(--color-text-dark-lighter);
     --color-border: var(--color-border-dark);
     --color-border-secondary: var(--color-border-secondary-dark);
     --color-placeholder: var(--color-placeholder-dark);

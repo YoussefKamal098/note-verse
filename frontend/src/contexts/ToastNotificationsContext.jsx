@@ -1,6 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import {toast} from "react-toastify";
-import ToastNotifications from "../components/notifications/ToastNotifications";
+import ToastNotifications from "../components/notifications/toastNotification";
 
 const NotificationContext = createContext({
     success: (any) => (any),

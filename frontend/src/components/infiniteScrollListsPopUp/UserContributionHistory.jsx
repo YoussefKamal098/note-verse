@@ -46,7 +46,7 @@ const TitleWrapper = styled.div`
 
 const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, onClose}) => {
     const {user: authUser} = useAuth();
-    const notify = useToastNotification();
+    const {notify} = useToastNotification();
     const infiniteScrollRef = useRef(null);
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [user, setUser] = useState(null);
@@ -57,7 +57,7 @@ const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, o
             const result = await userService.getUser({id: userId});
             setUser(result.data);
         } catch (error) {
-            notify.error('Failed to fetch contributor, ', error);
+            notify.error('Failed to fetch contributor, ', error.message);
         } finally {
             setIsUserLoading(false);
         }

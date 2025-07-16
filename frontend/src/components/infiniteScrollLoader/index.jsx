@@ -38,20 +38,25 @@ const InfiniteScrollLoader = ({
                                   loader = (<LoaderWrapper>
                                       <LoadingEffect color="var(--color-primary)" size={25}/>
                                   </LoaderWrapper>),
-                                  initLoader = <Loader isAbsolute={true} color={"var(--color-primary)"}/>,
+                                  initLoader = <Loader isAbsolute={true} size={30} color={"var(--color-primary)"}/>,
                                   initItems = [],
                                   initPage = 0,
                                   onChange,
                                   containerStyle = {},
+                                  initHasMore = true,
                                   ...props
                               }) => {
-    const notify = useToastNotification();
+    const {notify} = useToastNotification();
     const [items, setItems] = useState(initItems);
     const [page, setPage] = useState(initPage);
-    const [hasMore, setHasMore] = useState(true);
+    const [hasMore, setHasMore] = useState(initHasMore);
     const [isLoading, setIsLoading] = useState(false);
     const [hasInitialLoad, setHasInitialLoad] = useState(initItems.length === 0);
     const containerRef = useRef(null);
+
+    useEffect(() => {
+        setHasMore(initHasMore);
+    }, [initHasMore]);
 
     useEffect(() => {
         if (page === 0 && items.length === 0) {
@@ -71,7 +76,6 @@ const InfiniteScrollLoader = ({
         setIsLoading(true);
         try {
             const newItems = await fetchData(page, pageSize);
-
             if (newItems.length === 0) {
                 setHasMore(false);
             } else {
@@ -112,7 +116,7 @@ const InfiniteScrollLoader = ({
             loadMore();
         }
     }, [hasInitialLoad, initItems.length, loadMore]);
-
+   
     return (
         <ScrollContainer
             ref={containerRef}

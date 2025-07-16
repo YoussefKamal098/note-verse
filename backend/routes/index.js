@@ -7,6 +7,7 @@ const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const csrfRoutes = require('./csrf.routes');
 const fileRoutes = require('./file.routes');
+const notificationRoutes = require('./notification.routes');
 const container = require("../container");
 
 const router = express.Router();
@@ -19,5 +20,6 @@ router.use('/files', [defaultRateLimiterMiddleware, fileRoutes]);
 router.use('/notes', [authenticateMiddleware, defaultRateLimiterMiddleware, noteRoutes]);
 router.use('/versions', [authenticateMiddleware, defaultRateLimiterMiddleware, versionRoutes]);
 router.use('/users', [authenticateMiddleware, defaultRateLimiterMiddleware, userRoutes]);
+router.use('/notifications', [authenticateMiddleware, defaultRateLimiterMiddleware, notificationRoutes]);
 
 module.exports = router;

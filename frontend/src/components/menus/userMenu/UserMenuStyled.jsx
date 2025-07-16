@@ -9,7 +9,7 @@ const AvatarStyled = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    border: calc(var(--border-width) / 2) solid var(--color-border);
+    border: 2px solid var(--color-border);
     border-radius: 50%;
     background-color: var(--color-background-secondary);
     color: var(--color-placeholder);
@@ -27,7 +27,7 @@ const UserMenuAvatarStyled = styled(AvatarStyled)`
 const HeaderStyled = styled.div`
     display: flex;
     align-items: center;
-    border-bottom: var(--border-width) solid var(--color-border);
+    border-bottom: 2px solid var(--color-border);
     padding-bottom: 1em;
     padding-right: 2em;
     gap: 0.5em;

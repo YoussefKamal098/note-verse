@@ -19,7 +19,7 @@ const StyledTooltipWrapper = styled.div`
     opacity: ${(props) => (props.show ? 1 : 0)};
     visibility: ${(props) => (props.show ? "visible" : "hidden")};
     transition: opacity 0.3s ease, translate 0.3s ease;
-    z-index: 1500;
+    z-index: 3000;
     pointer-events: none;
 `;
 

@@ -1,5 +1,5 @@
 import 'react-toastify/dist/ReactToastify.css';
-import {ToastNotificationContainerStyled} from './ToastNotificationsStyled';
+import {ToastNotificationContainerStyled} from './styles';
 
 const ToastNotifications = () => (
     <ToastNotificationContainerStyled

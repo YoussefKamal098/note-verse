@@ -135,7 +135,7 @@ class VersionService {
 
             return this.#resourceUserCombiner.combineWithUsers(
                 versions,
-                {userIdField: 'createdBy'} // Using createdBy field for user reference
+                {userIdField: 'createdBy', projection: {createdAt: 0, updatedAt: 0}} // Using createdBy field for user reference
             );
         } catch (err) {
             throw new AppError(
@@ -164,7 +164,7 @@ class VersionService {
             );
 
             const contributorsWithUsers = await this.#resourceUserCombiner.combineWithUsers(
-                contributors, {userIdField: 'userId'} // Using userId field for user reference
+                contributors, {userIdField: 'userId', projection: {createdAt: 0, updatedAt: 0}} // Using userId field for user reference
             );
 
             return deepFreeze({

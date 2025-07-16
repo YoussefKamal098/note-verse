@@ -43,9 +43,4 @@ fileSchema.index({_id: 1, userId: 1}, {unique: true});
 
 const File = mongoose.model('File', fileSchema);
 
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    File.createIndexes().catch((err) => console.error('Error creating File indexes:', err));
-});
-
 module.exports = File;

@@ -1,7 +1,8 @@
 import React from "react";
-import {useAuth} from "../../contexts/AuthContext";
+import {useAuth} from "@/contexts/AuthContext";
 import SearchBar from "../searchBar/SearchBar";
 import UserMenu from "../menus/userMenu";
+import RealTimeNotification from "@/components/notifications/realTimeNotification";
 
 import {
     LeftNavbarSideStyled,
@@ -31,6 +32,7 @@ const Navbar = ({
                 </MiddleNavbarSideStyled>
 
                 {user && <RightNavbarSideStyled>
+                    <RealTimeNotification/>
                     <UserMenu/>
                 </RightNavbarSideStyled>}
             </NavbarWrapperContainerStyled>

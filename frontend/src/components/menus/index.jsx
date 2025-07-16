@@ -42,7 +42,7 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
         handlePointerUp
     } = useMobileDrag(isMobile, () => setMenuOpen(false));
 
-    useOutsideClick(wrapperRef, () => setMenuOpen(false), [menuWrapperRef.current]);
+    useOutsideClick(wrapperRef, () => setMenuOpen(false), [menuWrapperRef]);
 
     const currentMenu = menuStack[menuStack.length - 1];
 

@@ -40,9 +40,4 @@ authProviderSchema.index({provider: 1, providerId: 1}, {unique: true});
 
 const AuthProvider = mongoose.model('AuthProvider', authProviderSchema);
 
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    AuthProvider.createIndexes().catch((err) => console.error('Error creating AuthProvider indexes:', err));
-});
-
 module.exports = AuthProvider;

@@ -28,6 +28,7 @@ class VersionRepository {
     #sanitizeVersion(version) {
         const sanitize = doc => ({
             ...sanitizeMongoObject(doc),
+            ...(doc.id ? {id: doc.id.toString()} : {}),
             ...(doc.noteId ? {noteId: doc.noteId.toString()} : {}),
             ...(doc.createdBy ? {createdBy: doc.createdBy.toString()} : {}),
             ...(doc.previousVersion ? {previousVersion: doc.previousVersion.toString()} : {})
@@ -150,7 +151,7 @@ class VersionRepository {
      * @param {Object} [options] - Options
      * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
      * @param {Object|string} [options.projection] - MongoDB projection
-     * @returns {Promise<Readonly<Object|null>>} The version document or null if not found
+     * @returns {Promise<Readonly<OutputVersion|null>>} The version document or null if not found
      */
     async getVersion(versionId, {session = null, projection = null} = {}) {
         if (!isValidObjectId(versionId)) return null;
@@ -159,9 +160,7 @@ class VersionRepository {
                 .findById(convertToObjectId(versionId))
                 .session(session);
 
-            if (projection) {
-                query.select(projection);
-            }
+            if (projection) query.select(projection);
 
             const version = await query.lean();
             return version ? deepFreeze(this.#sanitizeVersion(version)) : null;
@@ -385,6 +384,36 @@ class VersionRepository {
                 error
             );
             throw new Error('Failed to retrieve user commits. Please try again later');
+        }
+    }
+
+
+    /**
+     * Finds multiple versions by their IDs with optional projection
+     * @param {Array<string>} versionIds - Array of version IDs to find
+     * @param {Object} [options] - Options
+     * @param {Object|string} [options.projection] - MongoDB projection to select specific fields
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
+     * @returns {Promise<Readonly<Array<OutputVersion>>>} Array of version documents (empty if none found)
+     */
+    async findByIds(versionIds, {projection = null, session = null} = {}) {
+        if (!Array.isArray(versionIds)) return deepFreeze([]);
+
+        const validIds = versionIds
+            .filter(id => isValidObjectId(id))
+            .map(id => convertToObjectId(id));
+
+        if (validIds.length === 0) return deepFreeze([]);
+
+        try {
+            const query = this.#model.find({_id: {$in: validIds}}).session(session);
+            if (projection) query.select(projection);
+
+            const versions = await query.lean();
+            return deepFreeze(versions.map(version => this.#sanitizeVersion(version)));
+        } catch (error) {
+            console.error("Error finding versions by IDs:", error);
+            throw new Error("Error finding versions by IDs");
         }
     }
 }

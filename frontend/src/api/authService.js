@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
-import {HttpStatusCode} from "../constants/httpStatus";
+import {jwtDecode} from 'jwt-decode';
+import {HttpStatusCode} from "@/constants/httpStatus";
 import httpHeaders from "../constants/httpHeaders";
 import errorCodes from '../constants/errorCodes';
 import apiClient from './apiClient';
@@ -10,6 +11,8 @@ const AUTH_EVENTS = Object.freeze({
     LOGIN: 'login',
     LOGOUT: 'logout',
     SESSION_EXPIRED: 'session_expired',
+    ACCESS_TOKEN_EXPIRED: 'access_token_expired',
+    ACCESS_TOKEN_REFRESHED: 'access_token_refreshed',
 });
 
 const ENDPOINTS = {
@@ -27,6 +30,7 @@ class AuthService {
     #tokenStorageService;
     #eventEmitter;
     #userService;
+    #tokenWatchInterval = null;
 
     /**
      * Creates an instance of AuthService.
@@ -72,6 +76,49 @@ class AuthService {
         return config;
     }
 
+    #isTokenExpiringSoon(token, bufferSeconds = 60) {
+        try {
+            const decoded = jwtDecode(token);
+            const now = Math.floor(Date.now() / 1000);
+            return decoded.exp && decoded.exp - now < bufferSeconds;
+        } catch {
+            return true;
+        }
+    }
+
+    #startTokenWatcher() {
+        const checkInterval = 60 * 1000; // every 60 seconds
+        this.#stopTokenWatcher();
+
+        this.#tokenWatchInterval = setInterval(() => {
+            const token = this.#tokenStorageService.getAccessToken();
+            if (!token) return;
+
+            if (this.#isTokenExpiringSoon(token)) {
+                console.warn('[AuthService] Token expiring soon — refreshing');
+
+                this.#refreshAccessToken().catch((err) => {
+                    console.error('[AuthService] Auto-refresh failed', err);
+                });
+            }
+        }, checkInterval);
+    }
+
+    #stopTokenWatcher() {
+        if (this.#tokenWatchInterval) {
+            clearInterval(this.#tokenWatchInterval);
+            this.#tokenWatchInterval = null;
+        }
+    }
+
+    /**
+     * Returns the current access token.
+     * @returns {string|null} Access token if available, otherwise null.
+     */
+    getAccessToken() {
+        return this.#tokenStorageService.getAccessToken();
+    }
+
     /**
      * Handles response errors, including token expiration and refresh.
      * @param {Object} error - The error object from the failed response.
@@ -85,6 +132,9 @@ class AuthService {
             !originalRequest._retry
         ) {
             originalRequest._retry = true;
+            this.#eventEmitter.emit(AUTH_EVENTS.ACCESS_TOKEN_EXPIRED);
+            this.#stopTokenWatcher();
+
             try {
                 const {accessToken} = await this.#refreshAccessToken();
                 originalRequest.headers[httpHeaders.AUTHORIZATION] = `Bearer ${accessToken}`;
@@ -112,6 +162,8 @@ class AuthService {
         try {
             const {data} = await this.#apiClient.post(ENDPOINTS.REFRESH);
             this.#tokenStorageService.setAccessToken(data.accessToken);
+            this.#startTokenWatcher();
+            this.#eventEmitter.emit(AUTH_EVENTS.ACCESS_TOKEN_REFRESHED, data.accessToken);
             return {accessToken: data.accessToken};
         } catch (error) {
             if (error.response && error.response.status === HttpStatusCode.UNAUTHORIZED) {
@@ -126,6 +178,7 @@ class AuthService {
      */
     #handleRefreshTokenFailure() {
         this.#tokenStorageService.clearAccessToken();
+        this.#startTokenWatcher();
         this.#eventEmitter.emit(AUTH_EVENTS.SESSION_EXPIRED);
     }
 
@@ -134,6 +187,7 @@ class AuthService {
      */
     #handleLogout() {
         this.#tokenStorageService.clearAccessToken();
+        this.#stopTokenWatcher();
         this.#eventEmitter.emit(AUTH_EVENTS.LOGOUT);
     }
 
@@ -149,6 +203,7 @@ class AuthService {
     async #handleLoginSuccess(accessToken, config) {
         // Store the new access token
         this.#tokenStorageService.setAccessToken(accessToken);
+        this.#startTokenWatcher();
 
         // Fetch user details
         const user = await this.#userService.getUser({id: "me"}, config);
@@ -293,14 +348,9 @@ class AuthService {
     off(event, listener) {
         this.#eventEmitter.off(event, listener);
     }
-
 }
 
-/**
- * Default instance of AuthService
- * @type {AuthService}
- */
-const authService = new AuthService(apiClient, tokenStorageService, userService)
+const authService = new AuthService(apiClient, tokenStorageService, userService);
 
 export {AUTH_EVENTS};
 export default authService;

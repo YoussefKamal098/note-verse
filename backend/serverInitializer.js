@@ -1,33 +1,41 @@
-const {connectDB, disconnectDB, isDBConnected} = require('./services/db.service');
-const {gracefulShutdown} = require('./utils/system.utils');
+const http = require('http');
+const {connectDB} = require('./services/db.service');
+const shutdownHandler = require('./utils/shutdownHandler');
+const SocketService = require('./services/socket');
 const container = require("./container");
 
 /**
- * Start the application by connecting to the database and cache service then starting the server.
+ * Start the application by connecting to the database and caache service then starting the server.
  */
-async function startServer({server, port = 5000}) {
+async function startServer({server: expressApp, port = 5000}) {
     try {
+        const httpServer = http.createServer(expressApp);
+
         const cacheService = container.resolve('cacheService');
+        const redisService = container.resolve('redisService');
+        const onlineUserService = container.resolve('onlineUserService');
+        const jwtAuthService = container.resolve('jwtAuthService');
+
+        const socketService = new SocketService({
+            redisClient: redisService.client,
+            httpServer,
+            onlineUserService,
+            jwtAuthService
+        });
+
         // Connect to both cache service and DB concurrently
-        await Promise.all([connectDB(), cacheService.connect()]);
+        await Promise.all([connectDB(), cacheService.connect(), redisService.connect()]);
+        await socketService.initialize();
 
         // Start the server once both services are connected
-        server.listen(port, () => {
+        httpServer.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
         });
 
         console.log('Database and cache service connected successfully.');
     } catch (error) {
-        console.error('Error during startup:', error);
-
-        // Gracefully shut down the system if any of the connections fail
-        await gracefulShutdown(async () => {
-            console.log('Cleaning up resources before shutting down...');
-
-            // Check if cache and DB are connected and close them if necessary
-            if (await cacheService.isConnected()) await cacheService.close();
-            if (await isDBConnected()) await disconnectDB();
-        });
+        console.error('❌ Error during startup:', error);
+        await shutdownHandler();
     }
 }
 

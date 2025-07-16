@@ -73,19 +73,50 @@ class SessionRepository {
      * Finds a session document by its unique identifier.
      *
      * @param {string} sessionId - The unique identifier of the session to retrieve.
+     * @param {Object} [options]
+     * @param {Object|string} [options.projection]
+     * @param {import('mongoose').ClientSession} [options.session]
      * @returns {Promise<Object|null>} The session document if found; otherwise, null.
      * @throws {Error} If an error occurs during the query.
      */
-    async findById(sessionId) {
+    async findById(sessionId, {session = null, projection = {}} = {}) {
         if (!isValidObjectId(sessionId)) return null;
+
         try {
-            const sessionDoc = await this.#model.findById(convertToObjectId(sessionId)).lean();
+            const query = this.#model.findById(convertToObjectId(sessionId));
+            if (projection) query.select(projection);
+            if (session) query.session(session);
+
+            const sessionDoc = await query.lean();
             return sessionDoc ? deepFreeze(sanitizeMongoObject(sessionDoc)) : null;
         } catch (error) {
             console.error('Error finding session by ID:', error);
             throw new Error('Error finding session by ID');
         }
     }
+
+    /**
+     * Finds multiple sessions by an array of IDs.
+     *
+     * @param {string[]} ids - Array of session IDs
+     * @param {Object} [options]
+     * @param {Object|string} [options.projection]
+     * @param {import('mongoose').ClientSession} [options.session]
+     * @returns {Promise<Readonly<Array<OutputSession>>>}
+     */
+    async findByIds(ids = [], {projection = null, session = null} = {}) {
+        try {
+            const objectIds = ids.filter(isValidObjectId).map(convertToObjectId);
+            const sessions = await this.#model.find({_id: {$in: objectIds}}, projection)
+                .session(session).lean();
+
+            return deepFreeze(sessions.map(sanitizeMongoObject));
+        } catch (error) {
+            console.error('Error finding sessions by IDs:', error);
+            throw new Error('Failed to find sessions');
+        }
+    }
+
 
     /**
      * Finds a session document by its domain-specific keys.

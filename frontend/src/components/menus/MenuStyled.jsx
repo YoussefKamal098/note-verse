@@ -102,7 +102,8 @@ const DynamicMenuContainerStyled = styled.div`
         max-height: 100vh;
         transform: translateX(0);
         padding-top: 0;
-        border-radius: 25px 25px 0 0;
+        border-radius: 20px 20px 0 0;
+        border: none;
         overflow-y: auto;
         transition: opacit 300ms ease, translate 300ms ease;
         animation: ${mobileAppearKeyframes} 300ms ease-out;

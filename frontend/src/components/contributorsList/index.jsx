@@ -127,7 +127,7 @@ const ContributorsList = ({
                               onAvatarClick
                           }) => {
     const {user} = useAuth();
-    const notify = useToastNotification();
+    const {notify} = useToastNotification();
     const [isLoading, setIsLoading] = useState(true);
     const [contributorsData, setContributorsData] = useState({
         contributors: [],
@@ -143,7 +143,7 @@ const ContributorsList = ({
                 totalContributors: result.totalContributors || 0
             });
         } catch (error) {
-            notify.error('Failed to fetch contributors,', error);
+            notify.error('Failed to fetch contributors,', error.message);
         } finally {
             setIsLoading(false);
         }

@@ -1,69 +1,80 @@
+const BaseResourceCombiner = require('./baseResourceCombiner.service');
 const {deepFreeze} = require('shared-utils/obj.utils');
 
-class ResourceUserCombiner {
+/**
+ * Combines resources with their related user documents
+ * @extends BaseResourceCombiner<Readonly<OutputUser>>
+ */
+class ResourceUserCombiner extends BaseResourceCombiner {
     /**
      * @private
-     * @type {import('../repositories/user.repository').UserRepository}
+     * @type {import('@/repositories/user.repository').UserRepository}
      */
     #userRepo;
 
     /**
+     * Creates a new ResourceUserCombiner instance
      * @param {Object} dependencies
-     * @param {import('../repositories/user.repository').UserRepository} dependencies.userRepo
+     * @param {import('@/repositories/user.repository').UserRepository} dependencies.userRepo
      */
     constructor({userRepo}) {
+        super();
         this.#userRepo = userRepo;
     }
 
     /**
-     * @private
-     * Static method to combine single resource with user
-     * @param {Object} resource - Resource data
-     * @param {Object|null} user - User data or null
-     * @param {string} [userIdField='userId'] - Field containing user reference
-     * @returns {Readonly<Object>} Frozen combined object
-     */
-    #combine(resource, user, userIdField = 'userId') {
-        const {[userIdField]: _, ...resourceData} = resource;
-        return deepFreeze({
-            ...resourceData,
-            user: user ? deepFreeze(user) : null
-        });
-    }
-
-    /**
-     * @private
-     * Static method to combine array of resources with users
-     * @param {Array} resources - Resource array
-     * @param {Array} users - User array
-     * @param {string} [userIdField='userId'] - Field containing user reference
-     * @returns {Readonly<Array>} Frozen array of combined objects
-     */
-    #combineAll(resources, users, userIdField = 'userId') {
-        const combined = resources.map(resource => {
-            const user = users.find(u => u.id === resource[userIdField]?.toString());
-            return this.#combine(resource, user, userIdField);
-        });
-        return deepFreeze(combined.filter(x => x.user !== null));
-    }
-
-    /**
-     * Instance method to fetch users and combine with resources
-     * @param {Array<Object>} resources - Resources to combine
-     * @param {Object} [options]
+     * Combines resources with their user documents
+     *
+     * @param {Array<Object>} resources - Resources to combine with users
+     * @param {Object} [options] - Configuration options
      * @param {string} [options.userIdField='userId'] - Field containing user reference
-     * @param {Object} [options.session] - Database session
-     * @returns {Promise<Readonly<Array>>} Combined resources with users
+     * @param {Object|string} [options.projection] - Fields to include from users
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @returns {Promise<Readonly<Array<Readonly<Object>>>>} Frozen array of resources with users attached
+     *
+     * @example
+     * await combiner.combineWithUsers(
+     *   [{id: '1', userId: 'u1'}, {id: '2', payload: {userId: 'u2'}}],
+     *   {userIdField: 'payload.userId', projection: {name: 1}}
+     * )
      */
-    async combineWithUsers(resources, {userIdField = 'userId', session} = {}) {
+    async combineWithUsers(resources, {userIdField = 'userId', projection = null, session = null} = {}) {
         if (!resources?.length) return deepFreeze([]);
 
-        const userIds = [...new Set(resources.map(r => r[userIdField]).filter(Boolean))];
+        const userIds = [
+            ...new Set(resources.map(r => this._extractNestedId(r, userIdField)).filter(Boolean))
+        ];
 
         if (!userIds.length) return deepFreeze([]);
 
-        const users = await this.#userRepo.findByIds(userIds, {session});
-        return this.#combineAll(resources, users, userIdField);
+        const users = await this.#userRepo.findByIds(userIds, {projection, session});
+        return this._combineAll(resources, users, userIdField, 'user');
+    }
+
+    /**
+     * Combines a single resource with its user document
+     *
+     * @param {Object} resource - The resource to combine with user
+     * @param {Object} [options] - Configuration options
+     * @param {string} [options.userIdField='userId'] - Field containing user reference
+     * @param {Object|string} [options.projection] - Fields to include from user
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
+     * @returns {Promise<Readonly<Object>>} Frozen combined object with user
+     *
+     * @example
+     * await combiner.combineWithSingleUser(
+     *   {id: '1', userId: 'u1'},
+     *   {userIdField: 'userId', projection: {name: 1}}
+     * )
+     */
+    async combineWithSingleUser(resource, {userIdField = 'userId', projection = null, session = null} = {}) {
+        if (!resource) return null;
+
+        const userId = this._extractNestedId(resource, userIdField);
+        if (!userId) return null;
+
+        const user = await this.#userRepo.findById(userId, {projection, session});
+        return this._combineSingle(resource, user, userIdField, 'user');
     }
 }
 

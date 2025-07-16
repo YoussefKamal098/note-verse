@@ -47,6 +47,12 @@ note search, filtering, and CRUD operations.
 - **👀 Contributor Tracking**: See who made changes
 - **📨 Sharing System**: Invite others via email
 
+### 🔔 Real-time Notifications
+
+- **📡 Instant Updates**: Receive notifications for new shares, or edits in real time
+- **📱 Socket.IO Integration**: Efficient WebSocket-based delivery system
+- **🔐 Login Detection**: Get notified when your account is accessed from another device or location
+
 ### 🔐 Authentication
 
 - **🔑 JWT Auth**: Secure token-based authentication
@@ -99,6 +105,7 @@ FRONTEND_BASE_URL=http://localhost:3000  # Base URL for frontend application (us
 # Database Configuration
 MONGO_URI=mongodb://localhost:27017/notes
 REDIS_URI=redis://127.0.0.1:6379
+REDIS_CLUSTER_NODES=redis://cluster-node1:6379,redis://cluster-node2:6379,redis://cluster-node3:6379  # For Redis Cluster, One or more
 DB_MAX_POOL_SIZE=10
 DB_MIN_POOL_SIZE=1
 
@@ -155,6 +162,7 @@ LOGS_DIR=./logs
 
 ```env
 API_BASE_URL=http://localhost:5000/api/v1
+SOCKET_URL=ws://localhost:5000
 NOTES_PER_PAGE=10
 ```
 
@@ -176,11 +184,8 @@ NOTES_PER_PAGE=10
    ```
 3. **Start the development server:**
    ```bash
-   npm run dev
+   npm pm2:start
    ```
-   > This command typically uses a tool like [nodemon](https://www.npmjs.com/package/nodemon) for hot-reloading, so any
-   changes in your backend code will automatically restart the server.  
-   > Ensure your environment variables (e.g., port number) are set as needed.
 
 #### React Frontend
 
@@ -205,19 +210,9 @@ NOTES_PER_PAGE=10
 
 #### Express Backend
 
-1. **Build the project (if applicable):**  
-   If you’re using Babel, TypeScript, or another transpiler, run the build script:
+1. **Start the server in production mode:**
    ```bash
-   npm run build
-   ```
-2. **Start the server in production mode:**
-   ```bash
-   npm start
-   ```
-   > Ensure you set the environment variable `NODE_ENV=production` before starting the server.  
-   > For improved process management and automatic restarts, consider using [PM2](https://pm2.keymetrics.io/):
-   ```bash
-   pm2 start dist/app.js --name "my-express-app"
+    npm pm2:start
    ```
 
 #### React Frontend
@@ -317,6 +312,15 @@ NOTES_PER_PAGE=10
 | `PATCH`     | `api/v1/users/:userId/permissions`         | Update a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
 | `DELETE`    | `api/v1/users/:userId/permissions`         | Revoke a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
 
+### 🔔 Notification API (`notification.routes.js`)
+
+| HTTP Method | Endpoint                                    | Description                                                                                                |
+|-------------|---------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `GET`       | `api/v1/notifications`                      | Get paginated list of user notifications for the authenticated user. Supports filters (e.g. `read=false`). |
+| `PATCH`     | `api/v1/notifications/:notificationId/read` | Mark a single notification as read for the authenticated user.                                             |
+| `PATCH`     | `api/v1/notifications/read-all`             | Mark all notifications as read for the authenticated user.                                                 |
+| `GET`       | `api/v1/notifications/unread-count`         | Get the count of unread notifications for the authenticated user.                                          |
+
 ---
 
 ## 📂 Folder and File Structure
@@ -341,13 +345,19 @@ notes_app/
 │   ├── routes/                    # API routes for defining endpoints and HTTP methods
 │   ├── schemas/                   # Validation schemas for request payloads using Joi
 │   ├── services/                  # Service layer for business logic and external integrations
+│   │   ├── batchers/              # Batch processing services (notifications)
+│   │   ├── caches/                # Caching implementations and strategies
+│   │   ├── emitters/              # Event emission services
 │   │   ├── helpers/               # Service-specific utilities.
+│   │   ├── notifications/         # Notification delivery services   
+│   │   ├── socket/                # Real-time socket services
 │   │   ├── storage/               # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
 │   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
 │   ├── types/                     # Global type definitions (JSDoc typedefs) for application models, configs, and utilities
 │   ├── unitOfWork/                # Unit of Work pattern implementation for transactional operations
 │   ├── useCases/                  # Business use cases and application logic    
 │   ├── utils/                     # Utility functions for various tasks
+│   ├── workers/                   # Background job processors
 │   ├── .nvmrc                     # Node.js version specification .nvmrc  
 │   ├── serverInitializer.js       # Responsible for initializing the server by setting up middleware, routing, and other core configurations for the application.
 │   ├── app.js                     # Main application setup (e.g., middleware, routing)
@@ -395,6 +405,7 @@ notes_app/
 │   │   │   ├── progressiveImage/       # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── selection/         # Custom selection/dropdown components
+│   │   │   ├── tabs/              # Filtering tabs components
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── texterea/          # Custom textarea components with enhanced features   
 │   │   │   ├── title/             # Components for managing title on notes
@@ -452,15 +463,17 @@ notes_app/
 - Provide users with the option to **delete their account**. Ensure that the data is wiped securely from both the
   backend and frontend storage.
 
-### 5. **Compression for Large Markdown Content (Frontend & Backend)**
+### 5. **Compression for Large Markdown Content (Frontend)**
 
-- Implement **compression for large Markdown content** (using libraries like `pako` in the frontend and `zlib` in the
-  backend) to reduce the amount of data transmitted over the network.
+- Implement **compression for large Markdown content** (using libraries like `pako` in the frontend) to reduce the
+  amount of data transmitted over the network.****
 
-### 6. **Archive and Collection Notes**
+### 6. **Archive, Collections, and Favorites**
 
-- Enable users to **archive or group their notes** into different **collections**. This will help with better
-  organization and easier access to notes.
+- Enable users to **archive** or **group their notes** into different **collections** for better organization
+- Allow users to **mark notes as favorites** for quick access
+- Provide a **Saved Notes** section where users can store and revisit **shared notes from other users** they found
+  useful
 
 ### 7. **User Settings Section**
 
@@ -468,16 +481,6 @@ notes_app/
     - Update their email and password.
     - View and manage active sessions.
     - Customize preferences like theme, language, etc.
-
-### 8. **Data Encryption (Security)**
-
-- Encrypt sensitive data (e.g., user data, note content) both at rest and in transit.
-  This will help improve the app's security and protect user privacy.
-
-### 9. **Notification System**
-
-- Implement an in-app **notification system** to alert users about important updates, reminders, or new activities on
-  their notes or account, using Socket.IO for real-time notifications.
 
 ---
 

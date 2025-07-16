@@ -1,27 +1,29 @@
 const {asFunction, asClass} = require('awilix');
-const B2StorageConfig = require("../config/B2StorageConfig");
 const PasswordHasherService = require('../services/passwordHasher.service');
 const HasherService = require('../services/hasher.service');
 const CacheService = require('../services/cache.service');
-const {timeUnit, time} = require('shared-utils/date.utils');
-const JwtProviderService = require("../services/jwtProvider.service");
+const config = require('../config/config');
+const redis = require('../config/redis');
 
 module.exports = container => {
     container.register({
         passwordHasherService: asClass(PasswordHasherService).singleton(),
+
         hasherService: asClass(HasherService).singleton(),
-        cacheService: asClass(CacheService, {
-            injector: () => ({
-                redisUrl: process.env.REDIS_URL,
-                ttl: time({[timeUnit.HOUR]: 1})
-            })
-        }).singleton(),
-        b2StorageEngine: asFunction(() =>
-            new (require('../services/storage/b2storage-engine'))(B2StorageConfig)
+
+        cacheService: asFunction(() =>
+            new CacheService({redisUrl: config.redisUri})
         ).singleton(),
 
-        transactionService: asClass(require('../services/helpers/baseTransaction.service')).singleton(),
-        resourceUserCombiner: asClass(require('../services/helpers/userResourceCombiner.service')).singleton(),
+        redisService: asFunction(() =>
+            new (require('../services/redis.service'))({redisClient: redis})
+        ).singleton(),
+
+        onlineUserService: asFunction(({redisService}) =>
+            new (require('../services/onlineUser.service'))(redisService)
+        ).singleton(),
+
+        notificationService: asClass(require('../services/notification')).singleton(),
 
         userService: asFunction(({passwordHasherService, userRepo, cacheService}) =>
             new (require('../services/user.service'))(passwordHasherService, userRepo, cacheService)
@@ -35,51 +37,9 @@ module.exports = container => {
             new (require('../services/session.service'))(sessionRepo)
         ).singleton(),
 
-        permissionService: asFunction(({
-                                           permissionRepo,
-                                           transactionService,
-                                           resourceUserCombiner
-                                       }) =>
-            new (require('../services/permission.service'))({
-                permissionRepo,
-                transactionService,
-                resourceUserCombiner
-            })
-        ).singleton(),
+        permissionService: asClass(require('../services/permission.service')).singleton(),
 
-        versionService: asFunction(({
-                                        versionRepo,
-                                        transactionService,
-                                        resourceUserCombiner
-                                    }) =>
-            new (require('../services/version.service'))({
-                versionRepo,
-                transactionService,
-                resourceUserCombiner,
-            })
-        ).singleton(),
-
-        jwtAuthService: asFunction(({userService, sessionService}) =>
-            new (require('../services/jwtAuth.service'))(
-                userService,
-                sessionService,
-                new JwtProviderService(),
-                require('../config/authConfig')
-            )
-        ).singleton(),
-
-        googleAuthService: asFunction(({userService, sessionService, jwtAuthService}) =>
-            new (require('../services/googleAuth.service'))(
-                userService,
-                sessionService,
-                jwtAuthService,
-                require('../config/googleAuthConfig')
-            )
-        ).singleton(),
-
-        emailMediator: asFunction(({}) =>
-            new (require('../services/email.mediator'))(require('../queues/email.queue'))
-        ).singleton(),
+        versionService: asClass(require('../services/version.service')).singleton(),
 
         fileStorageService: asFunction(({b2StorageEngine, fileRepo}) =>
             new (require('../services/fileStorage.service'))(
@@ -87,6 +47,10 @@ module.exports = container => {
                 fileRepo,
                 {filenameGenerator: () => crypto.randomUUID()}
             )
-        ).singleton()
+        ).singleton(),
+
+        emailMediator: asFunction(({}) =>
+            new (require('../services/email.mediator'))(require('../queues/email.queue'))
+        ).singleton(),
     });
 };

@@ -47,9 +47,5 @@ const noteSchema = new Schema({
 noteSchema.index({isPinned: -1, updatedAt: -1, createdAt: -1, title: 1, tags: 1});
 
 const Note = mongoose.model('Note', noteSchema);
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    Note.createIndexes().catch((err) => console.error('Error creating Note indexes:', err));
-});
 
 module.exports = Note;

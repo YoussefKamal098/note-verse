@@ -9,12 +9,12 @@ export const DEVICE_SIZES = {
 };
 
 export const MEDIA_QUERIES = {
-    mobileS: `(min-width: ${DEVICE_SIZES.mobileS}px)`,
-    mobileM: `(min-width: ${DEVICE_SIZES.mobileM}px)`,
-    mobileL: `(min-width: ${DEVICE_SIZES.mobileL}px)`,
+    mobileS: `(max-width: ${DEVICE_SIZES.mobileS}px)`,
+    mobileM: `(max-width: ${DEVICE_SIZES.mobileM}px)`,
+    mobileL: `(max-width: ${DEVICE_SIZES.mobileL}px)`,
     tablet: `(max-width: ${DEVICE_SIZES.tablet}px)`,
-    laptop: `(min-width: ${DEVICE_SIZES.laptop}px)`,
-    laptopL: `(min-width: ${DEVICE_SIZES.laptopL}px)`,
-    desktop: `(min-width: ${DEVICE_SIZES.desktop}px)`,
-    desktopL: `(min-width: ${DEVICE_SIZES.desktop}px)`
+    laptop: `(max-width: ${DEVICE_SIZES.laptop}px)`,
+    laptopL: `(max-width: ${DEVICE_SIZES.laptopL}px)`,
+    desktop: `(max-width: ${DEVICE_SIZES.desktop}px)`,
+    desktopL: `(max-width: ${DEVICE_SIZES.desktop}px)`
 };

@@ -1,4 +1,5 @@
 const statusMessages = require('../../constants/statusMessages');
+const NotificationType = require('@/enums/notifications.enum');
 
 class UpdateNoteUseCase {
     /**
@@ -20,8 +21,12 @@ class UpdateNoteUseCase {
      * @private
      * @type {ValidateUserNoteUpdateUseCase}
      */
-    #validator;
-
+    #validator
+    /**
+     * @private
+     * @type {NotificationBatcher}
+     */
+    #notificationBatcher;
 
     /**
      * Creates an instance of UpdateNoteUseCase.
@@ -30,16 +35,19 @@ class UpdateNoteUseCase {
      * @param {VersionRepository} dependencies.versionRepo - Version repository
      * @param {BaseTransactionService} dependencies.transactionService - Transaction service
      * @param {ValidateUserNoteUpdateUseCase} dependencies.validateUserNoteUpdateUseCase - validate note update use case
+     * @param {NotificationBatcher} dependencies.notificationBatcher - Notification batcher
      */
     constructor({
                     noteRepo,
                     versionRepo,
                     transactionService,
-                    validateUserNoteUpdateUseCase
+                    validateUserNoteUpdateUseCase,
+                    notificationBatcher,
                 }) {
         this.#noteRepo = noteRepo;
         this.#versionRepo = versionRepo;
         this.#transactionService = transactionService;
+        this.#notificationBatcher = notificationBatcher;
         this.#validator = validateUserNoteUpdateUseCase;
     }
 
@@ -78,6 +86,18 @@ class UpdateNoteUseCase {
                     updateData,
                     session
                 );
+
+                if (updatedNote && updatedNote.userId !== userId) {
+                    await this.#notificationBatcher.add({
+                        recipient: updatedNote.userId,
+                        type: NotificationType.NOTE_UPDATE,
+                        payload: {
+                            noteId,
+                            userId,
+                            versionId: version?.id
+                        },
+                    });
+                }
 
                 return {note: updatedNote, version};
             }, {

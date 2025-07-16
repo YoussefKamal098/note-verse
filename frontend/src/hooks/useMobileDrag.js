@@ -25,13 +25,17 @@ const useMobileDrag = (isMobile, onDragEnd, threshold = 100) => {
             if (deltaY > 0) {
                 setDragOffset(deltaY);
             }
+
+            const remainingFromBottom = windowHeight - pointerStartYRef.current - dragOffset;
+            if (remainingFromBottom < threshold && onDragEnd) {
+                handlePointerUp();
+            }
         }
     };
 
     const handlePointerUp = () => {
         if (isMobile && isDragging) {
             const remainingFromBottom = windowHeight - pointerStartYRef.current - dragOffset;
-
             if (remainingFromBottom < threshold && onDragEnd) {
                 onDragEnd();
             }

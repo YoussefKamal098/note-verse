@@ -117,7 +117,7 @@ class PermissionService {
      * @param {Object} options - Pagination options
      * @param {number} [options.limit=10] - Results per page
      * @param {number} [options.page=0] - Page number
-     * @returns {Promise<Array<Object>>} Array of { permission, user } objects
+     * @returns {Promise<ReadonlyArray<Readonly<Object>>>} Array of { permission, user } objects
      */
     async getResourceUsers({resourceType, resourceId}, {limit = 10, page = 0} = {}) {
         return this.#transactionService.executeTransaction(async (session) => {
@@ -127,7 +127,10 @@ class PermissionService {
                 session
             );
 
-            return this.#resourceUserCombiner.combineWithUsers(permissions, {session});
+            return this.#resourceUserCombiner.combineWithUsers(permissions, {
+                session,
+                projection: "-createdAt -updatedAt"
+            });
         }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 
@@ -149,7 +152,10 @@ class PermissionService {
                 session
             );
 
-            return this.#resourceUserCombiner.combineWithUsers(permissions, {session});
+            return this.#resourceUserCombiner.combineWithUsers(permissions, {
+                session,
+                projection: "-createdAt -updatedAt"
+            });
         }, {message: statusMessages.PERMISSION_OPERATION_FAILED});
     }
 }

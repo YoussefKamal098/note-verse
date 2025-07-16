@@ -58,9 +58,4 @@ userSchema.virtual('authProvider', {
 
 const User = mongoose.model('User', userSchema);
 
-// Ensure indexes are created after the connection is open.
-mongoose.connection.once('open', () => {
-    User.createIndexes().catch((err) => console.error('Error creating User indexes:', err));
-});
-
 module.exports = User;
