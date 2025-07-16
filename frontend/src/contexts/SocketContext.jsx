@@ -19,7 +19,6 @@ export const SocketProvider = ({children}) => {
     const {user} = useAuth();
     const socketRef = useRef(null);
     const [isConnected, setIsConnected] = useState(false);
-    const initializedRef = useRef(false);
 
     const createSocket = useCallback((token) => {
         const socket = io(AppConfig.SOCKET_URL, {
@@ -90,9 +89,9 @@ export const SocketProvider = ({children}) => {
 
     // Manage connection based on user state
     useEffect(() => {
-        if (user) {
-            const token = authService.getAccessToken();
+        const token = authService.getAccessToken();
 
+        if (user && token) {
             if (!socketRef.current) {
                 socketRef.current = createSocket(token);
             } else if (!socketRef.current.connected) {
@@ -107,31 +106,12 @@ export const SocketProvider = ({children}) => {
         }
 
         return () => {
-            // Optional cleanup if user changes fast or unmount
-            if (!user && socketRef.current) {
+            if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
         };
     }, [user, createSocket]);
-
-
-    // Initial socket connection
-    useEffect(() => {
-        if (initializedRef.current) return;
-        initializedRef.current = true;
-
-        const token = authService.getAccessToken();
-        if (!token) return;
-
-        socketRef.current = createSocket(token);
-
-        return () => {
-            socketRef.current?.disconnect();
-            socketRef.current = null;
-            initializedRef.current = false;
-        };
-    }, [createSocket]);
 
     // Handle auth events
     useEffect(() => {
