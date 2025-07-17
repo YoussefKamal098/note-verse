@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef, useMemo} from "react";
 
 /**
  * Custom hook for managing request cancellation
@@ -33,11 +33,10 @@ const useRequestManager = () => {
         abortControllers.current.delete(controller);
     }, []);
 
-    return {
+    return useMemo(() => ({
         createAbortController,
         removeAbortController
-    };
-
-}
+    }), [createAbortController, removeAbortController]);
+};
 
 export default useRequestManager;

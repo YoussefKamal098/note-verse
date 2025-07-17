@@ -1,4 +1,4 @@
-import React, {createContext, useContext} from 'react';
+import React, {createContext, useContext, useMemo} from 'react';
 import {toast} from "react-toastify";
 import ToastNotifications from "../components/notifications/toastNotification";
 
@@ -12,12 +12,12 @@ const NotificationContext = createContext({
 const useToastNotification = () => useContext(NotificationContext);
 
 const ToastNotificationProvider = ({children}) => {
-    const notify = {
+    const notify = useMemo(() => ({
         success: toast.success,
         error: toast.error,
         warn: toast.warn,
         info: toast.info,
-    };
+    }), []);
 
     return (
         <NotificationContext.Provider value={{notify}}>

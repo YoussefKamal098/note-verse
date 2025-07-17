@@ -138,7 +138,7 @@ const DynamicMenuTriggerButton = styled.button`
 
     &:hover {
         background-color: var(--color-background-secondary);
-        rotate: 180deg;
+        //rotate: 180deg;
     }
 
     ${(props) => (props.$isOpen ? `
