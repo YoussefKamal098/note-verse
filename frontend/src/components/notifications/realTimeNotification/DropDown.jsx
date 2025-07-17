@@ -22,7 +22,7 @@ import {
 } from './styles';
 import {deepClone} from "shared-utils/obj.utils";
 
-const EmptyNotification = (tab) => (
+const EmptyNotification = ({tab}) => (
     <EmptyState>
         <HiOutlineBell size={24}/>
         <p>
@@ -168,7 +168,7 @@ const NotificationDropdown = forwardRef(({
                             threshold={10}
                             containerStyle={{gap: "0"}}
                             endMessage={"No more Notifications to load"}
-                            emptyListMessage={<EmptyNotification/>}
+                            emptyListMessage={<EmptyNotification tab={activeTab}/>}
                         />
                     </DropdownContainer>
                 </ResponsiveDropdownContainer>

@@ -1,16 +1,12 @@
-import React, {memo, useCallback, useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import React, {useCallback, useMemo, useState} from "react";
 import {motion} from "framer-motion";
 import {LuCircleCheckBig} from "react-icons/lu";
 import {isAlphanumeric} from "shared-utils/string.utils";
-import {maskEmail} from "shared-utils/email.utils";
 import {computeAnimationDelays} from "./otpHelpers";
 import OTPInput from "./OTPInput";
 import Button, {BUTTON_TYPE} from "../buttons/Button";
 import {HeightTransitionContainer} from "../animations/ContainerAnimation";
 import LoadingEffect from "../common/LoadingEffect";
-import authService from "../../api/authService";
-import routesPaths from "../../constants/routesPaths";
 
 import {
     ContainerStyled,
@@ -26,23 +22,43 @@ import {
 /**
  * OTPVerification Component
  *
- * Manages OTP input state and simulates verification.
- * On error, use a timeout based on clearDelay to reset the OTP input.
- * On success, a success animation is shown and the user is redirected after 3 seconds.
+ * A reusable and animated OTP (One-Time Password) verification UI. Handles OTP input state,
+ * validation, error/success animations, and optional callback hooks for external verification and success behavior.
+ *
+ * Supports any verification type (e.g., email, password reset, phone) via configurable props.
  *
  * @component
- * @param {object} props - Component properties.
- * @param {string} props.email - The email address to be verified.
- * @param {number} [props.length=6] - Number of OTP characters expected.
- * @returns {JSX.Element} The rendered OTP verification component.
+ * @example
+ * <OTPVerification
+ *   maskedTarget="y***f@gmail.com"
+ *   verificationType="Email"
+ *   onVerify={verifyEmailFn}
+ *   onSuccess={() => navigate('/home')}
+ * />
+ *
+ * @param {Object} props - Component props.
+ * @param {string} props.maskedTarget - The masked target (e.g., masked email or phone) displayed to the user.
+ * @param {number} [props.length=6] - The expected OTP length.
+ * @param {string} [props.verificationType="OTP"] - The type of verification (used in UI copy).
+ * @param {function(string): Promise<void>} props.onVerify - Async function that performs OTP verification. Receives the OTP code.
+ * @param {function} [props.onSuccess] - Optional callback triggered after a successful verification (e.g., redirect).
+ * @param {string} [props.successMessage] - Custom message shown after successful verification.
+ *
+ * @returns {React.JSX.Element} Rendered OTP verification interface.
  */
-const OTPVerification = memo(({email, length = 6}) => {
+const OTPVerification = ({
+                             maskedTarget,
+                             length = 6,
+                             verificationType = "OTP",
+                             onVerify,
+                             onSuccess,
+                             successMessage = `${verificationType} verified successfully!`
+                         }) => {
     const [otp, setOtp] = useState("");
     const [error, setError] = useState("");
     const [isVerifying, setIsVerifying] = useState(false);
     const [animationState, setAnimationState] = useState("idle"); // "idle" | "error" | "success"
     const [resetOtp, setResetOtp] = useState(0);
-    const navigate = useNavigate();
 
     // Disable input when verifying or when not idle.
     const disabledInput = isVerifying || animationState !== "idle";
@@ -60,38 +76,22 @@ const OTPVerification = memo(({email, length = 6}) => {
         setIsVerifying(true);
         setError("");
 
-        // Validate an OTP format using the util function.
         if (!isAlphanumeric(code)) {
             setError("Invalid OTP. Only alphanumeric characters are allowed.");
-            setAnimationState("error");
-            setIsVerifying(false);
-            setTimeout(() => {
-                setAnimationState("idle");
-                setOtp("");
-                setResetOtp((prev) => prev + 1);
-            }, clearDelay);
+            handleError();
             return;
         }
 
         try {
-            try {
-                await authService.verifyEmail({email, otpCode: code});
-                setAnimationState("success");
-                // Redirect to the home page after 3 seconds.
-                setTimeout(() => {
-                    navigate(routesPaths.HOME);
-                }, 3000);
-            } catch (err) {
-                setError(`OTP verification failed. ${err.message}`);
-                setAnimationState("error");
-                setTimeout(() => {
-                    setAnimationState("idle");
-                    setOtp("");
-                    setResetOtp((prev) => prev + 1);
-                }, clearDelay);
-            }
+            await onVerify(code);
+            setAnimationState("success");
+            setTimeout(() => onSuccess?.(), 3000);
         } catch (err) {
             setError("An error occurred during verification. Please try again later.");
+            handleError();
+        }
+
+        function handleError() {
             setAnimationState("error");
             setTimeout(() => {
                 setAnimationState("idle");
@@ -99,8 +99,9 @@ const OTPVerification = memo(({email, length = 6}) => {
                 setResetOtp((prev) => prev + 1);
             }, clearDelay);
         }
+
         setIsVerifying(false);
-    }, [email, clearDelay]);
+    }, [onVerify, onSuccess, clearDelay]);
 
     /**
      * Handler for OTP changes. Initiates verification when the input is complete.
@@ -120,10 +121,10 @@ const OTPVerification = memo(({email, length = 6}) => {
             variants={containerVariants} initial="hidden" animate="visible"
         >
             <ContainerStyled>
-                <h2>OTP Verification</h2>
+                <h2>{verificationType} Verification</h2>
                 <TextStyled>
                     Please enter the {length}-character alphanumeric code sent to{" "}
-                    <strong>{maskEmail(email)}</strong> to verify your account.
+                    <strong>{maskedTarget}</strong> to verify your account.
                     <br/>
                     You may paste the complete code at once. Only alphanumeric characters are allowed.
                 </TextStyled>
@@ -147,7 +148,7 @@ const OTPVerification = memo(({email, length = 6}) => {
                 {animationState === "success" ? (
                     <motion.div variants={emailVerifiedVariants} initial="hidden" animate="visible">
                         <EmailVerifiedStyled>
-                            <LuCircleCheckBig className="icon"/> Email verified successfully!
+                            <LuCircleCheckBig className="icon"/> {successMessage}
                         </EmailVerifiedStyled>
                     </motion.div>
                 ) : (
@@ -159,13 +160,13 @@ const OTPVerification = memo(({email, length = 6}) => {
                         {isVerifying ? (
                             <LoadingEffect color="var(--color-background)" loading={isVerifying} size={19}/>
                         ) : (
-                            "Verify Email"
+                            `Verify ${verificationType}`
                         )}
                     </Button>
                 )}
             </ContainerStyled>
         </VerificationContainerStyled>
     );
-});
+};
 
-export default OTPVerification;
+export default React.memo(OTPVerification);
