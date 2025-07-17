@@ -1,168 +1,104 @@
 const {Server} = require('socket.io');
 const {createAdapter} = require('@socket.io/redis-adapter');
-const {SOCKET_EVENTS, REDIS, getUserRoom} = require('../../constants/socket.constants');
-const AppError = require('../../errors/app.error');
-const config = require('../../config/config');
-const httpCodes = require('../../constants/httpCodes');
-const statusMessages = require('../../constants/statusMessages');
-const SocketEventDispatcher = require('./socketEventDispatcher.service');
-const errorCodes = require('../../constants/errorCodes');
+const {SOCKET_EVENTS, getUserRoom} = require('@/constants/socket.constants');
+const AppError = require('@/errors/app.error');
+const config = require('@/config/config');
+const httpCodes = require('@/constants/httpCodes');
+const statusMessages = require('@/constants/statusMessages');
+const errorCodes = require('@/constants/errorCodes');
+const RedisConnectionManager = require('./redisConnectionManager');
+const ClusterHealthMonitor = require('./clusterHealthMonitor');
+const EventBridge = require('./eventBridge');
 
 /**
  * @class SocketService
  * @description Manages WebSocket connections using Socket.IO with Redis cluster support
- *
- * This service handles real-time communication including:
- * - Connection management
- * - Authentication
- * - Redis pub/sub integration
- * - Cluster health monitoring
- * - Degraded mode fallback
- *
- * @example
- * const socketService = new SocketService({
- *   httpServer,
- *   redisClient,
- *   onlineUserService,
- *   jwtAuthService
- * });
- * await socketService.initialize();
  */
 class SocketService {
     /**
      * @private
      * @type {import('socket.io').Server}
-     * @description Socket.IO server instance
      */
     #io;
 
     /**
      * @private
      * @type {import('ioredis').Redis}
-     * @description Redis publisher client
-     */
-    #redisPub;
-
-    /**
-     * @private
-     * @type {import('ioredis').Redis}
-     * @description Redis subscriber client
-     */
-    #redisSub;
-
-    /**
-     * @private
-     * @type {import('ioredis').Redis}
-     * @description Main Redis client connection
      */
     #redisClient;
 
     /**
      * @private
      * @type {OnlineUserService}
-     * @description Service for tracking online users
      */
     #onlineUserService;
 
     /**
      * @private
      * @type {JwtAuthService}
-     * @description JWT authentication service
      */
     #jwtAuthService;
 
     /**
      * @private
-     * @type {SocketEventDispatcher}
-     * @description Event dispatcher for socket events
-     */
-    #eventDispatcher;
-
-    /**
-     * @private
-     * @type {import('ioredis').Redis}
-     * @description Worker subscriber connection
-     */
-    #workerSub;
-
-    /**
-     * @private
      * @type {boolean}
-     * @description Flag indicating if service is initialized
      */
     #isInitialized = false;
 
     /**
      * @private
-     * @type {boolean}
-     * @description Flag indicating degraded mode status
+     * @type {RedisConnectionManager}
      */
-    #isDegraded = false;
+    #connectionManager;
 
     /**
      * @private
-     * @type {number}
-     * @description Count of connection retry attempts
+     * @type {ClusterHealthMonitor}
      */
-    #retryCount = 0;
+    #healthMonitor;
 
     /**
      * @private
-     * @type {ReturnType<NodeJS.Timeout>}
-     * @description Interval for health checks in degraded mode
+     * @type {EventBridge}
      */
-    #healthCheckInterval;
+    #eventBridge;
 
     /**
      * @private
-     * @type {{
-     *      pub: 'disconnected' | 'connected' ,
-     *      sub: 'disconnected' | 'connected' ,
-     *      worker: 'disconnected' | 'connected'
-     * }}
-     * @description Tracks connection states for pub/sub/worker
+     * @type {{connectionCount: number}}
      */
-    #connectionStates;
-
-    /**
-     * @private
-     * @type {{
-     *    eventsDispatched: number,
-     *    deliveryErrors: number,
-     *    redisErrors: number,
-     *    reconnects: number
-     * }}
-     * @description Service metrics and statistics
-     */
-    #metrics = {
-        eventsDispatched: 0,
-        deliveryErrors: 0,
-        redisErrors: 0,
-        reconnects: 0
-    };
+    #metrics = {connectionCount: 0};
 
     /**
      * Creates a SocketService instance
      * @param {Object} params - Dependencies
-     * @param {import('http').Server} params.httpServer - HTTP server instance
-     * @param {import('redis').Redis} params.redisClient - Redis cluster client
-     * @param {OnlineUserService} params.onlineUserService - Online user tracking service
-     * @param {JwtAuthService} params.jwtAuthService - JWT authentication service
-     * @throws {Error} If required dependencies are missing
+     * @param {import('http').Server} params.httpServer - HTTP server
+     * @param {import('ioredis').Redis} params.redisClient - Redis client
+     * @param {OnlineUserService} params.onlineUserService - User tracking service
+     * @param {JwtAuthService} params.jwtAuthService - JWT auth service
+     * @throws {Error} If dependencies are missing
      */
     constructor({httpServer, redisClient, onlineUserService, jwtAuthService}) {
         if (!redisClient || !onlineUserService || !jwtAuthService) {
-            throw new Error('Missing required dependencies');
+            throw new Error('[SocketService] Missing required dependencies');
         }
 
         this.#redisClient = redisClient;
         this.#onlineUserService = onlineUserService;
         this.#jwtAuthService = jwtAuthService;
 
-        // Create separate connections for pub/sub
-        this.#redisPub = this.#createRedisConnection();
-        this.#redisSub = this.#createRedisConnection();
+        this.#connectionManager = new RedisConnectionManager(redisClient);
+        this.#healthMonitor = new ClusterHealthMonitor(redisClient);
+        this.#initializeSocketServer(httpServer);
+        this.#setupConnectionHandlers();
+    }
 
+    /**
+     * @private
+     * Initializes Socket.IO server
+     * @param {import('http').Server} httpServer - HTTP server
+     */
+    #initializeSocketServer(httpServer) {
         this.#io = new Server(httpServer, {
             transports: ['websocket'],
             perMessageDeflate: false,
@@ -173,263 +109,134 @@ class SocketService {
                 credentials: true
             },
             connectionStateRecovery: {
-                maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+                maxDisconnectionDuration: 2 * 60 * 1000,
                 skipMiddlewares: true
             }
         });
-
-        this.#connectionStates = {
-            pub: 'disconnected',
-            sub: 'disconnected',
-            worker: 'disconnected'
-        };
-
-        this.#setupConnectionHandlers();
     }
 
     /**
      * @private
-     * Creates a new Redis connection with error handling
-     * @returns {import('ioredis').Redis} New Redis connection
-     */
-    #createRedisConnection() {
-        const conn = this.#redisClient.duplicate();
-        conn.on('error', (err) => this.#handleRedisError(err));
-        return conn;
-    }
-
-    /**
-     * @private
-     * Sets up Redis connection event handlers
+     * Sets up connection handlers
      */
     #setupConnectionHandlers() {
-        this.#redisPub.on('ready', () => {
-            console.log('[SocketService] Redis Pub connection ready');
-            this.#retryCount = 0; // Reset on successful connection
-        });
-
-        this.#redisSub.on('ready', () => {
-            console.log('[SocketService] Redis Sub connection ready');
-            this.#retryCount = 0;
-        });
-
-        this.#redisClient.on('node error', (err, node) => {
-            this.#metrics.redisErrors++;
-            console.error(`[SocketService] Redis node error (${node}):`, err.message);
-        });
-    }
-
-    /**
-     * @private
-     * Handles Redis connection errors
-     * @param {Error} err - Redis error
-     */
-    #handleRedisError(err) {
-        this.#metrics.redisErrors++;
-        console.error('[SocketService] Redis Error:', err.message);
-
-        if (err.message.includes('CLUSTERDOWN')) {
-            this.#retryCount++;
-            console.warn(`[SocketService] Redis cluster is down (attempt ${this.#retryCount})`);
-
-            if (this.#retryCount > 5) {
-                this.#enterDegradedMode();
-            } else {
-                setTimeout(() => this.#attemptReconnect(), 2000);
+        this.#connectionManager.pub.on('error', (err) => {
+            if (this.#connectionManager.handleError(err) === 'clusterDown') {
+                this.#handleClusterDownError();
             }
-        }
-    }
-
-    /**
-     * @private
-     * Attempts to reconnect Redis clients
-     * @returns {Promise<void>}
-     */
-    async #attemptReconnect() {
-        try {
-            if (!this.#isInitialized) return;
-
-            console.log('[SocketService] Attempting to reconnect Redis...');
-            await Promise.all([
-                this.#redisPub.connect(),
-                this.#redisSub.connect()
-            ]);
-            this.#metrics.reconnects++;
-            console.log('[SocketService] Redis reconnected successfully');
-        } catch (err) {
-            console.error('[SocketService] Reconnect failed:', err.message);
-        }
-    }
-
-    /**
-     * @private
-     * Enters degraded mode when Redis cluster is unavailable
-     */
-    #enterDegradedMode() {
-        if (this.#isDegraded) return;
-
-        this.#isDegraded = true;
-        console.warn('[SocketService] Entering degraded mode');
-
-        // Switch to polling fallback
-        this.#healthCheckInterval = setInterval(async () => {
-            try {
-                const health = await this.#checkClusterHealth();
-                if (health.status === 'healthy') {
-                    console.log('[SocketService] Cluster recovered, exiting degraded mode');
-                    this.#isDegraded = false;
-                    clearInterval(this.#healthCheckInterval);
-                    await this.#attemptReconnect();
-                }
-            } catch (err) {
-                console.error('[SocketService] Health check failed:', err.message);
-            }
-        }, 5000);
-    }
-
-    /**
-     * @private
-     * Checks Redis cluster health status
-     * @returns {Promise<
-     * {status: 'healthy' | 'degraded' | 'unhealthy', nodes: number} |
-     * {status: 'unhealthy', error?: string}
-     * >} Health status object
-     */
-    async #checkClusterHealth() {
-        try {
-            await this.#redisClient.ping();
-            const info = await this.#redisClient.cluster('INFO');
-            return {
-                status: info.includes('cluster_state:ok') ? 'healthy' : 'degraded',
-                nodes: (await this.#redisClient.cluster('NODES')).split('\n').length
-            };
-        } catch (err) {
-            return {status: 'unhealthy', error: err.message};
-        }
-    }
-
-    /**
-     * @private
-     * Sets up Socket.IO event listeners
-     */
-    #setupListeners() {
-        this.#io.on(SOCKET_EVENTS.CONNECTION, async (socket) => {
-            const userId = socket.userId;
-            if (!userId) return socket.disconnect(true);
-
-            await this.#onlineUserService.add(userId, socket.id);
-            socket.join(getUserRoom(userId));
-
-            socket.setMaxListeners(20);
-
-            socket.on(SOCKET_EVENTS.DISCONNECT, () => {
-                this.#onlineUserService.remove(userId, socket.id);
-            });
-
-            socket.on('error', (err) => {
-                console.error(`[SocketService] Socket error for user ${userId}:`, err.message);
-            });
         });
     }
 
     /**
      * @private
-     * Sets up Socket.IO authentication middleware
+     * Handles cluster down error
+     */
+    #handleClusterDownError() {
+        if (this.#connectionManager.retryCount > 5) {
+            this.#healthMonitor.enterDegradedMode();
+        } else {
+            this.#connectionManager.attemptReconnect();
+        }
+    }
+
+    /**
+     * @private
+     * Sets up authentication middleware
      */
     #setupMiddleware() {
         this.#io.use(async (socket, next) => {
             try {
-                const token = socket.handshake.auth?.token;
-                if (!token) {
-                    return next(new AppError(
-                        statusMessages.ACCESS_TOKEN_NOT_PROVIDED,
-                        httpCodes.UNAUTHORIZED.code,
-                        errorCodes.ACCESS_TOKEN_FAILED
-                    ));
-                }
-
-                const {userId} = await this.#jwtAuthService.verifyAccessToken(token);
-                socket.userId = userId;
+                await this.#authenticateSocket(socket);
                 next();
             } catch (err) {
-                console.error('[SocketService] Socket.IO Auth Error', err);
-                next(err);
+                this.#handleAuthError(err, next);
             }
         });
     }
 
     /**
      * @private
-     * Ensures Redis connection is ready
-     * @param {import('ioredis').Redis} redisConn - Redis connection
-     * @param {string} type - Connection type ('pub', 'sub', or 'worker')
+     * Authenticates a socket connection
+     * @param {import('socket.io').Socket} socket - Socket instance
      * @returns {Promise<void>}
-     * @throws {Error} If connection type is invalid or connection fails
      */
-    async #ensureConnection(redisConn, type) {
-        if (!['pub', 'sub', 'worker'].includes(type)) {
-            throw new Error('Invalid connection type');
+    async #authenticateSocket(socket) {
+        const token = socket.handshake.auth?.token;
+        if (!token) {
+            throw new AppError(
+                statusMessages.ACCESS_TOKEN_NOT_PROVIDED,
+                httpCodes.UNAUTHORIZED.code,
+                errorCodes.ACCESS_TOKEN_FAILED
+            );
         }
 
-        // Return if already ready or connecting
-        if (this.#connectionStates[type] === 'ready') return;
-        if (this.#connectionStates[type] === 'connecting') {
-            await new Promise((resolve) => {
-                const interval = setInterval(() => {
-                    if (this.#connectionStates[type] === 'ready') {
-                        clearInterval(interval);
-                        resolve();
-                    } else if (this.#connectionStates[type] === 'error') {
-                        clearInterval(interval);
-                        resolve();
-                    }
-                }, 100);
-            });
-            return;
-        }
+        const {userId} = await this.#jwtAuthService.verifyAccessToken(token);
+        socket.userId = userId;
+    }
 
-        this.#connectionStates[type] = 'connecting';
-        try {
-            // Skip if already connected
-            if (redisConn.status === 'ready') {
-                this.#connectionStates[type] = 'ready';
-                return;
-            }
+    /**
+     * @private
+     * Handles authentication errors
+     * @param {Error} err - Error object
+     * @param {Function} next - Next middleware function
+     */
+    #handleAuthError(err, next) {
+        console.error('[SocketService] Auth error', err);
+        next(err);
+    }
 
-            // Handle connecting state
-            if (redisConn.status === 'connecting') {
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        redisConn.removeAllListeners();
-                        reject(new Error('Redis connection timeout'));
-                    }, 10000);
+    /**
+     * @private
+     * Sets up socket event listeners
+     */
+    #setupListeners() {
+        this.#io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
+            this.#handleNewConnection(socket);
+        });
+    }
 
-                    redisConn.once('ready', () => {
-                        clearTimeout(timeout);
-                        this.#connectionStates[type] = 'ready';
-                        resolve();
-                    });
+    /**
+     * @private
+     * Handles new socket connection
+     * @param {import('socket.io').Socket} socket - Socket instance
+     */
+    async #handleNewConnection(socket) {
+        const userId = socket.userId;
+        if (!userId) return socket.disconnect(true);
 
-                    redisConn.once('error', (err) => {
-                        clearTimeout(timeout);
-                        this.#connectionStates[type] = 'error';
-                        reject(err);
-                    });
-                });
-                return;
-            }
+        this.#metrics.connectionCount++;
+        await this.#onlineUserService.add(userId, socket.id);
+        socket.join(getUserRoom(userId));
+        socket.setMaxListeners(20);
 
-            // New connection attempt
-            await redisConn.connect();
-            await redisConn.cluster('INFO');
-            this.#connectionStates[type] = 'ready';
-        } catch (err) {
-            this.#connectionStates[type] = 'error';
-            if (!err.message.includes('already connected')) {
-                throw err;
-            }
-            this.#connectionStates[type] = 'ready';
-        }
+        this.#setupSocketEventHandlers(socket, userId);
+    }
+
+    /**
+     * @private
+     * Sets up socket event handlers
+     * @param {import('socket.io').Socket} socket - Socket instance
+     * @param {string} userId - User ID
+     */
+    #setupSocketEventHandlers(socket, userId) {
+        socket.on(SOCKET_EVENTS.DISCONNECT, () => {
+            this.#handleDisconnect(userId, socket.id);
+        });
+
+        socket.on('error', (err) => {
+            console.error(`[Socket] Error (user ${userId}):`, err.message);
+        });
+    }
+
+    /**
+     * @private
+     * Handles socket disconnection
+     * @param {string} userId - User ID
+     * @param {string} socketId - Socket ID
+     */
+    async #handleDisconnect(userId, socketId) {
+        await this.#onlineUserService.remove(userId, socketId);
+        this.#metrics.connectionCount--;
     }
 
     /**
@@ -445,118 +252,131 @@ class SocketService {
 
         try {
             console.log('[SocketService] Initializing...');
-
-            // Wait for main client to be ready with timeout
-            if (this.#redisClient.status !== 'ready') {
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error('Redis connection timeout'));
-                    }, 15000);
-
-                    const check = () => {
-                        if (this.#redisClient.status === 'ready') {
-                            clearTimeout(timeout);
-                            resolve();
-                        } else if (this.#redisClient.status === 'end') {
-                            clearTimeout(timeout);
-                            reject(new Error('Redis connection failed'));
-                        } else {
-                            setTimeout(check, 100);
-                        }
-                    };
-                    check();
-                });
-            }
-
-            // Connect pub/sub connections sequentially
-            await this.#ensureConnection(this.#redisPub, 'pub');
-            await this.#ensureConnection(this.#redisSub, 'sub');
-
-            // Setup Socket.IO Redis adapter with hash tags
-            this.#io.adapter(createAdapter(this.#redisPub, this.#redisSub, {
-                key: `{socket.io}:${config.env}:notify`, // Added hash tags
-                requestsTimeout: 10000 // Increased timeout
-            }));
-
+            await this.#initializeRedisConnections();
+            await this.#initializeSocketAdapter();
             this.#setupMiddleware();
             this.#setupListeners();
-
-            // Initialize event bridge
-            this.#eventDispatcher = new SocketEventDispatcher(this.#io);
-            this.#workerSub = this.#createRedisConnection();
-            await this.#ensureConnection(this.#workerSub, 'worker');
-            await this.#workerSub.subscribe(REDIS.CHANNELS.SOCKET_EVENTS);
-
-            this.#workerSub.on('message', (channel, message) => {
-                this.#metrics.eventsDispatched++;
-                if (channel === REDIS.CHANNELS.SOCKET_EVENTS) {
-                    try {
-                        const event = JSON.parse(message);
-                        this.#eventDispatcher.dispatch(event);
-                    } catch (err) {
-                        this.#metrics.deliveryErrors++;
-                        console.error('[SocketService] Error processing socket event:', err);
-                    }
-                }
-            });
-
+            await this.#initializeEventBridge();
+            this.#startHealthMonitoring();
             this.#isInitialized = true;
-            console.log('[SocketService] Initialized with Redis Cluster adapter');
+            console.log('[SocketService] Initialized successfully');
         } catch (err) {
-            console.error('[SocketService] Initialization failed:', err);
-            await this.disconnect();
-            throw err;
+            await this.#handleInitializationError(err);
         }
     }
 
     /**
-     * Disconnects all connections and cleans up resources
+     * @private
+     * Initializes Redis connections
+     * @returns {Promise<void>}
+     */
+    async #initializeRedisConnections() {
+        await this.#waitForBaseRedisConnection();
+        await this.#connectionManager.ensureConnection(this.#connectionManager.pub, 'pub');
+        await this.#connectionManager.ensureConnection(this.#connectionManager.sub, 'sub');
+    }
+
+    /**
+     * @private
+     * Waits for base Redis connection
+     * @returns {Promise<void>}
+     */
+    async #waitForBaseRedisConnection() {
+        if (this.#redisClient.status === 'ready') return;
+
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(
+                () => reject(new Error('Redis connection timeout')),
+                15000
+            );
+
+            this.#redisClient.once('ready', () => {
+                clearTimeout(timeout);
+                resolve();
+            });
+
+            this.#redisClient.once('error', reject);
+        });
+    }
+
+    /**
+     * @private
+     * Initializes Socket.IO Redis adapter
+     * @returns {Promise<void>}
+     */
+    async #initializeSocketAdapter() {
+        this.#io.adapter(createAdapter(
+            this.#connectionManager.pub,
+            this.#connectionManager.sub,
+            {
+                key: `{socket.io}:${config.env}:notify`,
+                requestsTimeout: 10000
+            }
+        ));
+    }
+
+    /**
+     * @private
+     * Initializes event bridge
+     * @returns {Promise<void>}
+     */
+    async #initializeEventBridge() {
+        this.#eventBridge = new EventBridge(this.#connectionManager, this.#io);
+        await this.#eventBridge.initialize();
+    }
+
+    /**
+     * @private
+     * Starts health monitoring
+     */
+    #startHealthMonitoring() {
+        this.#healthMonitor.startPeriodicCheck((health) => {
+            if (health.status === 'healthy' && this.#healthMonitor.isDegraded) {
+                this.#healthMonitor.exitDegradedMode();
+                this.#connectionManager.attemptReconnect();
+            }
+        });
+    }
+
+    /**
+     * @private
+     * Handles initialization error
+     * @param {Error} err - Error object
+     * @returns {Promise<void>}
+     */
+    async #handleInitializationError(err) {
+        console.error('[SocketService] Initialization failed:', err);
+        await this.disconnect();
+        throw err;
+    }
+
+    /**
+     * Disconnects all connections
      * @returns {Promise<void>}
      */
     async disconnect() {
         if (!this.#isInitialized) return;
 
         console.log('[SocketService] Disconnecting...');
-        const disconnectTasks = [];
-
-        if (this.#workerSub) {
-            disconnectTasks.push(
-                this.#workerSub.unsubscribe()
-                    .then(() => this.#workerSub.quit())
-                    .catch(err => console.error('[SocketService] WorkerSub disconnect error:', err))
-            );
-        }
-
-        if (this.#redisPub) {
-            disconnectTasks.push(
-                this.#redisPub.quit()
-                    .catch(err => console.error('[SocketService] RedisPub disconnect error:', err))
-            );
-        }
-
-        if (this.#redisSub) {
-            disconnectTasks.push(
-                this.#redisSub.quit()
-                    .catch(err => console.error('[SocketService] RedisSub disconnect error:', err))
-            );
-        }
-
-        if (this.#io) {
-            disconnectTasks.push(new Promise(resolve => {
-                this.#io.close(() => {
-                    console.log('[SocketService] Socket.IO server closed');
-                    resolve();
-                });
-            }));
-        }
-
-        if (this.#healthCheckInterval) {
-            clearInterval(this.#healthCheckInterval);
-        }
-
-        await Promise.all(disconnectTasks);
+        await this.#connectionManager.disconnect();
+        await this.#closeSocketServer();
+        this.#healthMonitor.stopPeriodicCheck();
         this.#isInitialized = false;
-        console.log('[SocketService] Disconnected cleanly');
+        console.log('[SocketService] Disconnected');
+    }
+
+    /**
+     * @private
+     * Closes Socket.IO server
+     * @returns {Promise<void>}
+     */
+    async #closeSocketServer() {
+        return new Promise(resolve => {
+            this.#io.close(() => {
+                console.log('[SocketService] Socket.IO server closed');
+                resolve();
+            });
+        });
     }
 
     /**
@@ -565,39 +385,41 @@ class SocketService {
      */
     isConnected() {
         return this.#isInitialized &&
-            this.#redisPub?.status === 'ready' &&
-            this.#redisSub?.status === 'ready' &&
-            this.#workerSub?.status === 'ready';
+            this.#connectionManager.pub?.status === 'ready' &&
+            this.#connectionManager.sub?.status === 'ready' &&
+            this.#connectionManager.worker?.status === 'ready';
     }
 
     /**
      * Gets current service metrics
      * @returns {{
-     *    eventsDispatched: number,
-     *    deliveryErrors: number,
-     *    redisErrors: number,
-     *    reconnects: number,
-     *    status: 'connected' | 'disconnected',
-     *    degradedMode: boolean
-     * }} Metrics object
+     *   connectionCount: number,
+     *   redisErrors: number,
+     *   reconnects: number,
+     *   eventsDispatched: number,
+     *   deliveryErrors: number,
+     *   status: string,
+     *   degradedMode: boolean
+     * }}
      */
     getMetrics() {
         return {
-            ...this.#metrics,
+            connectionCount: this.#metrics.connectionCount,
+            redisErrors: this.#connectionManager.metrics.redisErrors,
+            reconnects: this.#connectionManager.metrics.reconnects,
+            eventsDispatched: this.#eventBridge?.metrics.eventsDispatched || 0,
+            deliveryErrors: this.#eventBridge?.metrics.deliveryErrors || 0,
             status: this.isConnected() ? 'connected' : 'disconnected',
-            degradedMode: this.#isDegraded
+            degradedMode: this.#healthMonitor.isDegraded
         };
     }
 
     /**
      * Gets Redis cluster health status
-     * @returns {Promise<
-     * {status: 'healthy' | 'degraded' | 'unhealthy', nodes: number} |
-     * {status: 'unhealthy', error?: string}
-     * >} Health status object
+     * @returns {Promise<{status: string, nodes?: number, error?: string}>}
      */
     async getClusterHealth() {
-        return this.#checkClusterHealth();
+        return this.#healthMonitor.checkHealth();
     }
 }
 

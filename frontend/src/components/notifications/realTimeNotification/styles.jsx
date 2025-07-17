@@ -126,7 +126,7 @@ export const DropdownActions = styled.div`
 `;
 
 export const NotificationItem = styled(BaseNotificationItem)`
-    border-left: ${({unread}) => unread ? '2px solid var(--color-primary)' : 'none'};
+        // border-left: ${({unread}) => unread ? '2px solid var(--color-primary)' : 'none'};
     background: ${({unread}) => unread ? 'var(--background-tertiary)' : 'transparent'};
 
     &:hover {

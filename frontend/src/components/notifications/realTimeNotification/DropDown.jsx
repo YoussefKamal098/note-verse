@@ -44,7 +44,6 @@ const NotificationDropdown = forwardRef(({
                                              fetchNotifications,
                                              onNotification
                                          }, ref) => {
-    const pageSize = 10;
     const isMobile = useMediaSize(DEVICE_SIZES.mobileL);
     const {
         dragOffset,
@@ -55,7 +54,6 @@ const NotificationDropdown = forwardRef(({
 
     const [notifications, setNotifications] = useState([]);
     const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
 
     const handleChange = useCallback((newItems, newPage) => {
         setNotifications(newItems);
@@ -107,26 +105,6 @@ const NotificationDropdown = forwardRef(({
             onMarkAsRead={handleMarkAsRead}
         />
     ), [handleMarkAsRead]);
-
-    // Handle real-time notifications
-    useEffect(() => {
-        const handleNewNotification = (notification) => {
-            if (!isOpen) return;
-
-            setNotifications((prev) => {
-                const updated = [...prev];
-                if (updated.length > pageSize) {
-                    updated.pop(); // Remove last
-                    setHasMore(true);
-                }
-
-                return [notification, ...updated]; // Add new to front
-            });
-        };
-
-        const unsubscribe = onNotification(handleNewNotification);
-        return unsubscribe;
-    }, [onNotification]);
 
     useEffect(() => {
         setPage(0);
@@ -184,11 +162,11 @@ const NotificationDropdown = forwardRef(({
                             onChange={handleChange}
                             initItems={notifications}
                             initPage={page}
-                            initHasMore={hasMore}
                             fetchData={fetchNotifications}
                             renderItem={Item}
                             pageSize={10}
                             threshold={10}
+                            containerStyle={{gap: "0"}}
                             endMessage={"No more Notifications to load"}
                             emptyListMessage={<EmptyNotification/>}
                         />

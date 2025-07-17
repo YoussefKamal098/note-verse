@@ -43,20 +43,15 @@ const InfiniteScrollLoader = ({
                                   initPage = 0,
                                   onChange,
                                   containerStyle = {},
-                                  initHasMore = true,
                                   ...props
                               }) => {
     const {notify} = useToastNotification();
     const [items, setItems] = useState(initItems);
     const [page, setPage] = useState(initPage);
-    const [hasMore, setHasMore] = useState(initHasMore);
+    const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [hasInitialLoad, setHasInitialLoad] = useState(initItems.length === 0);
     const containerRef = useRef(null);
-
-    useEffect(() => {
-        setHasMore(initHasMore);
-    }, [initHasMore]);
 
     useEffect(() => {
         if (page === 0 && items.length === 0) {
@@ -116,10 +111,11 @@ const InfiniteScrollLoader = ({
             loadMore();
         }
     }, [hasInitialLoad, initItems.length, loadMore]);
-   
+
     return (
         <ScrollContainer
             ref={containerRef}
+            style={containerStyle}
             {...props}
         >
             <AnimatedListWidthChildrenFade delayAfter={items.length - pageSize}>
