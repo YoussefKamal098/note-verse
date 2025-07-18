@@ -24,6 +24,10 @@ const PreviewStyles = styled(MarkdownPreview)`
     background-color: transparent !important;
 `;
 
+const normalizeCodeBlocks = (markdown) => {
+    return markdown.replace(/```(env|init)(\s)/g, '```ini$2');
+};
+
 // Custom Code Block Renderer
 const createCodeRenderer = (theme) => ({node, inline, className = '', children, ...props}) => {
     const match = /language-(\w+)/.exec(className || '');
@@ -78,7 +82,7 @@ const PreviewTab = ({content, ...props}) => {
         <div {...restProps} style={restStyle} data-color-mode={theme}>
             <PreviewStyles
                 style={{...(padding ? {padding: padding} : {})}}
-                source={content}
+                source={normalizeCodeBlocks(content)}
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[[rehypeKatex, {throwOnError: false}]]}
                 components={{
