@@ -141,7 +141,12 @@ class FileStorageService {
             if (error instanceof AppError) {
                 throw error
             } else {
-                throw new Error(`Download file failed: ${error.message}`);
+                console.error(`Download file failed: ${error.message}`);
+                throw new AppError(
+                    statusMessages.DOWNLOAD_FILE_FAILED,
+                    httpCodes.INTERNAL_SERVER_ERROR.code,
+                    httpCodes.INTERNAL_SERVER_ERROR.name
+                );
             }
         }
     }
@@ -183,7 +188,12 @@ class FileStorageService {
             if (error instanceof AppError) {
                 throw error
             } else {
-                throw new Error(`Delete file failed: ${error.message}`);
+                console.error(`Delete file failed: ${error.message}`);
+                throw new AppError(
+                    statusMessages.DELETE_FILE_FAILED,
+                    httpCodes.INTERNAL_SERVER_ERROR.code,
+                    httpCodes.INTERNAL_SERVER_ERROR.name
+                );
             }
         }
     }
@@ -202,7 +212,12 @@ class FileStorageService {
 
             return this.#storageEngine.exists(fileDoc.name);
         } catch (error) {
-            throw new Error(`Checking file existence failed: ${error.message}`);
+            console.error(`Checking file existence failed: ${error.message}`);
+            throw new AppError(
+                statusMessages.CHECK_FILE_EXISTENCE_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
         }
     }
 }

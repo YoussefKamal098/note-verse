@@ -7,8 +7,10 @@ import {useTheme} from "@/contexts/ThemeContext";
 
 const EditorStyled = styled(MarkdownEditor)`
     font-size: 0.9em !important;
-    font-family: "Poppins", sans-serif !important;
-    font-weight: 700 !important;
+
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
+    }
 `;
 
 const EditorTab = ({

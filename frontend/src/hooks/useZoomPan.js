@@ -51,8 +51,6 @@ export const useZoomPan = (
                     .scaleExtent(scaleExtent)
                     .on("zoom", (event) => {
                         const {x, y, k} = event.transform;
-                        
-                        // FIXME: Zoom is not centered properly.
                         wrapper.style.transform = `translate(${x}px, ${y}px) scale(${k})`;
                     });
 

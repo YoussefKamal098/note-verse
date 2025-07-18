@@ -6,19 +6,11 @@ import {useZoomPan} from "@/hooks/useZoomPan";
 const Error = styled.div`
     padding: 10px;
     color: var(--color-danger);
-    font-family: "Quicksand", "Poppins", sans-serif !important;
-    font-weight: 600;
     white-space: wrap;
     word-break: break-word;
 `
 
 const DiagramContainer = styled.div`
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
     cursor: grab;
 
@@ -30,17 +22,11 @@ const DiagramContainer = styled.div`
 const DiagramWrapper = styled.div`
     transform-origin: 0 0;
     will-change: transform;
-    width: fit-content;
-    height: fit-content;
 
-    .nodeLabel,
-    .messageText,
-    .actor,
-    .actor-box,
-    .titleText {
-        font-size: 0.8rem !important;
-        font-family: "Quicksand", "Poppins", sans-serif !important;
-        font-weight: 600 !important;
+    .mermaid-diagram {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 `;
 
@@ -90,6 +76,7 @@ const Mermaid = ({chart, theme}) => {
                 <DiagramContainer ref={containerRef}>
                     <DiagramWrapper ref={wrapperRef}>
                         <MermaidDiagram
+                            className={"mermaid-diagram"}
                             theme={theme}
                             securityLevel="strict"
                             onError={handleError}

@@ -19,9 +19,16 @@ const PreviewStyles = styled(MarkdownPreview)`
     padding: 1em 2em 3em;
     text-align: left;
     font-size: 1em !important;
-    font-family: "Poppins", sans-serif !important;
-    font-weight: 700 !important;
     background-color: transparent !important;
+
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
+    }
+
+    code,
+    pre {
+        font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
+    }
 `;
 
 const normalizeCodeBlocks = (markdown) => {

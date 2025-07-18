@@ -18,6 +18,8 @@ const Container = styled.div`
 
     .function-plot .x.axis-label,
     .function-plot .y.axis-label {
+        font-size: 0.75em;
+        font-weight: bold;
         fill: var(--color-text, #fff) !important;
         stroke: none !important;
     }
@@ -25,7 +27,6 @@ const Container = styled.div`
     .graph-error {
         color: var(--color-danger);
         padding: 10px;
-        font-weight: bold;
         white-space: wrap;
         word-break: break-word;
     }
