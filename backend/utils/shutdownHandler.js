@@ -7,6 +7,12 @@ async function shutdownServices() {
 
     try {
         await gracefulShutdown(async () => {
+            if (container.hasRegistration('onlineUserService')) {
+                const onlineUserService = container.resolve('onlineUserService');
+                await onlineUserService.clearAllOnlineUsers();
+                console.log('🧹 Cleared all online users from Redis');
+            }
+
             if (container.hasRegistration('cacheService')) {
                 const cacheService = container.resolve('cacheService');
                 if (cacheService?.isConnected?.() === true) {

@@ -26,14 +26,14 @@ class OnlineUserService {
 
     /**
      * @private
-     * @type {import('ioredis').Redis}
+     * @type {RedisService}
      * @description Redis client instance
      */
     #redis;
 
     /**
      * Creates an OnlineUserService instance
-     * @param {import('ioredis').Redis} redisService - Configured Redis client
+     * @param {RedisService} redisService - Configured Redis client
      * @throws {Error} If redisService is not provided
      */
     constructor(redisService) {
@@ -79,7 +79,7 @@ class OnlineUserService {
     /**
      * Checks if a user is currently online
      * @param {string} userId - User identifier to check
-     * @returns {Promise<boolean>} True if user has active connections
+     * @returns {Promise<number>} 1 if member exists, 0 if not
      *
      * @example
      * const online = await onlineService.isOnline('user123');
@@ -112,6 +112,21 @@ class OnlineUserService {
      */
     async getOnlineUsers() {
         return this.#redis.smembers(OnlineUserService.#ONLINE_USERS);
+    }
+
+    /**
+     * Flushes all online users and their socket mappings
+     * Should be called on app shutdown/restart
+     * @returns {Promise<void>}
+     */
+    async clearAllOnlineUsers() {
+        const userIds = await this.#redis.smembers(OnlineUserService.#ONLINE_USERS);
+        const pipeline = this.#redis.pipeline();
+        for (const userId of userIds) {
+            pipeline.del(`${OnlineUserService.#USER_SOCKETS}:${userId}`);
+        }
+        pipeline.del(OnlineUserService.#ONLINE_USERS);
+        await pipeline.exec();
     }
 }
 

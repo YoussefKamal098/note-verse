@@ -552,6 +552,21 @@ class RedisService extends EventEmitter {
     }
 
     /**
+     * Creates a Redis pipeline for batch operations.
+     *
+     * @returns {import('ioredis').Pipeline} Redis pipeline instance
+     *
+     * @example
+     * const pipeline = redisService.pipeline();
+     * pipeline.set('key1', 'val1');
+     * pipeline.set('key2', 'val2');
+     * await pipeline.exec();
+     */
+    pipeline() {
+        return this.#client.pipeline();
+    }
+
+    /**
      * Gets Redis cluster info
      * @returns {Promise<string>} Cluster info string
      */
