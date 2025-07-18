@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import functionPlot from "function-plot";
 import styled from "styled-components";
 
@@ -6,11 +6,14 @@ import styled from "styled-components";
 const DEFAULT_DOMAIN = [-10, 10];
 const DEFAULT_RANGE = [0, 2 * Math.PI];
 const POLAR_RANGE = [-Math.PI, Math.PI];
-const GRAPH_DIMENSIONS = {width: 600, height: 400};
 
 // Styled Components
 const Container = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    height: 100%;
     overflow: auto;
 
     .function-plot .x.axis-label,
@@ -199,13 +202,14 @@ const parseExpressions = (expressions) => {
     return data;
 };
 
-const renderGraph = (container, data) => {
+const renderGraph = (container, data, width, height) => {
     try {
         container.innerHTML = "";
 
         functionPlot({
             target: container,
-            ...GRAPH_DIMENSIONS,
+            width,
+            height,
             grid: true,
             disableZoom: false,
             xAxis: {
@@ -233,16 +237,36 @@ const renderGraph = (container, data) => {
 };
 
 const FunctionGraph = ({expressions}) => {
-    const ref = useRef(null);
+    const containerRef = useRef(null);
+    const [dimensions, setDimensions] = useState({width: 500, height: 250});
 
     useEffect(() => {
-        if (!ref.current) return;
+        const container = containerRef.current;
+        if (!container) return;
+
+        const updateSize = () => {
+            const {width} = container.getBoundingClientRect();
+            if (width <= 750) {
+                setDimensions({width: Math.floor(width), height: dimensions.height});
+            }
+        };
+
+        updateSize();
+
+        const resizeObserver = new ResizeObserver(updateSize);
+        resizeObserver.observe(container);
+
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
 
         const data = parseExpressions(expressions);
-        renderGraph(ref.current, data);
-    }, [expressions]);
+        renderGraph(containerRef.current, data, dimensions.width, dimensions.height);
+    }, [expressions, dimensions]);
 
-    return <Container ref={ref}/>;
+    return <Container ref={containerRef}/>;
 };
 
 export default React.memo(FunctionGraph);

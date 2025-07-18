@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
 import {MermaidDiagram} from '@lightenna/react-mermaid-diagram';
+import {useZoomPan} from "@/hooks/useZoomPan";
 
 const Error = styled.div`
     padding: 10px;
@@ -11,7 +12,27 @@ const Error = styled.div`
     word-break: break-word;
 `
 
-const Container = styled.div`
+const DiagramContainer = styled.div`
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+`;
+
+const DiagramWrapper = styled.div`
+    transform-origin: 0 0;
+    will-change: transform;
+    width: fit-content;
+    height: fit-content;
+
     .nodeLabel,
     .messageText,
     .actor,
@@ -21,30 +42,35 @@ const Container = styled.div`
         font-family: "Quicksand", "Poppins", sans-serif !important;
         font-weight: 600 !important;
     }
-`
+`;
+
 
 const Mermaid = ({chart, theme}) => {
     const [isMounted, setIsMounted] = useState(false);
     const [hasError, setHasError] = useState(null);
+    const containerRef = useRef(null);
+    const wrapperRef = useRef(null);
+
+    useZoomPan(containerRef, wrapperRef, [chart, theme]);
 
     useEffect(() => {
         setIsMounted(true);
         setHasError(null);
 
-        // Observe the DOM and remove injected Mermaid error diagrams (SVG elements with error messages).
-        // This handles cases where Mermaid renders an SVG with embedded <text class="error-text">Syntax error in text</text>
-        // when the diagram syntax is invalid. We remove the entire parent div to prevent the error from showing visually.
-        const observer = new MutationObserver(() => {
-            document.querySelectorAll('svg[id*="mermaid-svg"] text.error-text').forEach((el) => {
-                const parent = el.closest('div[id*="mermaid-svg"]');
-                if (parent) parent.remove(); // remove whole injected diagram
-            });
+        const errorObserver = new MutationObserver(() => {
+            document.querySelectorAll('svg text.error-text')
+                .forEach(el => {
+                    if (!containerRef.current?.contains(el)) {
+                        const parent = el.closest('div');
+                        if (parent) parent.remove();
+                    }
+                });
         });
 
-        observer.observe(document.body, {childList: true, subtree: true});
+        errorObserver.observe(document.body, {childList: true, subtree: true});
 
         return () => {
-            observer.disconnect();
+            errorObserver.disconnect();
             setIsMounted(false);
         };
     }, [chart, theme]);
@@ -53,26 +79,25 @@ const Mermaid = ({chart, theme}) => {
         setHasError(error);
     };
 
-
     if (!isMounted) return null;
 
     return (
         <>
             {hasError && (
-                <Error>
-                    Mermaid diagram error: {hasError.message || String(hasError)}
-                </Error>
+                <Error>{hasError.message || String(hasError)}</Error>
             )}
             {!hasError && (
-                <Container>
-                    <MermaidDiagram
-                        securityLevel="strict"
-                        theme={theme}
-                        onError={handleError}
-                    >
-                        {chart}
-                    </MermaidDiagram>
-                </Container>
+                <DiagramContainer ref={containerRef}>
+                    <DiagramWrapper ref={wrapperRef}>
+                        <MermaidDiagram
+                            theme={theme}
+                            securityLevel="strict"
+                            onError={handleError}
+                        >
+                            {chart}
+                        </MermaidDiagram>
+                    </DiagramWrapper>
+                </DiagramContainer>
             )}
         </>
     );
