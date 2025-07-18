@@ -27,6 +27,8 @@ const DiagramWrapper = styled.div`
         display: flex;
         align-items: center;
         justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
     }
 `;
 
