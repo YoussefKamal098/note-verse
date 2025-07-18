@@ -14,7 +14,6 @@ import {DEVICE_SIZES} from "@/constants/breakpoints";
 const HeaderWrapperStyles = styled.div`
     display: flex;
     justify-content: space-between;
-    flex-wrap: wrap;
     align-items: center;
     font-size: 1em;
     gap: 10px;
