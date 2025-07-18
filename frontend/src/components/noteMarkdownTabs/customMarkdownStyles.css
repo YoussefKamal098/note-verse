@@ -38,6 +38,51 @@
     padding-right: 0.75em;
 }
 
+/* Autocomplete popup panel */
+.md-editor .cm-tooltip-autocomplete {
+    background-color: var(--color-background-primary);
+    border: 2px solid var(--color-border-secondary);
+    border-radius: 7px;
+    box-shadow: var(--box-shadow);
+    color: var(--color-text);
+    overflow: hidden;
+}
+
+/* Default items in autocomplete */
+.md-editor .cm-tooltip-autocomplete li {
+    font-size: 1em;
+    margin: 5px;
+    border-radius: 5px;
+    padding: 3px 5px !important;
+    overflow: hidden;
+    text-wrap: nowrap;
+    text-overflow: ellipsis;
+    transition: 0.3s;
+}
+
+.md-editor .cm-tooltip-autocomplete li:hover {
+    background: var(--color-background-secondary) !important;
+}
+
+/* Highlighted (selected) item in autocomplete */
+.md-editor .cm-tooltip-autocomplete li[aria-selected="true"] {
+    background-color: var(--background-tertiary) !important;
+    padding: 5px !important;
+}
+
+.md-editor .cm-tooltip-autocomplete .cm-completionLabel {
+    font-size: 1em;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--color-text);
+}
+
+.md-editor .cm-tooltip-autocomplete .cm-completionDetail {
+    font-size: 0.9em;
+    color: var(--color-primary);
+}
+
+/* Preview styles */
 .wmde-markdown pre .copied {
     color: var(--color-text-dark) !important;
     background-color: var(--color-primary) !important;
