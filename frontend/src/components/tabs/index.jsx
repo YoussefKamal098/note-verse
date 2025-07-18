@@ -1,21 +1,22 @@
 import React, {useEffect, useRef, useState} from 'react';
+import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {motion} from 'framer-motion';
-import PropTypes from 'prop-types';
+import ButtonBase from '@mui/material/ButtonBase';
 
 const TabsContainer = styled.div`
     display: flex;
     position: relative;
-    gap: 10px;
     padding: 0 16px;
 `;
 
-const TabButton = styled(motion.button).attrs(() => ({
-    whileHover: {scale: 1.02, duration: 0.3},
-    whileTap: {scale: 0.98, duration: 0.3}
+const TabButton = styled(motion(ButtonBase)).attrs(() => ({
+    // whileHover: {scale: 1.02},
+    // whileTap: {scale: 0.98}
 }))`
     flex: 1;
-    padding: 12px 0;
+    padding: 15px 0 !important;
+    border-radius: 5px 5px 0 0 !important;
     background: none;
     border: none;
     cursor: pointer;
