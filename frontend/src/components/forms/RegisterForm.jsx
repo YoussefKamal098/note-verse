@@ -21,7 +21,7 @@ import {
     emailValidation,
     nameValidation,
     passwordValidation
-} from "../../validations/userValidation";
+} from "@/validations/userValidation";
 import Overlay from "../common/Overlay";
 
 

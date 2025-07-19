@@ -12,7 +12,8 @@ const InputField = ({
                         type = "",
                         placeholder = "",
                         label = "",
-                        isSensitive = false
+                        isSensitive = false,
+                        hoverColor = "var(--color-accent)"
                     }) => {
     const [isShow, setIsShow] = useState(!isSensitive);
     const {name} = field;
@@ -21,11 +22,11 @@ const InputField = ({
     const toggleDataVisibility = () => setIsShow(!isShow);
 
     return (
-        <InputContainerStyled has_error={error}>
+        <InputContainerStyled has_error={error} hover_color={hoverColor}>
             <label htmlFor={name}>{label}</label>
             <div className="input">
-                <div className="input__icon"><Icon/></div>
-                <SensitiveInputStyled>
+                {Icon && <div className="input__icon"><Icon/></div>}
+                <SensitiveInputStyled hover_color={hoverColor}>
                     <input autoFocus={autoFocus} ref={innerRef} spellCheck={false} {...field}
                            type={!isShow ? "password" : type === "password" ? "text" : type} placeholder={placeholder}
                            id={name}/>

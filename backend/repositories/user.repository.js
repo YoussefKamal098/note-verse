@@ -77,9 +77,12 @@ class UserRepository {
         if (!user) return user;
 
         const userWithAvatar = {...user};
-        userWithAvatar.avatarUrl = user.avatar
-            ? config.storage.constructFileUrl(user.avatar)
-            : user.authProvider?.avatarUrl;
+
+        if (user.avatar !== null) {
+            userWithAvatar.avatarUrl = user.avatar
+                ? config.storage.constructFileUrl(user.avatar)
+                : user.authProvider?.avatarUrl;
+        }
 
         delete userWithAvatar?.authProvider;
         delete userWithAvatar.provider;
@@ -383,36 +386,20 @@ class UserRepository {
             return this.#prepareUserDocument(updatedUser);
         } catch (error) {
             console.error("Error updating user:", error);
+
+            if (error.code === dbErrorCodes && error.keyPattern) {
+                const conflictedField = Object.keys(error.keyPattern)[0];
+
+                if (conflictedField === 'email') {
+                    throw new Error('Email address is already in use.');
+                } else if (conflictedField === 'avatar') {
+                    throw new Error('Avatar is already in use.');
+                } else {
+                    throw new Error(`Duplicate key conflict on field: ${conflictedField}`);
+                }
+            }
+
             throw new Error("Error updating user");
-        }
-    }
-
-    /**
-     * Finds and updates a user by email
-     * @param {string} email - User email
-     * @param {Object} updates - Update operations
-     * @param {Object} [options] - Options
-     * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
-     * @param {Object} [options.projection] - Fields to return
-     * @returns {Promise<Readonly<Object|null>>} Updated user or null
-     */
-    async findByEmailAndUpdate(email, updates = {}, {session = null, projection = {}} = {}) {
-        try {
-            let query = this.#userModel.findOneAndUpdate(
-                {email},
-                {$set: updates},
-                {new: true, runValidators: true}
-            ).select(projection);
-
-            if (session) query = query.session(session);
-
-            query = this.#withAuthProvider(query);
-
-            const updatedUser = await query.lean();
-            return this.#prepareUserDocument(updatedUser);
-        } catch (error) {
-            console.error("Error updating user by email:", error);
-            throw new Error("Error updating user by email");
         }
     }
 

@@ -5,6 +5,7 @@ const routesPaths = Object.freeze({
     GOOGLE_AUTH_CALLBACK: '/auth/google/callback',
     HOME: '/home',
     PROFILE: '/profile',
+    PROFILE_TAB: (tab) => `/profile/${tab}`,
     NOTE: (id) => `/notes/${id ? id : ":id"}`,
     NOTE_VERSION: (id) => `/versions/${id ? id : ":id"}`,
     ERROR: '/error',

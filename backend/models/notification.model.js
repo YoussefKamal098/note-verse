@@ -27,4 +27,8 @@ notificationSchema.index({recipient: 1, createdAt: -1});
 
 const Notification = mongoose.model('Notification', notificationSchema);
 
+mongoose.connection.once('open', () => {
+    Notification.createIndexes().catch((err) => console.error('Error creating Notification indexes:', err));
+});
+
 module.exports = Notification;

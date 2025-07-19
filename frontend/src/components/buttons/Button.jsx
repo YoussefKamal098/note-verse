@@ -39,7 +39,7 @@ const ButtonStyled = styled.button`
     border-radius: 8px;
     opacity: ${(props) => props.disabled ? 0.5 : 1};
     cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-    background-color: ${(props) => BUTTON_PROPS[props.type].color};
+    background-color: ${(props) => BUTTON_PROPS[props.button_type].color};
     box-shadow: var(--box-shadow-hoverable);
     transition: 0.3s ease;
 
@@ -62,6 +62,7 @@ const ButtonsContainerStyles = styled.div`
 
 const Button = ({
                     type = BUTTON_TYPE.SUCCESS,
+                    buttonType = "button",
                     disabled = false,
                     onClick = () => ({}),
                     Icon = null,
@@ -69,7 +70,7 @@ const Button = ({
                     loading = false
                 }) => {
     return (
-        <ButtonStyled type={type} disabled={disabled || loading} onClick={onClick}>
+        <ButtonStyled button_type={type} type={buttonType} disabled={disabled || loading} onClick={onClick}>
             {Icon && <Icon/>}
             {children} <LoadingEffect loading={loading}/>
         </ButtonStyled>

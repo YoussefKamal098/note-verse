@@ -10,7 +10,16 @@ const AppRoutes = () => (
         <Suspense fallback={<Loader/>}>
             <Routes>
                 {RoutesDefinition.map((route, index) => (
-                    <Route key={index} path={route.path} element={route.element}/>
+                    <Route key={index} path={route.path} element={route.element}>
+                        {route.children?.map((childRoute, childIndex) => (
+                            <Route
+                                key={childIndex}
+                                index={childRoute.index}
+                                path={childRoute.path}
+                                element={childRoute.element}
+                            />
+                        ))}
+                    </Route>
                 ))}
             </Routes>
         </Suspense>

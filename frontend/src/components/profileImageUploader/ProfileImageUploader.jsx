@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {FaCamera} from 'react-icons/fa';
-import {useToastNotification} from '../../contexts/ToastNotificationsContext';
+import {useToastNotification} from '@/contexts/ToastNotificationsContext';
 import useFileHandler from '../../hooks/useFileHandler';
 import Avatar from '../common/Avatar';
 import ProgressiveImage from '../progressiveImage/ProgressiveImage';

@@ -26,9 +26,7 @@ const userSchema = new Schema({
     avatar: {
         type: Schema.Types.ObjectId,
         ref: 'File',
-        unique: true,
-        sparse: true,
-        index: true,
+        default: undefined,
     },
     provider: {
         type: String,
@@ -56,6 +54,17 @@ userSchema.virtual('authProvider', {
     justOne: true
 });
 
+userSchema.index({avatar: 1}, {
+    unique: true,
+    partialFilterExpression: {
+        avatar: {$type: 'objectId'} // Only enforce uniqueness for ObjectId values
+    }
+});
+
 const User = mongoose.model('User', userSchema);
+
+mongoose.connection.once('open', () => {
+    User.createIndexes().catch((err) => console.error('Error creating User indexes:', err));
+});
 
 module.exports = User;

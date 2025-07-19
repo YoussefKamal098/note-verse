@@ -91,7 +91,10 @@ class UserController {
             return;
         }
 
-        const updatedUser = await this.#userService.updateAvatar(userId, req.files[0].fileId);
+        const updatedUser = await this.#userService.updateUser(
+            userId,
+            {avatar: req.files[0].fileId}
+        );
         if (!updatedUser) {
             next(new AppError(
                 statusMessages.USER_NOT_FOUND,
@@ -102,6 +105,77 @@ class UserController {
 
         req.updatedUser = updatedUser;
         res.status(httpCodes.CREATED.code).json({avatarUrl: updatedUser.avatarUrl});
+    }
+
+    /**
+     * Removes a user's avatar
+     * @param {import('express').Request} req - Express request object
+     * @param {import('express').Response} res - Express response object
+     * @param {Function} next - Express next middleware
+     */
+    async removeUserAvatar(req, res, next) {
+        const {userId} = req.params;
+
+        // Get current avatar URL
+        const user = await this.#userService.findById(userId);
+        if (!user) {
+            return next(new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            ));
+        }
+
+        if (!user.avatarUrl) {
+            return next(new AppError(
+                statusMessages.USER_NOT_HAVE_AVATAR,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            ));
+        }
+
+        req.updatedUser = await this.#userService.updateUser(
+            userId,
+            {
+                avatar: null
+            }
+        );
+
+        res.status(httpCodes.OK.code).json({
+            message: 'Avatar removed successfully'
+        });
+    }
+
+    /**
+     * Updates user profile information
+     * @param {import('express').Request} req - Express request object
+     * @param {import('express').Response} res - Express response object
+     * @param {Function} next - Express next middleware
+     */
+    async updateUserProfile(req, res, next) {
+        const {userId} = req.params;
+        const {firstname, lastname} = req.body;
+
+        const user = await this.#userService.updateUser(
+            userId,
+            {firstname, lastname}
+        );
+
+        if (!user) {
+            return next(new AppError(
+                statusMessages.USER_NOT_FOUND,
+                httpCodes.NOT_FOUND.code,
+                httpCodes.NOT_FOUND.name
+            ));
+        }
+
+        req.updatedUser = user;
+        res.status(httpCodes.OK.code).json({
+            id: user.id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            avatarUrl: user.avatarUrl
+        });
     }
 
     /**

@@ -17,6 +17,9 @@ const statusMessages = Object.freeze({
     GOOGLE_USER_CREATE_FAILED: "Google authentication process failed. Please try again later.",
     MISSING_GOOGLE_AUTH_DATA: "Required Google authentication data is missing",
     USER_NOTE_UPDATE_FORBIDDEN: "You do not have permission to update this note. Ensure you have the correct permissions.",
+    AVATAR_ALREADY_IN_USE: "This avatar is already in use by another account",
+    EMAIL_ALREADY_IN_USE: "This email is already in use by another account",
+    USER_NOT_HAVE_AVATAR: 'User does not have an avatar',
 
     // =======================
     // User-specific update errors

@@ -44,4 +44,8 @@ versionSchema.index({noteId: 1, createdBy: 1, previousVersion: 1, createdAt: -1}
 
 const Version = mongoose.model('Version', versionSchema);
 
+mongoose.connection.once('open', () => {
+    Version.createIndexes().catch((err) => console.error('Error creating Version indexes:', err));
+});
+
 module.exports = Version;

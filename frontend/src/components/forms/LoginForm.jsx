@@ -15,8 +15,8 @@ import Overlay from "../common/Overlay";
 
 import AuthService from "../../api/authService";
 import routesPaths from "../../constants/routesPaths";
-import {FieldTypes, requiredField} from "../../validations/fieldTypeValidators";
-import {emailValidation} from "../../validations/userValidation";
+import {FieldTypes, requiredField} from "@/validations/fieldTypeValidators";
+import {emailValidation} from "@/validations/userValidation";
 
 const loginValidationSchema = Yup.object({
     email: emailValidation,

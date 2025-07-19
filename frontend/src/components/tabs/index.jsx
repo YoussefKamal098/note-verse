@@ -7,7 +7,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 const TabsContainer = styled.div`
     display: flex;
     position: relative;
-    padding: 0 16px;
+    padding: 0 1.25em;
 `;
 
 const TabButton = styled(motion(ButtonBase)).attrs(() => ({
@@ -15,12 +15,16 @@ const TabButton = styled(motion(ButtonBase)).attrs(() => ({
     // whileTap: {scale: 0.98}
 }))`
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
     padding: 15px 0 !important;
     border-radius: 5px 5px 0 0 !important;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: 600;
     color: ${({$active}) => $active ? 'var(--color-primary)' : 'var(--color-text)'};
     position: relative;
@@ -51,7 +55,8 @@ const TabButton = styled(motion(ButtonBase)).attrs(() => ({
 `;
 
 const TabIcon = styled.span`
-    margin-right: 6px;
+    display: flex;
+    font-size: 1em;
 `;
 
 const ActiveIndicator = styled(motion.div)`
@@ -63,7 +68,7 @@ const ActiveIndicator = styled(motion.div)`
     z-index: 0;
 `;
 
-const Tabs = ({tabs, activeTab, onTabChange, className, ariaLabel}) => {
+const Tabs = ({tabs, containerStyles, tabStyles, activeTab, onTabChange, className, ariaLabel}) => {
     const tabRefs = useRef([]);
     const containerRef = useRef(null);
     const [indicatorStyle, setIndicatorStyle] = useState({left: 0, width: 0});
@@ -129,9 +134,10 @@ const Tabs = ({tabs, activeTab, onTabChange, className, ariaLabel}) => {
 
     return (
         <div role="tablist" aria-label={ariaLabel || "Tabs navigation"}>
-            <TabsContainer ref={containerRef} className={className}>
+            <TabsContainer ref={containerRef} className={className} style={containerStyles}>
                 {tabs.map((tab, index) => (
                     <TabButton
+                        style={tabStyles}
                         key={tab.id}
                         $active={activeTab === tab.id}
                         onClick={() => onTabChange(tab.id)}

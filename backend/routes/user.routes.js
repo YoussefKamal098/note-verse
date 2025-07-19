@@ -8,6 +8,7 @@ const resolveMeIdentifier = require('../middlewares/resolveMeIdentifier.middlewa
 const {createUploadMiddleware} = require('../middlewares/fileUpload.middleware');
 const getUserQuerySchema = require('../schemas/getUserQuery.schema');
 const updatePermissionSchema = require('../schemas/updatePermission.schema');
+const updateUserProfileSchema = require('../schemas/updateUserProfile.schema');
 const userCommitsQuerySchema = require('../schemas/userCommitsQuery.schema');
 const idSchema = require('../schemas/idObject.schema');
 const validateRequestMiddlewares = require('../middlewares/validateRequest.middleware');
@@ -68,8 +69,25 @@ router.get('/',
 router.patch('/:userId/avatar',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(uploadUserImageMiddleWare),
+    asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
     asyncRequestHandler(clearUserCaches),
     asyncRequestHandler(api('uploadUserAvatar'))
+);
+
+router.delete('/:userId/avatar',
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
+    asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
+    asyncRequestHandler(clearUserCaches),
+    asyncRequestHandler(api('removeUserAvatar'))
+);
+
+// Update user profile (firstname/lastname)
+router.patch('/:userId/profile',
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
+    asyncRequestHandler(validateRequestMiddlewares(updateUserProfileSchema)),
+    asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
+    asyncRequestHandler(clearUserCaches),
+    asyncRequestHandler(api('updateUserProfile'))
 );
 
 router.delete(

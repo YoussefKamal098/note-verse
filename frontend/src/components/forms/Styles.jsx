@@ -79,7 +79,7 @@ const InputContainerStyled = styled.div`
         align-items: center;
         width: 100%;
         border: 2px solid var(--color-border-secondary);
-        border-radius: 10px;
+        border-radius: 7px;
         box-shadow: var(--box-shadow);
         transition: 0.3s ease;
         overflow: hidden;
@@ -87,12 +87,12 @@ const InputContainerStyled = styled.div`
 
     .input:has(input:focus),
     .input:hover {
-        border-color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+        border-color: ${({has_error, hover_color}) => has_error ? "var(--color-danger)" : `${hover_color}`};
     }
 
     .input:hover input::placeholder,
     .input:has(input:focus) input::placeholder {
-        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+        color: ${({has_error, hover_color}) => has_error ? "var(--color-danger)" : `${hover_color}`};
     }
 
     input {
@@ -108,9 +108,8 @@ const InputContainerStyled = styled.div`
     }
 
     input::placeholder {
-        font-family: "Poppins", sans-serif;
         font-size: 0.9em;
-        font-weight: 500;
+        font-weight: 600;
         opacity: 0.75;
         color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-placeholder)"};
         transition: 0.3s ease;
@@ -127,7 +126,7 @@ const InputContainerStyled = styled.div`
 
     .input:has(input:focus) .input__icon,
     .input:hover .input__icon {
-        color: ${({has_error}) => has_error ? "var(--color-danger)" : "var(--color-accent)"};
+        color: ${({has_error, hover_color}) => has_error ? "var(--color-danger)" : `${hover_color}`};
     }
 
     .error {
@@ -153,7 +152,7 @@ const SensitiveInputStyled = styled.div`
         cursor: pointer;
 
         &:hover {
-            color: var(--color-accent);
+            color: ${({hover_color}) => `${hover_color}`};
         }
     }
 `;

@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
 import useRequestManager from "../hooks/useRequestManager";
 import {useConfirmation} from "./ConfirmationContext";
-import {POPUP_TYPE} from "../components/confirmationPopup/ConfirmationPopup";
+import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
 import cacheService from "../services/cacheService";
 import authService, {AUTH_EVENTS} from '../api/authService';
 import userService from '../api/userService';
@@ -73,7 +73,7 @@ const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{user}}>
+        <AuthContext.Provider value={{user, setUser}}>
             {children}
         </AuthContext.Provider>
     );

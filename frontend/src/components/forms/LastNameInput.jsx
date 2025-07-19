@@ -3,14 +3,14 @@ import InputField from "./InputField";
 import {GiMustache} from "react-icons/gi";
 
 const LastNameInput = (props) => {
-    const {label, placeholder} = props;
+    const {label, placeholder, showIcon = true} = props;
 
     return (
         <InputField
             {...props}
             label={label || "Last Name"}
             placeholder={placeholder || "Enter your last name"}
-            Icon={GiMustache}
+            Icon={showIcon ? GiMustache : undefined}
         />
     );
 };

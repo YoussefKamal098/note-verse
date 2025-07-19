@@ -240,25 +240,61 @@ class UserService {
     }
 
     /**
-     * Updates a user's avatar by linking to a File document via fileId.
+     * Updates a user's information.
      *
-     * @param {string} userId - The ID of the user to update
-     * @param {string} fileId - unique identifier of the File document from storage service
-     * @returns {Promise<Readonly<Object>>} The complete updated user object
+     * This method updates the specified user's details in the database. It can update
+     * any combination of the user's first name, last name, email, avatar, or password.
+     * If a password is provided, it will be hashed before storage.
+     * Only defined properties in updateData will be included in the update.
+     *
+     * @param {string} userId - The ID of the user to update.
+     * @param {Object} updateData - The data to update.
+     * @param {string} [updateData.firstname] - The new first name.
+     * @param {string} [updateData.lastname] - The new last name.
+     * @param {string | null} [updateData.avatar] - The new avatar ID.
+     * @param {string} [updateData.email] - The new email address.
+     * @param {string} [updateData.password] - The new password (will be hashed).
+     * @returns {Promise<Readonly<Object>>} The updated user object, deep-frozen.
      * @throws {AppError} If:
-     * - User doesn't exist (404)
-     * - File doesn't exist (404)
-     * - Database update fails (500)
+     * - The user doesn't exist (404)
+     * - The avatar is already in use by another account (409)
+     * - The email is already in use by another account (409)
+     * - There's a database error (500)
      */
-    async updateAvatar(userId, fileId) {
+    async updateUser(userId, {firstname, lastname, avatar, email, password} = {}) {
+        const updates = {firstname, lastname, avatar, email, password};
+
         try {
-            return await this.#userRepository.findByIdAndUpdate(
-                userId,
-                {avatar: fileId}
-            );
+            // Create update object with only defined properties
+            const cleanUpdateData = Object.entries(updates).reduce((acc, [key, value]) => {
+                if (value !== undefined) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {});
+
+            // Only proceed with update if we have actual data to update
+            if (Object.keys(cleanUpdateData).length === 0) {
+                return await this.#userRepository.findById(userId);
+            }
+
+            // Special handling for password (hash if provided)
+            if (cleanUpdateData.password) {
+                cleanUpdateData.password = await this.passwordHasherService.hash(cleanUpdateData.password);
+            }
+
+            return await this.#userRepository.findByIdAndUpdate(userId, cleanUpdateData);
         } catch (error) {
+            if (error.code === dbErrorCodes.DUPLICATE_KEY) {
+                throw new AppError(
+                    error.message,
+                    httpCodes.CONFLICT.code,
+                    httpCodes.CONFLICT.name
+                );
+            }
+
             throw new AppError(
-                statusMessages.AVATAR_UPDATE_FAILED,
+                statusMessages.USER_UPDATE_FAILED,
                 httpCodes.INTERNAL_SERVER_ERROR.code,
                 httpCodes.INTERNAL_SERVER_ERROR.name
             );

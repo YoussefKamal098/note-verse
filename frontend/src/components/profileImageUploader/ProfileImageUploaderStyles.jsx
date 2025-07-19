@@ -96,8 +96,8 @@ const ProfileImageContainerStyled = styled.div`
 
 const EditButtonStyled = styled.div`
     position: absolute;
-    bottom: 5px;
-    right: 5px;
+    bottom: 10px;
+    right: 10px;
     width: 40px;
     height: 40px;
     background-color: var(--color-background);

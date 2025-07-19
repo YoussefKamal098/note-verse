@@ -3,14 +3,14 @@ import InputField from "./InputField";
 import {SlUser} from "react-icons/sl";
 
 const FirstNameInput = (props) => {
-    const {label, placeholder} = props;
+    const {label, placeholder, showIcon = true} = props;
 
     return (
         <InputField
             {...props}
             label={label || "First Name"}
             placeholder={placeholder || "Enter your first name"}
-            Icon={SlUser}
+            Icon={showIcon ? SlUser : undefined}
         />
     );
 };

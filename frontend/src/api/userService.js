@@ -4,6 +4,8 @@ import httpHeaders from "../constants/httpHeaders";
 const ENDPOINTS = {
     GET_USER: `/users/`,
     AVATAR_UPLOAD: (userId) => `/users/${userId}/avatar`,
+    AVATAR_REMOVE: (userId) => `/users/${userId}/avatar`,
+    UPDATE_PROFILE: (userId) => `/users/${userId}/profile`,
     GET_USER_GRANTED_PERMISSIONS: (userId) => `users/${userId}/granted-permissions`,
     REVOKE_PERMISSION: (userId) => `/users/${userId}/permissions`,
     UPDATE_PERMISSION: (userId) => `/users/${userId}/permissions`,
@@ -72,6 +74,38 @@ class UserService {
                     [httpHeaders.CONTENT_TYPE]: 'multipart/form-data'
                 }
             }
+        );
+    }
+
+    /**
+     * Removes a user's avatar
+     * @param {string} userId - ID of the user to remove avatar for
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} API response with removal result
+     * @throws {Error} If removal fails
+     */
+    async removeAvatar(userId, config = {}) {
+        return await this.#apiClient.delete(
+            ENDPOINTS.AVATAR_REMOVE(userId),
+            config
+        );
+    }
+
+    /**
+     * Updates user profile information (firstname and lastname)
+     * @param {string} userId - ID of the user to update
+     * @param {Object} profileData - Profile data to update
+     * @param {string} profileData.firstname - New first name
+     * @param {string} profileData.lastname - New last name
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Updated user profile data
+     * @throws {Error} If update fails
+     */
+    async updateProfile(userId, {firstname, lastname}, config = {}) {
+        return await this.#apiClient.patch(
+            ENDPOINTS.UPDATE_PROFILE(userId),
+            {firstname, lastname},
+            config
         );
     }
 
