@@ -100,7 +100,7 @@ const RegisterForm = () => {
                         validationSchema={registerValidationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({isSubmitting}) => (
+                        {({isSubmitting, isValid}) => (
                             <Form onKeyDown={(e) => handleKeyDown(e, isSubmitting)}>
                                 <NameFieldsContainerStyled>
                                     <Field
@@ -133,8 +133,13 @@ const RegisterForm = () => {
                                     placeholder="Confirm Password"
                                     label="Confirm Password"
                                 />
-                                <SubmitButton isSubmitting={isSubmitting} loading={formLoading}
-                                              disabled={googleLoading}>Sign Up</SubmitButton>
+                                <SubmitButton
+                                    isSubmitting={isSubmitting}
+                                    loading={formLoading}
+                                    disabled={googleLoading || !isValid}
+                                >
+                                    Sign Up
+                                </SubmitButton>
                             </Form>
                         )}
                     </Formik>

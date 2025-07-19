@@ -66,7 +66,7 @@ const LoginForm = () => {
                         validationSchema={loginValidationSchema}
                         onSubmit={handleFromSubmit}
                     >
-                        {({isSubmitting}) => (
+                        {({isSubmitting, isValid}) => (
                             <Form onKeyDown={(e) => handleKeyDown(e, isSubmitting)}>
                                 <Field
                                     name="email"
@@ -79,8 +79,13 @@ const LoginForm = () => {
                                     component={PasswordInput}
                                     innerRef={passwordRef}
                                 />
-                                <SubmitButton isSubmitting={isSubmitting} loading={formLoading}
-                                              disabled={googleLoading}>Log in</SubmitButton>
+                                <SubmitButton
+                                    isSubmitting={isSubmitting}
+                                    loading={formLoading}
+                                    disabled={googleLoading || !isValid}
+                                >
+                                    Log in
+                                </SubmitButton>
                             </Form>
                         )}
                     </Formik>
