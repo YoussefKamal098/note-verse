@@ -83,11 +83,11 @@ const RegisterForm = () => {
     return (
         <>
             <Overlay isVisible={formLoading || googleLoading}/>
-            <HeightTransitionContainer keyProp="SignUp">
+            <HeightTransitionContainer overflowHidden keyProp="SignUp">
                 <OverriddenFormContainerStyled>
                     <FormHeaderStyled>Sign Up</FormHeaderStyled>
 
-                    <HeightTransitionContainer keyProp={errorMessage}>
+                    <HeightTransitionContainer overflowHiddenkeyProp={errorMessage}>
                         {errorMessage && (
                             <ErrorMessageStyled>
                                 <FadeInAnimatedText text={errorMessage}/>

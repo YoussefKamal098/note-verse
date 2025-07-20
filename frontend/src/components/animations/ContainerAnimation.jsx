@@ -17,7 +17,8 @@ const FadeInAnimation = ({children, keyProp}) => {
     );
 };
 
-const HeightTransitionContainer = ({children, keyProp}) => {
+const HeightTransitionContainer = ({children, keyProp, overflowHidden}) => {
+    console.log(overflowHidden)
     return (
         <AnimatePresence>
             {children && (
@@ -26,6 +27,7 @@ const HeightTransitionContainer = ({children, keyProp}) => {
                     initial={{opacity: 0, height: 0}}
                     animate={{opacity: 1, height: "auto"}}
                     exit={{opacity: 0, height: 0}}
+                    style={overflowHidden ? {overflow: "hidden"} : {}}
                     layout
                 >
                     {children}

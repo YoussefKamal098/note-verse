@@ -36,7 +36,7 @@ const InputField = ({
                 </SensitiveInputStyled>
             </div>
 
-            <HeightTransitionContainer keyProp={error}>
+            <HeightTransitionContainer overflowHidden keyProp={error}>
                 {error && <div className="error">{error}</div>}
             </HeightTransitionContainer>
         </InputContainerStyled>

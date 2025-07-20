@@ -139,7 +139,7 @@ const OTPVerification = ({
                     animationState={animationState}
                     reset={resetOtp}
                 />
-                <HeightTransitionContainer>
+                <HeightTransitionContainer overflowHidden>
                     {error && <ErrorMessageStyled>{error}</ErrorMessageStyled>}
                 </HeightTransitionContainer>
             </ContainerStyled>

@@ -33,14 +33,15 @@ const SubmitButtonStyled = styled.button`
     justify-content: center;
     align-items: center;
     width: 100%;
-    padding: 8px 24px;
+    padding: 5px 24px;
     margin: 35px auto 15px;
-    font-size: 1.1em;
-    font-weight: 600;
+    font-size: 1em;
+    font-weight: bold;
+    font-family: "Pacifico", cursive;
     color: var(--color-text);
     border: 2px solid var(--color-border-secondary);
     background-color: var(--color-background-secondary);
-    border-radius: 10px;
+    border-radius: 7px;
     box-shadow: var(--box-shadow);
     cursor: pointer;
     transition: 0.3s ease;
@@ -171,9 +172,10 @@ const LinkStyled = styled.div`
     }
 
     a {
-        font-size: 1.2em;
         color: var(--color-accent);
-        font-weight: 600;
+        font-size: 1.2em;
+        font-family: "Pacifico", cursive;
+        font-weight: bold;
         text-decoration: none;
         cursor: pointer;
 

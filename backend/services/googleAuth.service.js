@@ -17,13 +17,21 @@ const authProvider = require("../enums/auth.enum");
  * - Session token generation through JWT service
  */
 class GoogleAuthService {
-    /** @private @type {OAuth2Client} Google OAuth2 client instance */
+    /** @private
+     *  @type {OAuth2Client} Google OAuth2 client instance
+     */
     #oauthClient;
-    /** @private @type {import('../services/user.service')} User service instance */
+    /** @private
+     *  @type {import('@/services/user.service').UserService} User service instance
+     */
     #userService;
-    /** @private @type {import('../services/jwtAuth.service')} JWT authentication service */
+    /** @private
+     * @type {import('@/services/jwtAuth.service').JwtAuthService} JWT authentication service
+     */
     #jwtAuthService;
-    /** @private @type {GoogleAuthConfig} Immutable configuration object */
+    /** @private
+     * @type {GoogleAuthConfig} Immutable configuration object
+     */
     #config;
 
     /**
@@ -216,7 +224,10 @@ class GoogleAuthService {
         return this.#oauthClient.generateAuthUrl({
             access_type: 'offline',
             scope: ['profile', 'email'],
-            prompt: 'consent'
+            prompt: 'consent',
+            // prompt: 'select_account', / Forces account selection even if the user is already signed in
+            // login_hint: email,   // Pre-fills the email input on Google's login page (optional UX improvement)
+            include_granted_scopes: true // Enables incremental authorization by reusing previously granted scopes
         });
     }
 }

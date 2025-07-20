@@ -117,7 +117,7 @@ class UserService {
      * @param {string} authUserData.firstname - The user's first name.
      * @param {string} authUserData.lastname - The user's last name.
      * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
-     * @param {string} provider - The authentication provider (e.g., 'google', 'facebook').
+     * @param {authProvider} provider - The authentication provider (e.g., 'google', 'facebook').
      * @returns {Promise<Object>} The created or retrieved user object, deep-frozen.
      * @throws {AppError} If a duplicate key error occurs or if the creation process fails.
      */
@@ -240,6 +240,26 @@ class UserService {
     }
 
     /**
+     * Finds a user by email and authentication provider type
+     * @param {string} email - The user's email address
+     * @param {authProvider} provider - The authentication provider type (e.g., 'google', 'facebook')
+     * @returns {Promise<Object|null>} The user object if found, null otherwise
+     * @throws {AppError} If there's a database error
+     */
+    async getAuthUser(email, provider) {
+        try {
+            const user = await this.#userRepository.findOne({email});
+            return user?.provider === provider ? user : null;
+        } catch (error) {
+            throw new AppError(
+                `Failed to retrieve ${provider} user`,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+    }
+
+    /**
      * Updates a user's information.
      *
      * This method updates the specified user's details in the database. It can update
@@ -303,4 +323,3 @@ class UserService {
 }
 
 module.exports = UserService;
-

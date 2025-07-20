@@ -49,11 +49,11 @@ const LoginForm = () => {
     return (
         <>
             <Overlay isVisible={formLoading || googleLoading}/>
-            <HeightTransitionContainer keyProp="Login">
+            <HeightTransitionContainer overflowHidden keyProp="Login">
                 <FormContainerStyled>
                     <FormHeaderStyled>Sign In</FormHeaderStyled>
 
-                    <HeightTransitionContainer keyProp={errorMessage}>
+                    <HeightTransitionContainer overflowHidden keyProp={errorMessage}>
                         {errorMessage && (
                             <ErrorMessageStyled>
                                 <FadeInAnimatedText text={errorMessage}/>
