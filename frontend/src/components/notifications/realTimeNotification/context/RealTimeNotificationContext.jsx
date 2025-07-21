@@ -37,10 +37,6 @@ export const RealTimeNotificationProvider = ({children}) => {
         };
 
         fetchInitialUnreadCount();
-
-        return () => {
-            controller.abort();
-        };
     }, [createAbortController, removeAbortController]);
 
     // Fetch unread notifications

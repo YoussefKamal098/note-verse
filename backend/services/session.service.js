@@ -269,6 +269,25 @@ class SessionService {
             );
         }
     }
+
+    /**
+     * Retrieves all sessions for a given userId.
+     *
+     * @param {string} userId - The ID of the user whose sessions are to be retrieved.
+     * @returns {Promise<Readonly<Readonly<Object>>>} An array of session documents associated with the user.
+     * @throws {AppError} If the userId is invalid or a database error occurs.
+     */
+    async getSessionsByUserId(userId) {
+        try {
+            return await this.#sessionRepository.findSessionsByUserId(userId);
+        } catch (error) {
+            throw new AppError(
+                httpCodes.INTERNAL_SERVER_ERROR.message,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+    }
 }
 
 module.exports = SessionService;

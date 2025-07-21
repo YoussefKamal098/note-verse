@@ -2,7 +2,6 @@ import styled from "styled-components";
 
 export const PageWrapper = styled.div`
     padding: 2rem;
-    color: #e0e0e0;
     max-width: 800px;
     margin: 0 auto;
 `;
@@ -41,7 +40,6 @@ export const RemoveButtonWrapper = styled.div`
 export const SectionTitle = styled.h2`
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 1rem;
 `;
 
 export const InvalidTabContainer = styled.div`
@@ -70,4 +68,3 @@ export const BackButton = styled.span`
         color: var(--color-accent);
     }
 `;
-

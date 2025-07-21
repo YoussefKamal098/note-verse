@@ -18,7 +18,6 @@ const FadeInAnimation = ({children, keyProp}) => {
 };
 
 const HeightTransitionContainer = ({children, keyProp, overflowHidden}) => {
-    console.log(overflowHidden)
     return (
         <AnimatePresence>
             {children && (

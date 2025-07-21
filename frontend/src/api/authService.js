@@ -119,6 +119,26 @@ class AuthService {
         return this.#tokenStorageService.getAccessToken();
     }
 
+
+    /**
+     * Decodes the current access token to extract the session ID (jti claim).
+     * Returns null if no valid token exists or decoding fails.
+     * @returns {string|null} The session ID or null
+     */
+    getSessionId() {
+        const token = this.#tokenStorageService.getAccessToken();
+        if (!token) return null;
+
+        try {
+            const decoded = jwtDecode(token);
+            // Standard JWT ID claim is 'jti', but check other common names
+            return decoded.jti || decoded.sessionId || null;
+        } catch (error) {
+            console.error('Failed to decode token:', error);
+            return null;
+        }
+    }
+
     /**
      * Handles response errors, including token expiration and refresh.
      * @param {Object} error - The error object from the failed response.

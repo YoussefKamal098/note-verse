@@ -67,10 +67,12 @@ const Button = ({
                     onClick = () => ({}),
                     Icon = null,
                     children = "",
-                    loading = false
+                    loading = false,
+                    style
                 }) => {
     return (
-        <ButtonStyled button_type={type} type={buttonType} disabled={disabled || loading} onClick={onClick}>
+        <ButtonStyled button_type={type} style={style} type={buttonType} disabled={disabled || loading}
+                      onClick={onClick}>
             {Icon && <Icon/>}
             {children} <LoadingEffect loading={loading}/>
         </ButtonStyled>

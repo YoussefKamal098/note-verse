@@ -10,7 +10,8 @@ const ENDPOINTS = {
     REVOKE_PERMISSION: (userId) => `/users/${userId}/permissions`,
     UPDATE_PERMISSION: (userId) => `/users/${userId}/permissions`,
     GET_USER_PERMISSION: (userId) => `/users/${userId}/permissions`,
-    GET_USER_COMMITS: (userId) => `/users/${userId}/commits`
+    GET_USER_COMMITS: (userId) => `/users/${userId}/commits`,
+    GET_USER_SESSIONS: (userId) => `/users/${userId}/sessions`
 };
 
 /**
@@ -205,6 +206,20 @@ class UserService {
                 ...config,
                 params: {...queryParams}
             }
+        );
+    }
+
+    /**
+     * Get all active sessions for a specific user.
+     * @param {string} userId - ID of the user
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with session data
+     * @throws {Error} If fetching sessions fails
+     */
+    async getUserSessions(userId, config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_USER_SESSIONS(userId),
+            config
         );
     }
 }

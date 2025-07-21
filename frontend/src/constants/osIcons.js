@@ -1,11 +1,12 @@
 import {SiLinux, SiIos, SiApple} from 'react-icons/si';
-import {FaWindows, FaAndroid, FaLinux} from 'react-icons/fa';
+import {FaWindows, FaLinux} from 'react-icons/fa';
+import {GrAndroid} from "react-icons/gr";
 
 const OS_ICONS = {
     Windows: FaWindows,
     macOS: SiApple,
     Linux: SiLinux,
-    Android: FaAndroid,
+    Android: GrAndroid,
     iOS: SiIos,
     Ubuntu: FaLinux,
     Fedora: FaLinux,

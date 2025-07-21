@@ -25,6 +25,12 @@ class UserController {
      * @description The user service instance for handling version-related operations.
      */
     #versionService;
+    /**
+     * @private
+     * @type {SessionService}
+     * @description The session service instance for handling user sessions.
+     */
+    #sessionService;
 
     /**
      * Constructs a new UserController.
@@ -32,11 +38,13 @@ class UserController {
      * @param {UserService} depndencies.userService - The user service instance.
      * @param {PermissionService} depndencies.permissionService - The permission service instance.
      * @param {VersionService} depndencies.versionService - The version service instance.
+     * @param {SessionService} depndencies.sessionService - The session service instance.
      * */
-    constructor({userService, permissionService, versionService}) {
+    constructor({userService, permissionService, versionService, sessionService}) {
         this.#userService = userService;
         this.#permissionService = permissionService;
         this.#versionService = versionService;
+        this.#sessionService = sessionService;
     }
 
     /**
@@ -301,6 +309,17 @@ class UserController {
         );
 
         res.status(httpCodes.OK.code).json(commits);
+    }
+
+    /**
+     * Gets all sessions for a specific user.
+     * @param {import('express').Request} req - Express request object.
+     * @param {import('express').Response} res - Express response object.
+     */
+    async getUserSessions(req, res) {
+        const {userId} = req.params;
+        const sessions = await this.#sessionService.getSessionsByUserId(userId);
+        res.status(httpCodes.OK.code).json(sessions);
     }
 }
 

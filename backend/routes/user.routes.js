@@ -125,4 +125,11 @@ router.get(
     asyncRequestHandler(api('getUserCommits'))
 );
 
+router.get(
+    '/:userId/sessions',
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
+    asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
+    asyncRequestHandler(api('getUserSessions'))
+);
+
 module.exports = router;

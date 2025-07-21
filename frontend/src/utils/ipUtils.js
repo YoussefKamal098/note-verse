@@ -13,7 +13,7 @@ export const parseIp = (ipString) => {
     const localIps = ['127.0.0.1', '::1', '::ffff:127.0.0.1', 'localhost'];
 
     if (localIps.includes(ipString)) {
-        return {ip: 'local', version: ipv4Regex.test(ipString) ? 'IPv4' : 'IPv6'};
+        return {ip: 'localhost', version: ipv4Regex.test(ipString) ? 'IPv4' : 'IPv6'};
     }
 
     if (ipv4Regex.test(ipString)) {
@@ -37,12 +37,12 @@ export const parseIp = (ipString) => {
 
 export const fetchLocationData = async (ip) => {
     const {ip: parsedIp, version} = parseIp(ip);
-    if (!parsedIp || version === 'local') {
+    if (parsedIp === 'localhost') {
         return {
             continent: null,
             city: 'Localhost',
             country: 'Development Network',
-            region: '',
+            region: 'Local',
             ipVersion: version
         };
     }

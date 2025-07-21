@@ -166,6 +166,27 @@ class SessionRepository {
             throw new Error('Error updating session');
         }
     }
+
+    /**
+     * Finds all session documents associated with a userId.
+     *
+     * @param {string} userId - The ID of the user whose sessions should be retrieved.
+     * @returns {Promise<Readonly<Readonly<Object>>>} An array of session documents for the user.
+     * @throws {Error} If a database error occurs during the query.
+     */
+    async findSessionsByUserId(userId) {
+        try {
+            const sessions = await this.#model
+                .find({userId})
+                .select('_id ip userAgent lastAccessedAt createdAt reusedAt expiredAt')
+                .sort({lastAccessedAt: -1}).lean();
+
+            return deepFreeze(sessions.map(sanitizeMongoObject));
+        } catch (error) {
+            console.error('Error retrieving sessions by userId:', error);
+            throw new Error('Error retrieving sessions by userId');
+        }
+    }
 }
 
 module.exports = SessionRepository;

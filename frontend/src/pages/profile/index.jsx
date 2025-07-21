@@ -37,8 +37,12 @@ const ProfilePage = () => {
                         tabs={tabList}
                         activeTab={currentTab}
                         onTabChange={handleTabChange}
-                        containerStyles={{padding: "0"}}
-                        tabStyles={{minWidth: "100px", maxWidth: "180px"}}
+                        containerStyles={{
+                            padding: "0",
+                            borderBottom: "2px solid var(--color-border)",
+                            minWidth: "max-content"
+                        }}
+                        tabStyles={{minWidth: "125px", maxWidth: "180px"}}
                     />
                 </TabsContainer>
 
