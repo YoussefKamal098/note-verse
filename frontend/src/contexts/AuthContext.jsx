@@ -7,6 +7,7 @@ import authService, {AUTH_EVENTS} from '../api/authService';
 import userService from '../api/userService';
 import {useToastNotification} from "./ToastNotificationsContext";
 import usePersistedState, {clearAllPersistedData} from "../hooks/usePersistedState";
+import {useOnlineBack} from "@/hooks/useOnlineBack";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const AuthContext = createContext({user: null});
@@ -19,6 +20,7 @@ const AuthProvider = ({children}) => {
     const [authUser, setAuthUser] = usePersistedState("auth_user", null);
     const [user, setUser] = useState(authUser);
     const [sessionId, setSessionId] = useState(null);
+    const [isUserFetched, setIsUserFetched] = useState(false);
 
     const loadUser = async () => {
         if (!authUser || !authUser.id) {
@@ -28,10 +30,10 @@ const AuthProvider = ({children}) => {
         const controller = createAbortController();
 
         try {
-
             const response = await userService.getUser({id: user.id}, {signal: controller.signal});
             setUser(response.data);
             setSessionId(authService.getSessionId());
+            setIsUserFetched(true);
         } catch (error) {
             if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 notify.error(error.message || "Error fetching authenticated user.");
@@ -40,6 +42,12 @@ const AuthProvider = ({children}) => {
             removeAbortController(controller)
         }
     };
+
+    useOnlineBack(async () => {
+        if (!isUserFetched) {
+            await loadUser();
+        }
+    });
 
     useEffect(() => {
         loadUser();

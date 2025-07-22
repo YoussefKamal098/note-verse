@@ -3,6 +3,7 @@ import {useSocketEvent} from '@/hooks/useSocketEvent';
 import {SOCKET_EVENTS} from "@/constants/socketEvents";
 import notificationService from '@/api/notificationService';
 import useRequestManager from '@/hooks/useRequestManager';
+import {useOnlineBack} from "@/hooks/useOnlineBack";
 import {API_CLIENT_ERROR_CODES} from '@/api/apiClient';
 
 // Context
@@ -16,27 +17,29 @@ export const RealTimeNotificationProvider = ({children}) => {
     const notificationCallbacksRef = useRef([]);
     const {createAbortController, removeAbortController} = useRequestManager();
 
-    // Fetch initial unread count on mount
-    useEffect(() => {
+    const fetchUnreadCount = useCallback(async () => {
         const controller = createAbortController();
 
-        const fetchInitialUnreadCount = async () => {
-            try {
-                const result = await notificationService.getUnreadCount({
-                    signal: controller.signal
-                });
-                setUnreadCount(result.data.count);
-            } catch (err) {
-                if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                    setError(err.message || 'Failed to fetch unread count');
-                }
-            } finally {
-                removeAbortController(controller);
+        try {
+            const result = await notificationService.getUnreadCount({
+                signal: controller.signal
+            });
+            setUnreadCount(result.data.count);
+        } catch (err) {
+            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                setError(err.message || 'Failed to fetch unread count');
             }
-        };
-
-        fetchInitialUnreadCount();
+        } finally {
+            removeAbortController(controller);
+        }
     }, [createAbortController, removeAbortController]);
+
+    useOnlineBack(fetchUnreadCount);
+
+    // Fetch initial unread count on mount
+    useEffect(() => {
+        fetchUnreadCount();
+    }, [fetchUnreadCount]);
 
     // Fetch unread notifications
     const fetchUnreadNotifications = useCallback(async (page = 0, perPage = 10) => {
