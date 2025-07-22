@@ -24,8 +24,11 @@ const NotificationItem = ({notification, onMarkAsRead, onClose}) => {
     const Icon = NOTIFICATION_ICONS[type];
 
     const handleClick = async () => {
-        if (redirect && !notification.read) {
+        if (!notification.read) {
             await onMarkAsRead?.(id);
+        }
+
+        if (redirect) {
             navigate(redirect);
         }
     };

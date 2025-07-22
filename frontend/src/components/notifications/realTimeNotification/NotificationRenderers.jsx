@@ -5,11 +5,12 @@ import {IoEarth} from "react-icons/io5";
 import {PiDevicesBold} from "react-icons/pi";
 import {parseUserAgent} from '@/utils/userAgent';
 import {useGeoLocation} from "@/hooks/useGeoLocation";
+import Avatar from '@/components/common/Avatar';
 import {NOTIFICATION_TYPES} from './constant';
 import BROWSER_ICONS from '@/constants/browserIcons';
 import OS_ICONS from '@/constants/osIcons';
-import routesPaths from "@/constants/routesPaths"
-import Avatar from '@/components/common/Avatar';
+import routesPaths from "@/constants/routesPaths";
+import {TABS as PROFILE_TABS} from "@/pages/profile/constants"
 
 import {
     AvatarWrapper,
@@ -68,7 +69,7 @@ export const LoginNotification = ({payload}) => {
                                    {location.city},
                                </span>
                                 <span>
-                                    {location.region},
+                                    {location.region}
                                </span>
                             </FlexRow>
                         </Highlight>
@@ -122,7 +123,7 @@ export const notificationsRenderer = (notification) => {
             return {
                 bodyRender: LoginNotification,
                 avatarRender: LoginNotificationAvatar,
-                redirect: routesPaths.PROFILE,
+                redirect: routesPaths.PROFILE_TAB(PROFILE_TABS.SESSIONS_TAB.id),
                 title: 'Security Alert'
             }
 
@@ -130,7 +131,7 @@ export const notificationsRenderer = (notification) => {
             return {
                 bodyRender: NoteUpdateNotification,
                 avatarRender: NoteUpdateNotificationAvatar,
-                redirect: routesPaths.NOTE(notification.payload.note.id),
+                redirect: routesPaths.NOTE_VERSION(notification.payload.version.id),
                 title: 'Note Update'
             }
         default:

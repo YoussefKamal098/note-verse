@@ -6,4 +6,3 @@ export const TABS = Object.freeze({
     PASSWORD_AUTH_TAB: Object.freeze({id: "password-auth-tab", label: "Password & Auth", icon: SiAuthelia}),
     SESSIONS_TAB: Object.freeze({id: "sessions-tab", label: "Sessions", icon: FaLaptop})
 });
-
