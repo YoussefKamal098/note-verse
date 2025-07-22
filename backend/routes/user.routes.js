@@ -133,7 +133,7 @@ router.get(
 );
 
 router.patch(
-    '/:userId/sessions/:sessionId',
+    '/:userId/sessions/:sessionId/revoke',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(resolveMeIdentifier({fields: ['userId']})),
     asyncRequestHandler(api('revokeUserSession'))

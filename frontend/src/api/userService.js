@@ -12,7 +12,7 @@ const ENDPOINTS = {
     GET_USER_PERMISSION: (userId) => `/users/${userId}/permissions`,
     GET_USER_COMMITS: (userId) => `/users/${userId}/commits`,
     GET_USER_SESSIONS: (userId) => `/users/${userId}/sessions`,
-    REVOKE_SESSION: (userId, sessionId) => `/users/${userId}/sessions/${sessionId}`,
+    REVOKE_SESSION: (userId, sessionId) => `/users/${userId}/sessions/${sessionId}/revoke`
 };
 
 /**

@@ -59,6 +59,7 @@ note search, filtering, and CRUD operations.
 - **📧 Email Verification**: OTP verification system
 - **🌐 Google OAuth**: Social login integration
 - **🔄 Token Refresh**: Automatic session renewal
+- **🧠 Session Management**: View active sessions, revoke individual, and monitor device/browser access
 
 ### 🎨 UI/UX
 
@@ -296,17 +297,18 @@ NOTES_PER_PAGE=10
 
 #### 👤 User API (`user.routes.js`)
 
-| HTTP Method | Endpoint                                   | Description                                                                                                                                                                                                                                                                 |
-|-------------|--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `GET`       | `api/v1/users`                             | Retrieve a user's profile. You can query by either:<br>- `id`: The user's unique identifier<br>- `email`: The user's email address<br>- `"me"` as a query parameter: Resolves to the authenticated user's profile<br><br>*Response is cached for performance optimization.* |
-| `PATCH`     | `api/v1/users/:userId/avatar`              | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
-| `DELETE`    | `api/v1/users/:userId/avatar`              | Remove the user's avatar. Replace `:userId` with `"me"` to target the authenticated user. Clears cached user data.                                                                                                                                                          |
-| `PATCH`     | `api/v1/users/:userId/profile`             | Update user profile information (firstname/lastname). Replace `:userId` with `"me"` to target the authenticated user.                                                                                                                                                       |
-| `GET`       | `api/v1/users/:userId/granted-permissions` | Get permissions granted by authenticated user with pagination                                                                                                                                                                                                               |
-| `GET`       | `api/v1/users/:userId/commits`             | Get user’s note commit history. Requires note view permission.                                                                                                                                                                                                              |
-| `GET`       | `api/v1/users/:userId/permissions`         | Get a authenticated user's permission on a note.                                                                                                                                                                                                                            |
-| `PATCH`     | `api/v1/users/:userId/permissions`         | Update a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
-| `DELETE`    | `api/v1/users/:userId/permissions`         | Revoke a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
+| HTTP Method | Endpoint                                          | Description                                                                                                                                                                                                                                                                 |
+|-------------|---------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `GET`       | `api/v1/users`                                    | Retrieve a user's profile. You can query by either:<br>- `id`: The user's unique identifier<br>- `email`: The user's email address<br>- `"me"` as a query parameter: Resolves to the authenticated user's profile<br><br>*Response is cached for performance optimization.* |
+| `PATCH`     | `api/v1/users/:userId/avatar`                     | Upload a new profile avatar for the user. Only image/png, image/jpeg, and image/webp formats are allowed. Replace `:userId` with `"me"` to target the authenticated user                                                                                                    |
+| `DELETE`    | `api/v1/users/:userId/avatar`                     | Remove the user's avatar. Replace `:userId` with `"me"` to target the authenticated user. Clears cached user data.                                                                                                                                                          |
+| `PATCH`     | `api/v1/users/:userId/profile`                    | Update user profile information (firstname/lastname). Replace `:userId` with `"me"` to target the authenticated user.                                                                                                                                                       |
+| `GET`       | `api/v1/users/:userId/granted-permissions`        | Get permissions granted by authenticated user with pagination                                                                                                                                                                                                               |
+| `GET`       | `api/v1/users/:userId/commits`                    | Get user’s note commit history. Requires note view permission.                                                                                                                                                                                                              |
+| `GET`       | `api/v1/users/:userId/permissions`                | Get a authenticated user's permission on a note.                                                                                                                                                                                                                            |
+| `PATCH`     | `api/v1/users/:userId/permissions`                | Update a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
+| `DELETE`    | `api/v1/users/:userId/permissions`                | Revoke a user's permission on a note. Requires note ownership.                                                                                                                                                                                                              |
+| `PATCH`     | `api/v1/users/:userId/sessions/:sessionId/revoke` | Revoke a specific session for the user. Replace `:userId` with `"me"` to target the authenticated user. Only valid for sessions belonging to the user.                                                                                                                      |
 
 ### 🔔 Notification API (`notification.routes.js`)
 
@@ -401,6 +403,7 @@ notes_app/
 │   │   │   ├── progressiveImage/       # This folder contains React components for progressive image loading (from placeholder to high-res images).
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── selection/         # Custom selection/dropdown components
+│   │   │   ├── sessions/          # Components for displaying and managing user sessions, including session list and session item with revoke actions
 │   │   │   ├── tabs/              # Filtering tabs components
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── texterea/          # Custom textarea components with enhanced features   
@@ -415,6 +418,7 @@ notes_app/
 │   │   ├── contexts/              # React contexts for managing global state
 │   │   ├── hooks/                 # Custom React hooks for managing reusable logic across components
 │   │   ├── pages/                 # Pages for the different app routes (Home, Login, Register, Note, Errors, etc.)
+│   │   │   ├── profile/           # Profile page with tabs for user info, password change, and session/device management
 │   │   ├── services/              # Contains utility services for managing various frontend functionalities
 │   │   ├── styles/                # Styles (CSS) for the app's UI
 │   │   ├── utils/                 # Shared utility functions and helpers
