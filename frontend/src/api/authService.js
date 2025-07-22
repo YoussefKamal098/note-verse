@@ -1,5 +1,4 @@
 import EventEmitter from 'events';
-import {jwtDecode} from 'jwt-decode';
 import {HttpStatusCode} from "@/constants/httpStatus";
 import httpHeaders from "../constants/httpHeaders";
 import errorCodes from '../constants/errorCodes';
@@ -76,25 +75,14 @@ class AuthService {
         return config;
     }
 
-    #isTokenExpiringSoon(token, bufferSeconds = 60) {
-        try {
-            const decoded = jwtDecode(token);
-            const now = Math.floor(Date.now() / 1000);
-            return decoded.exp && decoded.exp - now < bufferSeconds;
-        } catch {
-            return true;
-        }
-    }
-
     #startTokenWatcher() {
         const checkInterval = 60 * 1000; // every 60 seconds
         this.#stopTokenWatcher();
 
         this.#tokenWatchInterval = setInterval(() => {
-            const token = this.#tokenStorageService.getAccessToken();
-            if (!token) return;
+            if (!this.#tokenStorageService.getAccessToken()) return;
 
-            if (this.#isTokenExpiringSoon(token)) {
+            if (this.#tokenStorageService.isTokenExpiringSoon()) {
                 console.warn('[AuthService] Token expiring soon — refreshing');
 
                 this.#refreshAccessToken().catch((err) => {
@@ -119,24 +107,14 @@ class AuthService {
         return this.#tokenStorageService.getAccessToken();
     }
 
-
     /**
      * Decodes the current access token to extract the session ID (jti claim).
      * Returns null if no valid token exists or decoding fails.
      * @returns {string|null} The session ID or null
      */
     getSessionId() {
-        const token = this.#tokenStorageService.getAccessToken();
-        if (!token) return null;
-
-        try {
-            const decoded = jwtDecode(token);
-            // Standard JWT ID claim is 'jti', but check other common names
-            return decoded.jti || decoded.sessionId || null;
-        } catch (error) {
-            console.error('Failed to decode token:', error);
-            return null;
-        }
+        const payload = this.#tokenStorageService.getPayload();
+        return payload?.jti || payload?.sessionId || null;
     }
 
     /**
