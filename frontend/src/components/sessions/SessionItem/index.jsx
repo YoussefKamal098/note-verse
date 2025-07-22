@@ -39,6 +39,10 @@ const SessionItem = ({session, onRevoke, isCurrent}) => {
 
             <SessionDetails>
                 <SessionHeader>
+                    <SessionDates>
+                        <div>{formatSocialDate(session.createdAt)}</div>
+                    </SessionDates>
+
                     <SessionRow>
                         <strong>
                             {userAgentInfo?.browser.name} on {userAgentInfo?.os.name}
@@ -61,8 +65,8 @@ const SessionItem = ({session, onRevoke, isCurrent}) => {
                 </SessionHeader>
 
                 <SessionDates>
-                    {!isCurrent && <div>Last accessed {formatSocialDate(session.lastAccessedAt)}</div>}
-                    <div>Created {formatSocialDate(session.createdAt)}</div>
+                    {!isCurrent && isActive && <div>Last accessed {formatSocialDate(session.lastAccessedAt)}</div>}
+                    {!isCurrent && !isActive && <div>Expired {formatSocialDate(session.expiredAt)}</div>}
                 </SessionDates>
 
                 {!isCurrent && isActive && (

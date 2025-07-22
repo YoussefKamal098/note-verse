@@ -11,10 +11,6 @@ import {useAuth} from "@/contexts/AuthContext";
 import useRequestManager from "@/hooks/useRequestManager";
 import {API_CLIENT_ERROR_CODES} from "@/api/apiClient";
 
-const simulateAPIDelay = () => new Promise(resolve =>
-    setTimeout(resolve, 800 + Math.random() * 5000)
-);
-
 const SessionsContainer = styled.div`
     min-height: 400px;
     display: flex;
@@ -84,12 +80,7 @@ const SessionsTab = () => {
                 )
             );
 
-            // TODO: Replace this simulation with actual Aclusy API call
-            await simulateAPIDelay();
-            if (Math.random() > 0.5) {
-                throw new Error("Revoke failed");
-            }
-
+            await userService.revokeUserSession("me", sessionId);
             notify.success('Session revoked successfully');
         } catch (error) {
             setActiveSessions(prev =>

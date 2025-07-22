@@ -58,9 +58,9 @@ export const SessionMeta = styled.div`
 export const SessionDates = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 15px;
     font-size: 0.85em;
     color: var(--color-text);
+    margin-bottom: 5px;
 `;
 
 export const SessionAction = styled.div`

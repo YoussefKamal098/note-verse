@@ -11,7 +11,8 @@ const ENDPOINTS = {
     UPDATE_PERMISSION: (userId) => `/users/${userId}/permissions`,
     GET_USER_PERMISSION: (userId) => `/users/${userId}/permissions`,
     GET_USER_COMMITS: (userId) => `/users/${userId}/commits`,
-    GET_USER_SESSIONS: (userId) => `/users/${userId}/sessions`
+    GET_USER_SESSIONS: (userId) => `/users/${userId}/sessions`,
+    REVOKE_SESSION: (userId, sessionId) => `/users/${userId}/sessions/${sessionId}`,
 };
 
 /**
@@ -219,6 +220,22 @@ class UserService {
     async getUserSessions(userId, config = {}) {
         return await this.#apiClient.get(
             ENDPOINTS.GET_USER_SESSIONS(userId),
+            config
+        );
+    }
+
+    /**
+     * Revoke a specific user session (marks it as expired).
+     * @param {string} userId - ID of the user
+     * @param {string} sessionId - ID of the session to revoke
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with revocation result
+     * @throws {Error} If revocation fails
+     */
+    async revokeUserSession(userId, sessionId, config = {}) {
+        return await this.#apiClient.patch(
+            ENDPOINTS.REVOKE_SESSION(userId, sessionId),
+            {}, // No body needed unless you want to include metadata
             config
         );
     }

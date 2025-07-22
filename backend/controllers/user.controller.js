@@ -321,6 +321,20 @@ class UserController {
         const sessions = await this.#sessionService.getSessionsByUserId(userId);
         res.status(httpCodes.OK.code).json(sessions);
     }
+
+    /**
+     * Revokes a specific session by sessionId for a given user.
+     * @param {import('express').Request} req - Express request object
+     * @param {import('express').Response} res - Express response object
+     * @param {Function} next - Express next middleware
+     */
+    async revokeUserSession(req, res, next) {
+        const {sessionId} = req.params;
+
+        await this.#sessionService.inactivateSession(sessionId);
+        res.status(httpCodes.OK.code).json({message: `Session ${sessionId} revoked successfully.`});
+    }
+
 }
 
 module.exports = UserController;

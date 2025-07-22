@@ -29,7 +29,6 @@ export const RealTimeNotificationProvider = ({children}) => {
             } catch (err) {
                 if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                     setError(err.message || 'Failed to fetch unread count');
-                    throw err;
                 }
             } finally {
                 removeAbortController(controller);

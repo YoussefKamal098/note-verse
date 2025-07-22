@@ -132,4 +132,12 @@ router.get(
     asyncRequestHandler(api('getUserSessions'))
 );
 
+router.patch(
+    '/:userId/sessions/:sessionId',
+    asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
+    asyncRequestHandler(resolveMeIdentifier({fields: ['userId']})),
+    asyncRequestHandler(api('revokeUserSession'))
+);
+
+
 module.exports = router;
