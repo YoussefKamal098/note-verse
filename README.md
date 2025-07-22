@@ -59,7 +59,7 @@ note search, filtering, and CRUD operations.
 - **📧 Email Verification**: OTP verification system
 - **🌐 Google OAuth**: Social login integration
 - **🔄 Token Refresh**: Automatic session renewal
-- **🧠 Session Management**: View active sessions, revoke individual, and monitor device/browser access
+- **🧠 Session Management**: View active sessions, revoke individual sessions, and monitor device/browser access
 
 ### 🎨 UI/UX
 
