@@ -44,7 +44,7 @@ const handleCodeBlocks = (content, isMarkdownFile, inCodeBlock, currentLanguage)
     let newCurrentLanguage = currentLanguage;
 
     if (isMarkdownFile) {
-        const codeBlockMatch = content.match(/^```(\w*)/);
+        const codeBlockMatch = content.match(/^\s*```(\w*)/);
         if (codeBlockMatch) {
             if (inCodeBlock) {
                 // End of code block

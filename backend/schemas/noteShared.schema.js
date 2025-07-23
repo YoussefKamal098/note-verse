@@ -28,12 +28,12 @@ const schema = {
         }),
     content: Joi.string()
         .min(25)
-        .max(convertToBytes("10KB"))
+        .max(convertToBytes("500KB"))
         .messages({
             'string.base': 'Content must be a string',
             'string.empty': 'Content is required',
             'string.min': 'Content must be at least 25 bytes long',
-            'string.max': 'Content cannot exceed 10 KB',
+            'string.max': 'Content cannot exceed 500 KB',
         }),
     isPinned: Joi.boolean(),
     isPublic: Joi.boolean()

@@ -1,5 +1,4 @@
 import React, {Suspense} from 'react';
-import styled from 'styled-components';
 import {motion} from 'framer-motion';
 import MarkdownPreview from "@uiw/react-markdown-preview";
 import '@uiw/react-markdown-preview/markdown.css';
@@ -10,26 +9,11 @@ import 'katex/contrib/mhchem';
 import './customMarkdownStyles.css';
 import {useTheme} from "@/contexts/ThemeContext";
 import extractTextFromChildren from "@/utils/extractTextFromChildren";
+import {directionAwareComponents} from "@/utils/langUtils";
 import Loader from "@/components/common/Loader";
 
 const Mermaid = React.lazy(() => import('@/components/mermaid'));
 const Graph = React.lazy(() => import('@/components/graph'));
-
-const PreviewStyles = styled(MarkdownPreview)`
-    padding: 1em 2em 3em;
-    text-align: left;
-    font-size: 1em !important;
-    background-color: transparent !important;
-
-    * {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
-    }
-
-    code,
-    pre {
-        font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace !important;
-    }
-`;
 
 const normalizeCodeBlocks = (markdown) => {
     return markdown.replace(/```(env|init)(\s)/g, '```ini$2');
@@ -69,11 +53,13 @@ const imageRenderer = ({src, alt}) => (
         animate={{opacity: 1}}
         transition={{duration: 0.3}}
         style={{
+            backgroundColor: 'transparent',
             borderRadius: '10px',
             maxWidth: '100%',
             height: 'auto',
             display: 'block',
-            margin: '0.5rem 0'
+            margin: '0.5rem 0',
+            fontWeight: "bold"
         }}
     />
 );
@@ -87,14 +73,15 @@ const PreviewTab = ({content, ...props}) => {
 
     return (
         <div {...restProps} style={restStyle} data-color-mode={theme}>
-            <PreviewStyles
+            <MarkdownPreview
                 style={{...(padding ? {padding: padding} : {})}}
                 source={normalizeCodeBlocks(content)}
                 remarkPlugins={[remarkMath]}
                 rehypePlugins={[[rehypeKatex, {throwOnError: false}]]}
                 components={{
                     code: codeRenderer,
-                    img: imageRenderer
+                    img: imageRenderer,
+                    ...directionAwareComponents
                 }}
             />
         </div>

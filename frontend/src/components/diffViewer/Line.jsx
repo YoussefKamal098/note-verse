@@ -1,4 +1,5 @@
 import React, {useMemo} from 'react';
+import {detectLangDirection, detectLangCode} from "@/utils/langUtils";
 import {highlightWordDiffs} from './WordDiff';
 import SyntaxHighlighter from './SyntaxHighlighter';
 
@@ -107,8 +108,11 @@ const Line = React.memo((
         return line.content;
     }, [line, showWordDiff, nextLine, prevLine]);
 
+    const dir = detectLangDirection(content);
+    const lang = detectLangCode(content);
+
     return (
-        <div className={`diff-viewer-line diff-viewer-${line.type}`}>
+        <div className={`diff-viewer-line diff-viewer-${line.type}`} dir={dir} lang={lang}>
             <span className="diff-viewer-line-number old">{line.oldLine || ''}</span>
             <span className="diff-viewer-line-number new">{line.newLine || ''}</span>
             <span className="diff-viewer-line-marker">

@@ -1,5 +1,6 @@
 import {createSelector} from 'reselect';
 import {deepEqual} from "shared-utils/obj.utils";
+import {roles} from "@/constants/roles"
 
 export const createNoteSelectors = () => {
     const selectBase = state => state;
@@ -19,10 +20,10 @@ export const createNoteSelectors = () => {
         getUserRole: createSelector([selectBase], state => state.userRole),
         getStatus: createSelector([selectBase], state => state.status),
         canEdit: createSelector([selectBase], state =>
-            ['owner', 'editor'].includes(state.userRole)
+            [roles.OWNER, roles.EDITOR].includes(state.userRole)
         ),
         isOwner: createSelector([selectBase], state =>
-            state.userRole === 'owner'
+            state.userRole === roles.OWNER
         ),
         hasChanges: createSelector([selectBase], state =>
             !deepEqual(state.originalContent, state.currentContent)

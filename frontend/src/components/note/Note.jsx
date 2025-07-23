@@ -97,7 +97,7 @@ const Note = () => {
         } else {
             await actions.persistNote();
         }
-    }, [actions.persistNote]);
+    }, [actions.persistNote, isContentChange]);
 
     const handleOnCommitSave = useCallback(async (message) => {
         setCommitMessageOpen(false);
@@ -137,7 +137,7 @@ const Note = () => {
         onShowShare: handleShowShare,
         onSettingsIconClick: handleSettingsIconClick,
         onShowCommitHistory: handleShowCommitHistory
-    }), [actions, handleCopyLink, handleShowShare]);
+    }), [actions, handleCopyLink, handleShowShare, handleOnSave]);
 
     const handleContributorClick = useCallback((userId) => {
         setContributorsOpen(false);

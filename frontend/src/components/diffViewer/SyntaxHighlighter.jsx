@@ -74,6 +74,9 @@ const LANGUAGES_MAP = {
     htm: 'markup',
     xml: 'markup',
     txt: 'text',
+    init: 'bash',
+    env: 'bash',
+    mermaid: 'mermaid'
 };
 
 Prism.languages.text = {
@@ -132,6 +135,15 @@ Prism.languages.text = {
         pattern: /\b\d+[eE][+-]?\d+\b/,
         alias: 'number'
     }
+};
+
+Prism.languages.mermaid = {
+    'keyword': /\b(graph|sequenceDiagram|classDiagram|stateDiagram|flowchart|erDiagram)\b/,
+    'operator': /-->|--|==>|==|:::|\|\|/,
+    'string': /"[^"]*"|'[^']*'/,
+    'number': /\b\d+\b/,
+    'punctuation': /[{}();]/,
+    'label': /[A-Za-z0-9_]+(?=:)/,
 };
 
 const SyntaxHighlighter = React.memo((

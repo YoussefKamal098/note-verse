@@ -29,6 +29,15 @@ const DiagramWrapper = styled.div`
         justify-content: center;
         max-width: 500px;
         margin: 0 auto;
+
+        .nodeLabel,
+        .messageText,
+        .actor,
+        .actor-box,
+        .titleText,
+        .edgeLabel {
+            font-size: 0.9rem !important;
+        }
     }
 `;
 

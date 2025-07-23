@@ -1,10 +1,10 @@
 import {useEffect, useMemo, useRef} from 'react';
 import {useNavigate} from "react-router-dom";
 import {useImmerReducer} from 'use-immer';
-import {useAuth} from '../../../contexts/AuthContext';
-import {useToastNotification} from '../../../contexts/ToastNotificationsContext';
-import useNoteValidation from '../../../hooks/useNoteValidation';
-import useRequestManager from '../../../hooks/useRequestManager';
+import {useAuth} from '@/contexts/AuthContext';
+import {useToastNotification} from '@/contexts/ToastNotificationsContext';
+import useNoteValidation from '@/hooks/useNoteValidation';
+import useRequestManager from '@/hooks/useRequestManager';
 import {noteReducer} from '../reducers/noteReducer';
 import {createNoteActions} from '../reducers/noteActions';
 import {noteSelectors} from '../selectors/noteSelectors';
