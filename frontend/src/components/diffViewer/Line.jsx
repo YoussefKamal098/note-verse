@@ -112,13 +112,13 @@ const Line = React.memo((
     const lang = detectLangCode(content);
 
     return (
-        <div className={`diff-viewer-line diff-viewer-${line.type}`} dir={dir} lang={lang}>
+        <div className={`diff-viewer-line diff-viewer-${line.type}`}>
             <span className="diff-viewer-line-number old">{line.oldLine || ''}</span>
             <span className="diff-viewer-line-number new">{line.newLine || ''}</span>
             <span className="diff-viewer-line-marker">
               {line.type === 'insert' ? '+' : line.type === 'delete' ? '-' : ' '}
             </span>
-            <span className="diff-viewer-line-content">
+            <span className="diff-viewer-line-content" dir={dir} lang={lang}>
               {renderContent(content, isComment, lineLang, filePath, darkMode)}
             </span>
         </div>

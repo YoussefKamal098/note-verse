@@ -53,13 +53,13 @@ const statusMessages = Object.freeze({
     // Version-related errors
     // =======================
     VERSION_OPERATION_FAILED: "Version operation failed. Please check your permissions and try again.",
-    VERSION_RESTORE_FAILED: "Restore version operation failed. Please check your permissions and try again.",
+    VERSION_RESTORE_FAILED: "Restore version failed. This may be due to missing permissions or a system error.",
     VERSION_NOT_FOUND: "The version you requested does not exist.",
     VERSION_CONFLICT: "Note modified by another user. Please refresh and try again.",
     VERSION_RESTORE_CONFLICT: "Version restore conflict detected. Please refresh and try again.",
     VERSION_ACCESS_CHECK_FAILED: "Failed to check version access permissions",
     VERSION_ALREADY_CURRENT: "The version you're trying to restore is already the current version. No changes were made.",
-
+    VERSION_CONTENT_FETCH_FAILED: "Failed to retrieve the version content. may be corrupted, you may not have permission, or a system error occurred.",
 
     // =======================
     // Notification-related errors
@@ -150,8 +150,7 @@ const statusMessages = Object.freeze({
     CORS_NOT_ALLOWED: "Cross-Origin Resource Sharing (CORS) is not allowed from this origin. Access to the requested resource has been denied.",
     REQUEST_TIMEOUT: "The server took too long to respond. Please try again later.",
     TOO_MANY_REQUESTS: "You have made too many requests in a short period. Please try again later.",
-    OPERATION_FAILED: "Operation failed. Please check your permissions and try again."
-
+    OPERATION_FAILED: "Operation failed. This may be due to missing permissions or a system error."
 });
 
 module.exports = statusMessages

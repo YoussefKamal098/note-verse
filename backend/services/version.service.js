@@ -112,6 +112,8 @@ class VersionService {
     async getVersionContent(versionId) {
         return this.#transactionService.executeTransaction(async (session) => {
             return await this.#versionRepo.getVersionContent(versionId, {session});
+        }, {
+            message: statusMessages.VERSION_CONTENT_FETCH_FAILED
         });
     }
 

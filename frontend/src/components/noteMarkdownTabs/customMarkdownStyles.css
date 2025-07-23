@@ -1,4 +1,5 @@
 .md-editor {
+    font-weight: normal !important;
     font-size: 0.9em !important;
     height: 100%;
     overflow-y: auto;
@@ -90,6 +91,7 @@
 /* Preview styles */
 .wmde-markdown {
     padding: 1em 2em 3em;
+    font-weight: normal !important;
     font-size: 1em !important;
     background-color: transparent !important;
 }
