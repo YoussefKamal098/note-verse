@@ -20,6 +20,7 @@ import useMediaSize from "@/hooks/useMediaSize";
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 import routesPaths from "@/constants/routesPaths";
 import CommitMessagePopup from "@/components/commitMessagePopup";
+import useNoteValidation from "@/hooks/useNoteValidation";
 
 const GridContainerStyles = styled.div`
     display: grid;
@@ -48,6 +49,7 @@ const LeftContainerStyles = styled(ContainerStyles)`
 const Note = () => {
     const navigate = useNavigate();
     const copyLink = useCopyLink();
+    const {validateNote} = useNoteValidation();
     const isMobile = useMediaSize(DEVICE_SIZES.tablet);
     const {actions, selectors} = useNoteContext();
     const [showShare, setShowShare] = useState(false);
@@ -92,12 +94,17 @@ const Note = () => {
     }, [actions.updateVisibilityState]);
 
     const handleOnSave = useCallback(async () => {
-        if (isContentChange && !isNew) {
+        const isValid = validateNote(current);
+        
+        if (isContentChange && !isNew && isValid) {
             setCommitMessageOpen(true);
-        } else {
-            await actions.persistNote();
+            return;
         }
-    }, [actions.persistNote, isContentChange]);
+
+        if (!isValid) return;
+
+        await actions.persistNote();
+    }, [actions.persistNote, isContentChange, current]);
 
     const handleOnCommitSave = useCallback(async (message) => {
         setCommitMessageOpen(false);

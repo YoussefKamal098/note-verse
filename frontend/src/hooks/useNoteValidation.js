@@ -1,6 +1,6 @@
-import {useToastNotification} from "../contexts/ToastNotificationsContext";
 import {useCallback} from "react";
-import noteValidationSchema from "../validations/noteValidtion";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
+import noteValidationSchema from "@/validations/noteValidtion";
 
 const useNoteValidation = () => {
     const {notify} = useToastNotification();

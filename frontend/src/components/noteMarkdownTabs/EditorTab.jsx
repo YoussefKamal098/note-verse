@@ -16,6 +16,7 @@ const EditorTab = ({
                    }) => {
     const {theme} = useTheme();
     const [direction, setDirection] = useState("ltr");
+    
     const toolbars = useMemo(() => [
         ...Object.values(defaultCommands),
         {
