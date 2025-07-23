@@ -8,6 +8,8 @@ import {ACTION_TYPES} from "../constants/actionTypes";
 import {DEFAULT_CONTENT, NEW_NOTE_KEY} from "../constants/noteConstants";
 import {getContentChanges} from "./noteReducer";
 
+const normalizeContent = (str) => str.replace(/\s+$/, '') + '\n';
+
 export const createNoteActions = (dispatch, getState, dependencies) => {
     const {navigate, notify, validateNote, requestManager, user} = dependencies;
 
@@ -56,6 +58,8 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                     userRole = result.data.role;
                 }
 
+                const currentContent = {...noteContent, ...cachedData}
+
                 dispatch({
                     type: ACTION_TYPES.NOTE.INIT,
                     payload: {
@@ -71,8 +75,14 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                             email: owner.email
                         },
                         userRole: userRole,
-                        currentContent: {...noteContent, ...cachedData},
-                        originalContent: {...noteContent},
+                        currentContent: {
+                            ...currentContent,
+                            content: normalizeContent(currentContent.content),
+                        },
+                        originalContent: {
+                            ...noteContent,
+                            content: normalizeContent(noteContent.content),
+                        },
                         status: {editMode: !!cachedData}
                     }
                 });
@@ -106,10 +116,15 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
 
         updateContent: async (updates) => {
             const {originalContent, currentContent} = getState();
-            const newContent = {...currentContent, ...updates};
+            const normalizedUpdates = {
+                ...updates,
+                content: normalizeContent((updates.content ?? currentContent.content)),
+            }
+
+            const newContent = {...currentContent, ...normalizedUpdates};
             const changes = getContentChanges(originalContent, newContent);
 
-            dispatch({type: ACTION_TYPES.CONTENT.UPDATE_CURRENT, payload: updates});
+            dispatch({type: ACTION_TYPES.CONTENT.UPDATE_CURRENT, payload: normalizedUpdates});
 
             if (Object.keys(changes).length) {
                 await cacheService.save(getCacheKey(), changes).catch(() => null);

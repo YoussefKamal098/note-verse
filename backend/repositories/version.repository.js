@@ -40,6 +40,21 @@ class VersionRepository {
     }
 
     /**
+     * Normalize content for diffing by:
+     * - Removing all trailing whitespace (spaces, tabs, newlines)
+     * - Ensuring the content ends with exactly one newline (`\n`)
+     *
+     * This prevents false-positive diffs caused by inconsistent trailing whitespace
+     * or missing final newlines.
+     *
+     * @param {string} str - The input content string to normalize
+     * @returns {string} - The normalized content with consistent trailing newline
+     */
+    #normalizeContent(str) {
+        return str.replace(/\s+$/, '') + '\n';
+    }
+
+    /**
      * Creates a new version of a note
      * @param {Object} params
      * @param {string} params.noteId - ID of the note being versioned
@@ -59,6 +74,9 @@ class VersionRepository {
                             message
                         }, {session = null} = {}) {
         try {
+            oldContent = oldContent ? this.#normalizeContent(oldContent) : oldContent;
+            newContent = newContent ? this.#normalizeContent(newContent) : newContent;
+
             if (oldContent === newContent) return null;
 
             // Get the previous version ID

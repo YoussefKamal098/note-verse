@@ -95,7 +95,7 @@ const Note = () => {
 
     const handleOnSave = useCallback(async () => {
         const isValid = validateNote(current);
-        
+
         if (isContentChange && !isNew && isValid) {
             setCommitMessageOpen(true);
             return;
@@ -144,7 +144,16 @@ const Note = () => {
         onShowShare: handleShowShare,
         onSettingsIconClick: handleSettingsIconClick,
         onShowCommitHistory: handleShowCommitHistory
-    }), [actions, handleCopyLink, handleShowShare, handleOnSave]);
+    }), [
+        handleEdit,
+        handleCopyLink,
+        handleDelete,
+        handleDiscard,
+        handleShowShare,
+        handleOnSave,
+        handleShowCommitHistory,
+        handleSettingsIconClick
+    ]);
 
     const handleContributorClick = useCallback((userId) => {
         setContributorsOpen(false);

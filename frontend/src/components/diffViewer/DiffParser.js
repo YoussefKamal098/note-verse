@@ -79,8 +79,6 @@ export const parseDiffText = (text) => {
     const lines = text.split('\n');
 
     for (const line of lines) {
-        if (line === '\\ No newline at end of file') continue;
-
         lineCounter++;
 
         // Check if the file is Markdown
