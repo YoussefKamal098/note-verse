@@ -62,8 +62,8 @@ export const directionAwareComponents = {
     dd: AutoDir('dd'),
 
     // Inline elements
-    span: AutoDir('span'),
-    strong: AutoDir('strong'),
-    em: AutoDir('em'),
-    del: AutoDir('del'),
+    // span: AutoDir('span'),
+    // strong: AutoDir('strong'),
+    // em: AutoDir('em'),
+    // del: AutoDir('del'),
 };
