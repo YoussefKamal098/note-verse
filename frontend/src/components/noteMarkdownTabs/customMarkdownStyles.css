@@ -54,6 +54,12 @@
     overflow: hidden;
 }
 
+.md-editor .toolbar-item {
+    font-size: 0.9em;
+    font-weight: bolder;
+    font-family: Pacifico, sans-serif !important;
+}
+
 /* Fold placeholder */
 .md-editor .cm-foldPlaceholder {
     background-color: var(--color-background-secondary);

@@ -16,17 +16,14 @@ const EditorTab = ({
                    }) => {
     const {theme} = useTheme();
     const [direction, setDirection] = useState("ltr");
-    
+
     const toolbars = useMemo(() => [
         ...Object.values(defaultCommands),
         {
             name: "direction-toggle",
             keyCommand: "direction-toggle",
-            icon: <span style={{
-                fontSize: "0.85em",
-                fontWeight: "bold",
-                width: "2em"
-            }}>{direction === "rtl" ? "LTR" : "RTL"}</span>,
+            icon: <span className={"toolbar-item"}>{direction === "rtl" ? "LTR" : "RTL"}</span>,
+            button: {style: {padding: "0 17px"}},
             execute: () => {
                 setDirection(prev => (prev === "rtl" ? "ltr" : "rtl"));
             }
