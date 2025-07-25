@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
 import {POPUP_TYPE} from '../confirmationPopup/ConfirmationPopup';
@@ -49,6 +49,7 @@ const LeftContainerStyles = styled(ContainerStyles)`
 const Note = () => {
     const navigate = useNavigate();
     const copyLink = useCopyLink();
+    const {showConfirmation} = useConfirmation();
     const {validateNote} = useNoteValidation();
     const isMobile = useMediaSize(DEVICE_SIZES.tablet);
     const {actions, selectors} = useNoteContext();
@@ -61,12 +62,11 @@ const Note = () => {
     const [showSettings, setShowSettings] = useState(!isMobile);
     const {editMode, isNew} = useNoteSelector(selectors.getStatus);
     const {id, isPublic} = useNoteSelector(selectors.getMeta);
-    const {current} = useNoteSelector(selectors.getContent);
+    const {current, original} = useNoteSelector(selectors.getContent);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
     const isContentChange = useNoteSelector(selectors.isContentChange);
-
-    const {showConfirmation} = useConfirmation();
+    const markdownTabsRef = useRef(null);
 
     useEffect(() => {
         if (!isMobile) setShowSettings(true);
@@ -85,9 +85,12 @@ const Note = () => {
         showConfirmation({
             type: POPUP_TYPE.WARNING,
             confirmationMessage: "Are you sure you want to discard all unsaved changes? Your modifications will be lost permanently.",
-            onConfirm: actions.discardChanges,
+            onConfirm: async () => {
+                markdownTabsRef.current.resetContent(original.content);
+                await actions.discardChanges();
+            },
         });
-    }, [actions.discardChanges, showConfirmation]);
+    }, [actions.discardChanges, showConfirmation, original.content]);
 
     const onVisibilityChange = useCallback((visibility) => {
         actions.updateVisibilityState(visibility);
@@ -198,6 +201,7 @@ const Note = () => {
                 />
 
                 <NoteMarkdownTabs
+                    ref={markdownTabsRef}
                     content={current.content}
                     onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
                     canEdit={editMode && canEdit}

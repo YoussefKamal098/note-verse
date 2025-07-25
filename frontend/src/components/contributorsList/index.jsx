@@ -38,6 +38,9 @@ const AvatarWrapper = styled.div`
     will-change: transform;
     width: 2.25em;
     height: 2.25em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
     border: 2px solid var(--color-border);
     background: var(--color-background-primary);
@@ -188,7 +191,11 @@ const ContributorsList = ({
                                                 {user.id === contributor.user.id &&
                                                     <Badge style={{fontSize: "0.75em"}} label={"you"}/>}
                                             </TooltipTitle>
-                                        }>
+                                        } containerStyle={{
+                                            width: "100%",
+                                            height: "100%"
+                                        }}
+                                        >
                                             <Avatar avatarUrl={contributor.user.avatarUrl}/>
                                         </Tooltip>
                                     </AvatarWrapper>

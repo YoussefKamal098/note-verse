@@ -10,7 +10,7 @@ const VersionPage = () => {
         <div className="page">
             <Navbar/>
             <div className="wrapper">
-                <Version id={id}/>
+                <Version id={id} key={id}/>
             </div>
         </div>
     );

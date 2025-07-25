@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import {useGlobalSettings} from "@/contexts/GlobalSettingsContext";
 import {StyledArrow, StyledTooltipWrapper} from "./TooltipStyled";
 
-const Tooltip = ({title, children, position = "bottom", targetRect}) => {
+const Tooltip = ({title, children, position = "bottom", targetRect, containerStyle}) => {
     const [show, setShow] = useState(false);
     const [tooltipPosition, setTooltipPosition] = useState({left: 0, top: 0});
     const {appRef} = useGlobalSettings();
@@ -44,6 +44,7 @@ const Tooltip = ({title, children, position = "bottom", targetRect}) => {
             ref={targetRef}
             onPointerEnter={() => setShow(true)}
             onPointerLeave={() => setShow(false)}
+            style={containerStyle}
         >
             {children}
             {ReactDOM.createPortal(

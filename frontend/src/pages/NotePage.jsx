@@ -10,7 +10,7 @@ const NotePage = () => {
         <div className="page">
             <Navbar showSearch={false}/>
             <div className="wrapper">
-                <Note id={id}/>
+                <Note id={id} key={id}/>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useState} from "react";
 import styled from "styled-components";
 import {HiOutlineWrenchScrewdriver} from "react-icons/hi2";
 import {FaBookOpenReader} from "react-icons/fa6";
@@ -11,27 +11,21 @@ const NoteMarkdownTabsWrapperStyled = styled.div`
     margin-top: 2em;
 `;
 
-const NoteMarkdownTabs = ({content, canEdit, onContentChange}) => {
+const NoteMarkdownTabs = forwardRef(({content, canEdit, onContentChange}, ref) => {
     const [value, setValue] = useState(content);
-    const isValueFromInside = useRef(false);
 
     // Debounced content update handler
     const handleContentUpdate = useCallback((newContent) => {
-        isValueFromInside.current = true;
         onContentChange(newContent);
     }, [onContentChange]);
 
     const debouncedContentUpdate = useDebounce(handleContentUpdate, 300);
 
-    // Sync external content changes
-    useEffect(() => {
-        if (isValueFromInside.current) {
-            isValueFromInside.current = false;
-            return;
+    useImperativeHandle(ref, () => ({
+        resetContent: (content) => {
+            setValue(content);
         }
-
-        setValue(content);
-    }, [content]);
+    }), []);
 
     // Editor change handlers
     const handleOnChange = useCallback((newValue) => {
@@ -69,6 +63,6 @@ const NoteMarkdownTabs = ({content, canEdit, onContentChange}) => {
             <DynamicTabs tabs={tabs}/>
         </NoteMarkdownTabsWrapperStyled>
     );
-};
+});
 
 export default React.memo(NoteMarkdownTabs);
