@@ -123,7 +123,12 @@ class GoogleAuthService {
      * @param {string} code - Authorization code from Google.
      * @param {string} stateToken - State token for CSRF protection.
      * @param {SessionInfo} sessionInfo - Client session information.
-     * @returns {Promise<{accessToken: string, refreshToken: string}>} Session tokens.
+     * @returns {Promise<{accessToken: string, refreshToken: string, sessionId:string, userId: string, new: boolean}>}
+     * @property {string} accessToken - Short-lived JWT for API authorization
+     * @property {string} refreshToken - Long-lived token for session renewal
+     * @property {string} userId - Authenticated user's unique identifier
+     * @property {string} sessionId - Unique identifier for the authenticated session
+     * @property {boolean} isNew - Indicates if this is a newly registered user
      * @throws {AppError} When validation or token exchange fails.
      */
     async handleGoogleCallback(code, stateToken, sessionInfo) {
@@ -137,10 +142,15 @@ class GoogleAuthService {
         const payload = await this.verifyAndValidateGoogleToken(tokens);
 
         // Synchronize the user with the local database
-        const user = await this.syncUser(payload);
+        const result = await this.syncUser(payload);
+        const user = result.user;
 
         // Generate session tokens for the authenticated user
-        return this.#jwtAuthService.generateSessionTokens(user.id, sessionInfo);
+        return {
+            userId: user.id,
+            isNew: !result.exist,
+            ...(await this.#jwtAuthService.generateSessionTokens(user.id, sessionInfo))
+        };
     }
 
     /**
@@ -204,10 +214,13 @@ class GoogleAuthService {
      * Synchronizes the Google user profile with the local database.
      * @async
      * @param {Object} payload - Decoded Google token payload containing user details.
-     * @returns {Promise<Object>} The user object from the local system.
+     * @returns {Promise<Readonly<{ user: Object, exist: boolean }>>}
+     * An object with:
+     * - `user`: the existing or newly created user document.
+     * - `exist`: `true` if the user already existed, `false` if a new user was created.
      */
     async syncUser(payload) {
-        return await this.#userService.createAuthProviderUser({
+        return await this.#userService.getOrCreateProviderUser({
             email: payload.email,
             providerId: payload.sub,
             firstname: payload.given_name,

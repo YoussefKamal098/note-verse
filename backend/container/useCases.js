@@ -8,6 +8,8 @@ module.exports = container => {
         updateNoteUseCase: asClass(require('../useCases/notes/updateNote.useCase')).transient(),
         createNoteUseCase: asClass(require('../useCases/notes/createNote.useCase')).transient(),
         restoreVersionUseCase: asClass(require('../useCases/versions/restoreVersion.useCase')).transient(),
-        validateVersionAccessUseCase: asClass(require('../useCases/versions/validateVersionAccess.useCase')).transient()
+        validateVersionAccessUseCase: asClass(require('../useCases/versions/validateVersionAccess.useCase')).transient(),
+        loginUseCase: asClass(require('../useCases/auth/login.useCase')).transient(),
+        googleCallbackUseCase: asClass(require('../useCases/auth/googleCallback.useCase')).transient()
     });
 };

@@ -118,10 +118,14 @@ class UserService {
      * @param {string} authUserData.lastname - The user's last name.
      * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
      * @param {authProvider} provider - The authentication provider (e.g., 'google', 'facebook').
-     * @returns {Promise<Object>} The created or retrieved user object, deep-frozen.
+     * @returns {Promise<Readonly<{ user: Object, exist: boolean }>>}
+     * An object with:
+     * - `user`: the existing or newly created user document.
+     * - `exist`: `true` if the user already existed, `false` if a new user was created.
+     *
      * @throws {AppError} If a duplicate key error occurs or if the creation process fails.
      */
-    async createAuthProviderUser(authUserData = {}, provider) {
+    async getOrCreateProviderUser(authUserData = {}, provider) {
         try {
             return await this.#userRepository.findOrCreateAuthUser({...authUserData, provider});
         } catch (error) {

@@ -303,7 +303,11 @@ class UserRepository {
      * @param {string} [authUserData.avatarUrl] - The URL of the user's profile picture.
      * @param {Object} [options] - Options
      * @param {import('mongoose').ClientSession} [options.session] - MongoDB session
-     * @returns {Promise<Readonly<Object>>} The created or existing user document, deep-frozen.
+     * @returns {Promise<Readonly<{ user: Object, exist: boolean }>>}
+     * An object with:
+     * - `user`: the existing or newly created user document.
+     * - `exist`: `true` if the user already existed, `false` if a new user was created.
+     *
      *
      * @throws {Error} Throws an error if:
      * - A **duplicate key conflict** occurs (`DUPLICATE_KEY`),
@@ -318,13 +322,13 @@ class UserRepository {
             await this.#beginTransactionIfNeeded(session, InSession);
 
             const existingUser = await this.#checkExistingAuthUser(authUserData, InSession);
-            if (existingUser) return existingUser;
+            if (existingUser) return Object.freeze({user: existingUser, exist: true});
 
             await this.#checkForLocalEmailConflict(email, InSession);
             const newUser = await this.#createAuthUserWithProvider(authUserData, InSession);
 
             await this.#commitTransactionIfNeeded(session, InSession);
-            return newUser;
+            return Object.freeze({user: newUser, exist: false});
         } catch (error) {
             await this.#handleFindOrCreateAuthUserError(error, provider, session, InSession);
             throw error; // Re-throw after handling

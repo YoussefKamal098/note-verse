@@ -20,13 +20,13 @@ const {deepClone, deepFreeze} = require("shared-utils/obj.utils");
 class JwtAuthService {
     /**
      * @private
-     * @type {import('../services/user.service')}
+     * @type {import('@/services/user.service').UserService}
      * @description The UserService instance used for user operations.
      */
     #userService;
     /**
      * @private
-     * @type {import('../services/session.service')}
+     * @type {import('@/services/session.service').SessionService}
      * @description The SessionService instance used to manage session-related operations.
      */
     #sessionService;
@@ -47,8 +47,8 @@ class JwtAuthService {
     /**
      * Constructs a new JwtAuthService.
      *
-     * @param {import('../services/user.service')} userService - An instance of UserService.
-     * @param {import('../services/session.service')} sessionService - An instance of SessionService.
+     * @param {import('@/services/user.service').UserService} userService - An instance of UserService.
+     * @param {import('@/services/session.service').SessionService} sessionService - An instance of SessionService.
      * @param {JwtProviderService} jwtProviderService - An instance of JwtProviderService.
      * @param {AuthConfig} config - The authentication configuration object
      */
@@ -234,13 +234,14 @@ class JwtAuthService {
      * Generates session tokens after successful authentication
      * @param {string} userId - user id
      * @param {SessionInfo} sessionInfo - Session context information
-     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair
+     * @returns {Promise<{sessionId: string, accessToken: string, refreshToken: string}>} sessionId and Token pair
      */
     async generateSessionTokens(userId, sessionInfo) {
         const session = await this.#handleSession(userId, sessionInfo);
         const payload = this.#getPayload(userId, session.id);
 
         return {
+            sessionId: session.id,
             accessToken: await this.#jwtProviderService.generateToken(
                 payload,
                 this.#config.accessTokenSecret,
@@ -250,7 +251,7 @@ class JwtAuthService {
                 payload,
                 this.#config.refreshTokenSecret,
                 this.#config.refreshTokenExpiry
-            )
+            ),
         };
     }
 
@@ -343,12 +344,12 @@ class JwtAuthService {
      * @param {string} credentials.email - User's email
      * @param {string} credentials.password - User's password
      * @param {SessionInfo} sessionInfo - Session context information
-     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair
+     * @returns {Promise<{userId:string, sessionId: string, accessToken: string, refreshToken: string}>} userId and sessionId, Token pair
      * @throws {AppError} On invalid credentials or session conflict
      */
     async login({email, password}, sessionInfo) {
         const user = await this.#verifyUserCredentials(email, password);
-        return this.generateSessionTokens(user.id, sessionInfo);
+        return {userId: user.id, ...(await this.generateSessionTokens(user.id, sessionInfo))};
     }
 
     /**

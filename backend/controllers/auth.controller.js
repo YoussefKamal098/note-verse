@@ -9,34 +9,51 @@ const statusMessages = require('../constants/statusMessages');
 class AuthController {
     /**
      * @private
-     * @type {import('../services/jwtAuth.service')}
+     * @type {import('@/services/jwtAuth.service').JwtAuthService}
      * @description The JWT authentication service instance.
      */
     #jwtAuthService;
     /**
      * @private
-     * @type {import('../services/googleAuth.service')}
+     * @type {import('@/services/googleAuth.service').GoogleAuthService}
      * @description The Google authentication service instance
      */
     #googleAuthService;
     /**
      * @private
-     * @type {import('../services/email.mediator')}
+     * @type {import('@/services/email.mediator').EmailMediator}
      * @description Email mediator
      */
     #emailMediator;
+    /**
+     * @private
+     * @type {import('@/useCases/auth/login.useCase').LoginUseCase}
+     * @description Login UseCase
+     */
+    #loginUseCase
+    /**
+     * @private
+     * @type {import('@/useCases/auth/googleCallback.useCase').GoogleCallbackUseCase}
+     * @description Google Callback UseCase
+     */
+    #googleCallbackUseCase
+
 
     /**
      * Constructs a new AuthController.
      * @param depndencies
-     * @param {import('../services/jwtAuth.service')} depndencies.jwtAuthService
-     * @param {import('../services/googleAuth.service')} depndencies.googleAuthService
-     * @param {import('../services/email.mediator')} depndencies.emailMediator
+     * @param {import('@/services/jwtAuth.service').JwtAuthService} depndencies.jwtAuthService
+     * @param {import('@/services/googleAuth.service').GoogleAuthService} depndencies.googleAuthService
+     * @param {import('@/useCases/auth/login.useCase').LoginUseCase} depndencies.loginUseCase
+     * @param {import('@/useCases/auth/googleCallback.useCase').GoogleCallbackUseCase} depndencies.googleCallbackUseCase
+     * @param {import('@/services/email.mediator').EmailMediator} depndencies.emailMediator
      */
-    constructor({jwtAuthService, googleAuthService, emailMediator}) {
+    constructor({jwtAuthService, googleAuthService, loginUseCase, googleCallbackUseCase, emailMediator}) {
         this.#jwtAuthService = jwtAuthService;
         this.#googleAuthService = googleAuthService;
         this.#emailMediator = emailMediator;
+        this.#loginUseCase = loginUseCase;
+        this.#googleCallbackUseCase = googleCallbackUseCase;
     }
 
     /**
@@ -165,10 +182,7 @@ class AuthController {
         }
 
         const sessionInfo = this.#getSessionInfo(req);
-        const {accessToken, refreshToken} = await this.#jwtAuthService.login({
-            email,
-            password
-        }, sessionInfo);
+        const {accessToken, refreshToken} = await this.#loginUseCase.execute({email, password, sessionInfo});
 
         this.#sendTokens(res, accessToken, refreshToken);
     }
@@ -218,11 +232,7 @@ class AuthController {
         }
 
         const sessionInfo = this.#getSessionInfo(req);
-        const tokens = await this.#googleAuthService.handleGoogleCallback(
-            code,
-            stateToken,
-            sessionInfo
-        );
+        const tokens = await this.#googleCallbackUseCase.execute({code, stateToken, sessionInfo});
 
         // Clear state cookie using config options
         this.#clearGoogleAuthCookie(res);
