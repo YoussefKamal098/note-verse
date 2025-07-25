@@ -30,6 +30,8 @@ note search, filtering, and CRUD operations.
 - **📄 Full CRUD Operations**: Create, Read, Update, and Delete notes
 - **✏️ Rich Markdown Editor**: Support for **code blocks**, **tables**, **LaTeX**, **chemical equations**, **graphs**,
   and **Mermaid** diagrams
+- **🌐 Multilingual Support**: Automatically detect and apply **text direction** (`LTR`/`RTL`) per paragraph based on
+  language (e.g., Arabic, Hebrew, English, etc.)
 - **🔍 Advanced Search**: Full-text search with tag
 - **🏷️ Tag Management**: tags with filtering
 - **📌 Note Pinning**: Pin important notes to top

@@ -52,6 +52,7 @@ const NoteHeader = ({actions}) => {
     const {isNew, isLoading, editMode} = useNoteSelector(selectors.getStatus);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
+    const {current} = useNoteSelector(selectors.getContent);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
     const {isPublic, createdAt} = useNoteSelector(selectors.getMeta);
@@ -83,7 +84,7 @@ const NoteHeader = ({actions}) => {
                             <Button
                                 type={BUTTON_TYPE.SUCCESS}
                                 onClick={actions.onSave}
-                                disabled={!hasChanges}
+                                disabled={!hasChanges || !current.content.trim()}
                                 loading={isLoading && hasChanges}
                             >
                                 Save
