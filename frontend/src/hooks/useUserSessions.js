@@ -1,8 +1,10 @@
 import {useEffect, useState, useCallback} from "react";
 import userService from "@/api/userService";
 import {API_CLIENT_ERROR_CODES} from "@/api/apiClient";
-import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import useRequestManager from "@/hooks/useRequestManager";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
+import {useConfirmation} from "@/contexts/ConfirmationContext";
+import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
 
 const useUserSessions = () => {
     const [activeSessions, setActiveSessions] = useState([]);
@@ -11,6 +13,7 @@ const useUserSessions = () => {
     const [error, setError] = useState(null);
 
     const {notify} = useToastNotification();
+    const {showConfirmation} = useConfirmation();
     const {createAbortController, removeAbortController} = useRequestManager();
 
     const fetchSessions = useCallback(() => {
@@ -61,6 +64,14 @@ const useUserSessions = () => {
         }
     }, [notify]);
 
+    const onRevokeSession = useCallback(async (sessionId) => {
+        showConfirmation({
+            type: POPUP_TYPE.DANGER,
+            confirmationMessage: "Are you sure you want to revoke this session?",
+            onConfirm: () => revokeSession(sessionId),
+        });
+    }, [showConfirmation, revokeSession]);
+
     useEffect(() => {
         fetchSessions();
     }, [fetchSessions]);
@@ -70,7 +81,7 @@ const useUserSessions = () => {
         inactiveSessions,
         loading,
         error,
-        revokeSession,
+        revokeSession: onRevokeSession,
     };
 };
 
