@@ -44,7 +44,7 @@ const AuthProvider = ({children}) => {
     };
 
     useOnlineBack(async () => {
-        if (!isUserFetched) {
+        if (!isUserFetched || !sessionId) {
             await loadUser();
         }
     });
