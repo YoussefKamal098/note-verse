@@ -3,10 +3,10 @@ import styled from "styled-components";
 import {useNavigate} from "react-router-dom";
 import {Field, Form, Formik} from "formik";
 import * as Yup from "yup";
-import {HeightTransitionContainer} from "../animations/ContainerAnimation";
-import {FadeInAnimatedText} from "../animations/TextAnimation";
-import useFormNavigation from "../../hooks/useFormNavigation";
-import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
+import {HeightTransitionContainer} from "@/components/animations/ContainerAnimation";
+import {FadeInAnimatedText} from "@/components/animations/TextAnimation";
+import Overlay from "@/components/common/Overlay";
+import useFormNavigation from "@/hooks/useFormNavigation";
 import SubmitButton from "./SubmitButtom";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
@@ -14,16 +14,15 @@ import FirstNameInput from "./FirstNameInput";
 import LastNameInput from "./LastNameInput";
 import AuthSeparator from "./AuthSeparator";
 import GoogleLoginButton from "./GoogleLoginButton";
-import authService from "../../api/authService";
-import routesPaths from "../../constants/routesPaths";
+import authService from "@/api/authService";
+import routesPaths from "@/constants/routesPaths";
 import {
     confirmPasswordValidation,
     emailValidation,
     nameValidation,
     passwordValidation
 } from "@/validations/userValidation";
-import Overlay from "../common/Overlay";
-
+import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
 
 // Create a styled component for the div wrapping the name fields
 const NameFieldsContainerStyled = styled.div`
@@ -53,10 +52,12 @@ const registerValidationSchema = Yup.object({
 });
 
 const RegisterForm = () => {
+    const navigate = useNavigate();
+
     const [formLoading, setFormLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
+
     const firstnameRef = useRef(null);
     const lastnameRef = useRef(null);
     const emailRef = useRef(null);

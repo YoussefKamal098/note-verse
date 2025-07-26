@@ -3,10 +3,10 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 import {FcGoogle} from "react-icons/fc";
 import {MoonLoader} from 'react-spinners';
-import useRequestManager from '../hooks/useRequestManager';
-import Navbar from "../components/navbar/Navbar";
-import authService from '../api/authService';
-import routesPaths from "../constants/routesPaths";
+import Navbar from "@/components/navbar/Navbar";
+import useRequestManager from '@/hooks/useRequestManager';
+import authService from '@/api/authService';
+import routesPaths from "@/constants/routesPaths";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
 const Container = styled.div`
@@ -41,6 +41,8 @@ const GoogleCallbackAuthPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const {createAbortController} = useRequestManager();
+
+    const from = location.state?.from?.pathname || routesPaths.HOME;
 
     const handleGoogleCallback = async () => {
         // Extract the authorization code and any error parameter from the callback URL
@@ -79,7 +81,7 @@ const GoogleCallbackAuthPage = () => {
             await authService.handleGoogleCallback({code}, {signal: controller.signal});
             // Redirect to the home page after one second.
             setTimeout(() => {
-                navigate(routesPaths.HOME);
+                navigate(from, {replace: true});
             }, 1000);
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {

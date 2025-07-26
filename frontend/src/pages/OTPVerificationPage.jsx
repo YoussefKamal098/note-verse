@@ -19,10 +19,10 @@ const OTPVerificationPage = () => {
     const location = useLocation();
     const email = location.state?.email;
 
+    const from = location.state?.from?.pathname || routesPaths.HOME;
+
     useEffect(() => {
-        if (!email) {
-            navigate(routesPaths.REGISTER, {replace: true});
-        }
+        !email && navigate(routesPaths.REGISTER, {replace: true});
     }, [email, navigate]);
 
     const handleVerify = async (otpCode) => {
@@ -30,7 +30,7 @@ const OTPVerificationPage = () => {
     };
 
     const handleSuccess = () => {
-        navigate(routesPaths.HOME);
+        navigate(from, {replace: true});
     };
 
     const maskedEmail = useMemo(() => maskEmail(email), [email]);

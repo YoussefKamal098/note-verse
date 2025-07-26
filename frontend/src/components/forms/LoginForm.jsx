@@ -1,22 +1,21 @@
 import React, {useRef, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {Field, Form, Formik} from "formik";
 import * as Yup from "yup";
-import {HeightTransitionContainer} from "../animations/ContainerAnimation";
-import {FadeInAnimatedText} from "../animations/TextAnimation";
-import useFormNavigation from "../../hooks/useFormNavigation";
-import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
+import {HeightTransitionContainer} from "@/components/animations/ContainerAnimation";
+import {FadeInAnimatedText} from "@/components/animations/TextAnimation";
+import Overlay from "@/components/common/Overlay";
+import useFormNavigation from "@/hooks/useFormNavigation";
 import SubmitButton from "./SubmitButtom";
 import GoogleLoginButton from "./GoogleLoginButton";
 import EmailInput from "./EmailInput";
 import PasswordInput from "./PasswordInput";
 import AuthSeparator from "./AuthSeparator";
-import Overlay from "../common/Overlay";
-
-import AuthService from "../../api/authService";
-import routesPaths from "../../constants/routesPaths";
+import AuthService from "@/api/authService";
+import routesPaths from "@/constants/routesPaths";
 import {FieldTypes, requiredField} from "@/validations/fieldTypeValidators";
 import {emailValidation} from "@/validations/userValidation";
+import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
 
 const loginValidationSchema = Yup.object({
     email: emailValidation,
@@ -24,20 +23,24 @@ const loginValidationSchema = Yup.object({
 });
 
 const LoginForm = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [formLoading, setFormLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
+
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
     const fieldRefs = [emailRef, passwordRef];
     const {handleKeyDown} = useFormNavigation(fieldRefs);
 
+    const from = location.state?.from?.pathname || routesPaths.HOME;
+    
     const handleFromSubmit = async (values, {setSubmitting}) => {
         try {
             setFormLoading(true);
             await AuthService.login(values);
-            navigate(routesPaths.HOME);
+            navigate(from, {replace: true});
         } catch (error) {
             setErrorMessage(error.message);
         } finally {
