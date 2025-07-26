@@ -6,6 +6,7 @@ export const createVersionSelectors = () => {
     return {
         getVersion: createSelector([selectBase], state => ({
             id: state.id,
+            noteId: state.noteId,
             createdAt: state.createdAt,
             commitMessage: state.commitMessage,
             patch: state.patch,

@@ -40,6 +40,7 @@ export const createVersionActions = (dispatch, getState, dependencies) => {
                     type: ACTION_TYPES.VERSION.INIT,
                     payload: {
                         id: version.id,
+                        noteId: note.id,
                         createdAt: version.createdAt,
                         commitMessage: version.message,
                         patch: version.patch,

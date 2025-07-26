@@ -36,6 +36,7 @@ const HeaderComponent = ({user, version, actions}) => {
                 onRestore={actions.onRestore ? actions.onRestore : undefined}
                 onGetFullVersion={actions.onGetFullVersion ? actions.onGetFullVersion : null}
                 onCopyLink={actions.onCopyLink ? actions.onCopyLink : null}
+                onGoToNote={actions.onGoToNote}
             />
         </HeaderContainer>
     );

@@ -1,4 +1,5 @@
 import React, {useCallback, useState} from 'react';
+import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
 import {useTheme} from '@/contexts/ThemeContext';
 import useCopyLink from "@/hooks/useCopyLink";
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
 `;
 
 const Version = () => {
+    const navigate = useNavigate();
     const {theme} = useTheme();
     const copyLink = useCopyLink();
     const {actions, selectors} = useVersionContext();
@@ -35,10 +37,17 @@ const Version = () => {
         await actions.setFullContent();
     }, [actions.setFullContent]);
 
+    const handleGoToNote = useCallback(() => {
+        if (version?.noteId) {
+            navigate(`/notes/${version.noteId}`);
+        }
+    }, [navigate, version?.noteId]);
+
     const headerActions = {
         onRestore: isNoteOwner ? handleRestoreVersion : null,
         onGetFullVersion: handleGetFullContent,
-        onCopyLink: copyLink
+        onCopyLink: copyLink,
+        onGoToNote: handleGoToNote
     };
 
     return (

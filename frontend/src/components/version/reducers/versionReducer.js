@@ -7,6 +7,7 @@ export const versionReducer = (draft, action) => {
             Object.assign(draft, {
                 ...INIT_STATE,
                 id: action.payload.id,
+                noteId: action.payload.noteId,
                 createdAt: action.payload.createdAt,
                 commitMessage: action.payload.commitMessage,
                 patch: action.payload.patch,

@@ -7,6 +7,7 @@ export const VERSION_STATUS = {
 
 export const INIT_STATE = {
     id: null,
+    noteId: null,
     createdAt: null,
     commitMessage: '',
     patch: "",
