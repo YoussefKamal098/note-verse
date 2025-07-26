@@ -16,6 +16,8 @@ export const RealTimeNotificationProvider = ({children}) => {
     const [error, setError] = useState(null);
     const notificationCallbacksRef = useRef([]);
     const {createAbortController, removeAbortController} = useRequestManager();
+    const fetchUnreadController = useRef(null)
+    const fetchAllController = useRef(null);
 
     const fetchUnreadCount = useCallback(async () => {
         const controller = createAbortController();
@@ -26,9 +28,6 @@ export const RealTimeNotificationProvider = ({children}) => {
             });
             setUnreadCount(result.data.count);
         } catch (err) {
-            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                setError(err.message || 'Failed to fetch unread count');
-            }
         } finally {
             removeAbortController(controller);
         }
@@ -44,6 +43,8 @@ export const RealTimeNotificationProvider = ({children}) => {
     // Fetch unread notifications
     const fetchUnreadNotifications = useCallback(async (page = 0, perPage = 10) => {
         const controller = createAbortController();
+        fetchUnreadController.current = controller;
+
         setIsLoading(true);
         setError(null);
 
@@ -59,18 +60,20 @@ export const RealTimeNotificationProvider = ({children}) => {
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 setError(err.message || 'Failed to fetch unread notifications');
-                throw err;
             }
             throw err;
         } finally {
             setIsLoading(false);
             removeAbortController(controller);
+            fetchUnreadController.current = null;
         }
     }, [createAbortController, removeAbortController]);
 
     // Fetch all notifications with pagination
     const fetchNotifications = useCallback(async (page = 0, perPage = 10) => {
         const controller = createAbortController();
+        fetchAllController.current = controller;
+
         setIsLoading(true);
         setError(null);
 
@@ -85,11 +88,12 @@ export const RealTimeNotificationProvider = ({children}) => {
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 setError(err.message || 'Failed to fetch notifications');
-                throw err;
             }
+            throw err;
         } finally {
             setIsLoading(false);
             removeAbortController(controller);
+            fetchAllController.current = null;
         }
     }, [createAbortController, removeAbortController]);
 
@@ -154,6 +158,11 @@ export const RealTimeNotificationProvider = ({children}) => {
         notificationCallbacksRef.current.forEach(cb => cb(newNotification));
     }, []);
 
+    const abortNotificationFetchRequests = useCallback(() => {
+        fetchUnreadController.current && removeAbortController(fetchUnreadController.current);
+        fetchAllController.current && removeAbortController(fetchAllController.current);
+    }, []);
+
     useSocketEvent(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
 
     return (
@@ -165,7 +174,8 @@ export const RealTimeNotificationProvider = ({children}) => {
             fetchUnreadNotifications,
             markAsRead,
             markAllAsRead,
-            onNotification
+            onNotification,
+            abortNotificationFetchRequests
         }}>
             {children}
         </NotificationContext.Provider>

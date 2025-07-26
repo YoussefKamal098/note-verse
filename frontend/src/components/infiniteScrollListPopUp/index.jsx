@@ -34,6 +34,10 @@ const ListTitle = styled.div`
 
 `;
 
+const CloseButtonWrapper = styled.div`
+    margin-left: auto;
+`
+
 const Icon = styled.div`
     display: inline-flex;
     font-size: 0.75em;
@@ -87,7 +91,9 @@ const InfiniteScrollList = forwardRef(({
                         {title}
                         <Icon>{icon}</Icon>
                     </ListTitle>
-                    <CloseButton onClick={onClose}/>
+                    <CloseButtonWrapper>
+                        <CloseButton onClick={onClose}/>
+                    </CloseButtonWrapper>
                 </ListHeader>
                 <InfiniteScrollLoader
                     fetchData={fetchData}

@@ -18,13 +18,18 @@ const NotificationBell = () => {
         fetchUnreadNotifications,
         markAsRead,
         markAllAsRead,
-        onNotification
+        onNotification,
+        abortNotificationFetchRequests
     } = useRealTimeNotifications();
 
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(NOTIFICATION_TABS.ALL);
     const dropdownRef = useRef(null);
     const bellButtonRef = useRef(null);
+
+    useEffect(() => {
+        !isOpen && abortNotificationFetchRequests()
+    }, [isOpen]);
 
     // Show error toast if there's an error
     useEffect(() => {

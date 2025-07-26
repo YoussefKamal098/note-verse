@@ -30,7 +30,8 @@ const useRequestManager = () => {
      * @param {AbortController} controller - Controller to remove
      */
     const removeAbortController = useCallback((controller) => {
-        abortControllers.current.delete(controller);
+        controller && controller.abort();
+        controller && abortControllers.current.delete(controller);
     }, []);
 
     /**
