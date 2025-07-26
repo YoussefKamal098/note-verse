@@ -28,6 +28,7 @@ class PermissionRepository {
         const sanitize = doc => ({
             ...sanitizeMongoObject(doc),
             ...(doc.userId ? {userId: doc.userId.toString()} : {}),
+            ...(doc.grantedBy ? {grantedBy: doc.grantedBy.toString()} : {}),
             resourceId: doc.resourceId.toString()
         });
 
@@ -109,7 +110,7 @@ class PermissionRepository {
                 conflictError.code = dbErrorCodes.DUPLICATE_KEY;
                 throw conflictError;
             }
-            
+
             console.error("Permission operation failed:", error);
             throw new Error(`Failed to process permissions: ${error.message}`);
         }
