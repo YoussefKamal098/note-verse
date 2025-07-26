@@ -1,6 +1,6 @@
 import React from "react";
 import InputField from "./InputField";
-import {SlUser} from "react-icons/sl";
+import {FaUser} from "react-icons/fa";
 
 const FirstNameInput = (props) => {
     const {label, placeholder, showIcon = true} = props;
@@ -10,7 +10,7 @@ const FirstNameInput = (props) => {
             {...props}
             label={label || "First Name"}
             placeholder={placeholder || "Enter your first name"}
-            Icon={showIcon ? SlUser : undefined}
+            Icon={showIcon ? FaUser : undefined}
         />
     );
 };
