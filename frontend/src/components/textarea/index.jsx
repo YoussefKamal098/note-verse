@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {HeightTransitionContainer} from "../animations/ContainerAnimation";
-import {FadeInAnimatedText} from "../animations/TextAnimation";
+import {detectLangDirection} from "@/utils/langUtils";
+import {HeightTransitionContainer} from "@/components/animations/ContainerAnimation";
+import {FadeInAnimatedText} from "@/components/animations/TextAnimation";
 import {
     CharacterCounterStyles,
     ErrorMessageStyles,
@@ -9,7 +10,6 @@ import {
     LabelContainerStyles,
     TextAreaStyles
 } from "./styles";
-
 
 const FloatingLabelTextArea = ({
                                    label,
@@ -22,6 +22,7 @@ const FloatingLabelTextArea = ({
                                }) => {
     const [focused, setFocused] = useState(false);
     const [error, setError] = useState(null);
+    const [textDirection, setTextDirection] = useState('ltr');
     const charCount = value?.length || 0;
 
     const setErrorMessage = (value) => {
@@ -37,6 +38,7 @@ const FloatingLabelTextArea = ({
     useEffect(() => {
         setFocused(!!value);
         setErrorMessage(value);
+        setTextDirection(detectLangDirection(value));
     }, []);
 
     useEffect(() => {
@@ -51,6 +53,7 @@ const FloatingLabelTextArea = ({
 
         // Validate length
         setErrorMessage(newValue);
+        setTextDirection(detectLangDirection(newValue));
 
         // Propagate change if valid or under max
         if (newValue.length <= maxLength) {
@@ -62,6 +65,7 @@ const FloatingLabelTextArea = ({
         <LabelContainerStyles>
             <TextAreaStyles
                 {...props}
+                dir={textDirection}
                 value={value}
                 onChange={handleChange}
                 onFocus={() => setFocused(true)}
@@ -76,7 +80,6 @@ const FloatingLabelTextArea = ({
                 {label}
             </FloatingLabelStyles>
 
-
             <FooterStyles>
                 <HeightTransitionContainer keyProp={error}>
                     {error && (
@@ -90,7 +93,6 @@ const FloatingLabelTextArea = ({
                     {charCount}/{maxLength}
                 </CharacterCounterStyles>
             </FooterStyles>
-
 
         </LabelContainerStyles>
     );
