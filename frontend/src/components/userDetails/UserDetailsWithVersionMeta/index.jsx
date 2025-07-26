@@ -12,6 +12,7 @@ const UserDetailsWithVersionMeta = ({
                                         avatarUrl,
                                         createdAt,
                                         showYouBadge = false,
+                                        showOwnerBadge = false,
                                         commitMessage,
                                     }) => {
     return (
@@ -28,6 +29,7 @@ const UserDetailsWithVersionMeta = ({
                         </div>
                     }
                     {showYouBadge && <Badge label={"you"}/>}
+                    {showOwnerBadge && <Badge label={"owner"}/>}
                 </S.UserName>
                 <S.MetaInfo>
                     {createdAt && formatDateTime(createdAt)}

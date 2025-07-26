@@ -11,6 +11,7 @@ const UserDetailsWithContributions = ({
                                           lastname,
                                           avatarUrl,
                                           showYouBadge = false,
+                                          showOwnerBadge = false,
                                           lastContributed,
                                           contributions
                                       }) => {
@@ -26,6 +27,7 @@ const UserDetailsWithContributions = ({
                         <UserContributionS.ContributionBadge>{contributions}</UserContributionS.ContributionBadge>
                     )}
                     {showYouBadge && <Badge label={"you"}/>}
+                    {showOwnerBadge && <Badge label={"owner"}/>}
                 </S.UserName>
                 <S.MetaInfo>
                     <UserContributionS.ContributionInfo>

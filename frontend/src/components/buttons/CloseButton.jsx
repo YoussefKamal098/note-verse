@@ -23,7 +23,7 @@ const CloseButtonStyles = styled(CgClose)`
     }
 `;
 
-const CloseButton = ({onClick, size = '2rem', color = "var(--color-danger)", ariaLabel = 'Close'}) => {
+const CloseButton = ({onClick, size = '2em', color = "var(--color-danger)", ariaLabel = 'Close'}) => {
     return (
         <Tooltip title={ariaLabel}>
             <CloseButtonStyles

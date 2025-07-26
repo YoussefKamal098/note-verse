@@ -44,7 +44,15 @@ const TitleWrapper = styled.div`
     gap: 10px;
 `
 
-const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, onClose}) => {
+const BadgesContainer = styled.div`
+    font-size: 0.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25em;
+`
+
+const UserContributionHistory = ({userId, noteId, noteOwnerId, isOpen = false, onItemClick, onClose}) => {
     const {user: authUser} = useAuth();
     const {notify} = useToastNotification();
     const infiniteScrollRef = useRef(null);
@@ -96,7 +104,10 @@ const UserContributionHistory = ({userId, noteId, isOpen = false, onItemClick, o
                             <Avatar avatarUrl={user.avatarUrl} isLoading={isUserLoading}/>
                         </AvatarWrapper>
                     </Tooltip>
-                    {authUser.id === userId && <Badge label={"you"}/>}
+                    <BadgesContainer>
+                        {authUser.id === userId && <Badge label={"you"}/>}
+                        {userId === noteOwnerId && <Badge label={"owner"}/>}
+                    </BadgesContainer>
                 </UserWrapper>
             </TitleWrapper> : ""
     ), [user, isUserLoading]);

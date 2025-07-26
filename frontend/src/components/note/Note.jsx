@@ -63,6 +63,7 @@ const Note = () => {
     const {editMode, isNew} = useNoteSelector(selectors.getStatus);
     const {id, isPublic} = useNoteSelector(selectors.getMeta);
     const {current, original} = useNoteSelector(selectors.getContent);
+    const owner = useNoteSelector(selectors.getOwner);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
     const isContentChange = useNoteSelector(selectors.isContentChange);
@@ -180,7 +181,8 @@ const Note = () => {
             {!isNew && !editMode && <TopContainerStyles>
                 <ContributorsList
                     noteId={id}
-                    maxVisible={1}
+                    noteOwnerId={owner.id}
+                    maxVisible={2}
                     onAvatarClick={handleClick}
                 />
             </TopContainerStyles>}
@@ -217,19 +219,22 @@ const Note = () => {
 
             <CommitHistory
                 noteId={id}
+                noteOwnerId={owner.id}
                 isOpen={commitHistoryOpen}
                 onItemClick={handleCommitClick}
                 onClose={handleShowCommitHistory}
             />
             <Contributor
                 noteId={id}
+                noteOwnerId={owner.id}
                 isOpen={contributorsOpen}
                 onItemClick={handleContributorClick}
                 onClose={handleShowContributors}
             />
             <UserContributionHistory
-                userId={currentUserContributionHistoryId}
                 noteId={id}
+                userId={currentUserContributionHistoryId}
+                noteOwnerId={owner.id}
                 isOpen={userContributionHistoryOpen}
                 onItemClick={handleCommitClick}
                 onClose={() => setUserContributionHistoryOpen(false)}

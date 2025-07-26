@@ -18,6 +18,7 @@ const ListHeader = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap-reverse;
     margin-bottom: 15px;
 `;
 

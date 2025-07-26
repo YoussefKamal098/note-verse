@@ -7,7 +7,7 @@ import {ListItem} from "./styles";
 import {useAuth} from "@/contexts/AuthContext";
 import noteService from "@/api/noteService";
 
-const CommitHistory = ({noteId, isOpen = false, onItemClick, onClose}) => {
+const CommitHistory = ({noteId, noteOwnerId, isOpen = false, onItemClick, onClose}) => {
     const {user} = useAuth();
 
     const fetchCommits = useCallback(async (page, pageSize) => {
@@ -25,6 +25,7 @@ const CommitHistory = ({noteId, isOpen = false, onItemClick, onClose}) => {
                     createdAt={commit.createdAt}
                     commitMessage={commit.message}
                     showYouBadge={user.id === commit.user.id}
+                    showOwnerBadge={commit.user.id === noteOwnerId}
                 />
             </Tooltip>
         </ListItem>

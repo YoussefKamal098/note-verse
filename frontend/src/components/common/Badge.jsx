@@ -4,8 +4,9 @@ import styled from 'styled-components';
 const BadgeWrapper = styled.span`
     display: inline-block;
     padding: 2px 5px;
-    font-size: 0.6rem;
+    font-size: 0.6em;
     font-weight: 600;
+    font-family: Pacifico, cursive;
     background-color: var(--color-background-secondary);
     border-radius: 25px;
     border: 2px solid var(--color-border-secondary);

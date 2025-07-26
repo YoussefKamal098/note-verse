@@ -124,8 +124,18 @@ const TooltipTitle = styled.div`
     gap: 5px;
 `
 
+
+const BadgesContainer = styled.div`
+    font-size: 0.75em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25em;
+`
+
 const ContributorsList = ({
                               noteId,
+                              noteOwnerId,
                               maxVisible = 5,
                               onAvatarClick
                           }) => {
@@ -188,8 +198,11 @@ const ContributorsList = ({
                                         <Tooltip title={
                                             <TooltipTitle>
                                                 {contributor.user.firstname} {contributor.user.lastname}
-                                                {user.id === contributor.user.id &&
-                                                    <Badge style={{fontSize: "0.75em"}} label={"you"}/>}
+
+                                                <BadgesContainer>
+                                                    {user.id === contributor.user.id && <Badge label={"you"}/>}
+                                                    {contributor.user.id === noteOwnerId && <Badge label={"owner"}/>}
+                                                </BadgesContainer>
                                             </TooltipTitle>
                                         } containerStyle={{
                                             width: "100%",

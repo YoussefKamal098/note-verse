@@ -6,7 +6,7 @@ import {ListItem} from "./styles";
 import {useAuth} from "@/contexts/AuthContext";
 import noteService from "@/api/noteService";
 
-const ContributorInfiniteScrollList = ({noteId, isOpen = false, onItemClick, onClose}) => {
+const ContributorInfiniteScrollList = ({noteId, noteOwnerId, isOpen = false, onItemClick, onClose}) => {
     const {user} = useAuth();
 
     const fetchContributors = useCallback(async (page, pageSize) => {
@@ -23,6 +23,7 @@ const ContributorInfiniteScrollList = ({noteId, isOpen = false, onItemClick, onC
                 lastContributed={contributor.lastCommitAt}
                 contributions={contributor.commitCount}
                 showYouBadge={user.id === contributor.user.id}
+                showOwnerBadge={contributor.user.id === noteOwnerId}
             />
         </ListItem>
     ), []);
