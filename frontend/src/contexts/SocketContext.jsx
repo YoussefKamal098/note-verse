@@ -105,11 +105,33 @@ export const SocketProvider = ({children}) => {
             }
         }
 
+        const handleOnline = () => {
+            const token = authService.getAccessToken();
+            if (user && token && socketRef.current && !socketRef.current.connected) {
+                console.info('[Socket] Reconnecting after going online...');
+                socketRef.current.auth.token = token;
+                socketRef.current.connect();
+            }
+        };
+
+        const handleOffline = () => {
+            if (socketRef.current?.connected) {
+                console.info('[Socket] Disconnected due to offline status');
+                socketRef.current.disconnect();
+            }
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
                 socketRef.current = null;
             }
+
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
         };
     }, [user, createSocket]);
 
