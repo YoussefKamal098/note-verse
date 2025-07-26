@@ -1,25 +1,26 @@
 import React, {useEffect, useRef} from 'react';
 import {AnimatePresence} from "framer-motion";
-import CloseButton from "../../../buttons/CloseButton";
-import {useSharePopUp} from "../../hooks/useSharePopUp";
+import {useSharePopUp, useSharePopUpSelector} from "../../hooks/useSharePopUp";
 import InitialLoad from '../InitialLoad';
 import ProgressBar from '../ProgressBar';
+import Header from '../Header';
 import NewCollaboratorsSection from "../NewCollaboratorsSection"
 import CollaboratorSections from "../CollaboratorSections"
 import Footer from "../Footer";
-import {MainContentStyles, PopUpBackdropStyles, PopUpContainerStyles, PopUpHeaderStyles} from "./styles"
+import {MainContentStyles, PopUpBackdropStyles, PopUpContainerStyles} from "./styles"
 
 const Index = ({onClose, onVisibilityChange, show = true}) => {
-    const {state, actions} = useSharePopUp();
+    const {state, selectors, actions} = useSharePopUp();
     const inputRef = useRef(null);
     const firstTimeShow = useRef(true);
+    const initError = useSharePopUpSelector(selectors.getInitError);
 
     useEffect(() => {
         onVisibilityChange?.(state.isPublic);
     }, [state.isPublic])
 
     useEffect(() => {
-        if (show && firstTimeShow.current) {
+        if ((show && firstTimeShow.current) || initError) {
             firstTimeShow.current = false;
             actions.fetchInitialData();
         }
@@ -39,13 +40,10 @@ const Index = ({onClose, onVisibilityChange, show = true}) => {
                         animate={{opacity: 1, scale: 1}}
                         exit={{opacity: 0, scale: 0.9}}
                     >
-                        <InitialLoad/>
+                        <InitialLoad onClose={onClose}/>
                         <ProgressBar/>
 
-                        <PopUpHeaderStyles>
-                            <h3>Share with people and groups</h3>
-                            <CloseButton onClick={onClose}/>
-                        </PopUpHeaderStyles>
+                        <Header onClose={onClose}/>
 
                         <MainContentStyles>
                             <NewCollaboratorsSection inputRef={inputRef}/>

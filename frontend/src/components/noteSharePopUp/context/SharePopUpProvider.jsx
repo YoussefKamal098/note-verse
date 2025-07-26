@@ -1,8 +1,8 @@
 import {useEffect, useMemo, useRef} from 'react';
 import {useImmerReducer} from 'use-immer';
-import useRequestManager from "../../../hooks/useRequestManager";
-import {useAuth} from "../../../contexts/AuthContext";
-import {useToastNotification} from '../../../contexts/ToastNotificationsContext';
+import useRequestManager from "@/hooks/useRequestManager";
+import {useAuth} from "@/contexts/AuthContext";
+import {useToastNotification} from '@/contexts/ToastNotificationsContext';
 import {sharePopUpReducer} from '../reducers/sharePopUpReducer';
 import {createSharePopUpActions} from '../reducers/sharePopUpActions';
 import {sharePopUpSelectors} from '../selectors/sharePopUpSelectors';

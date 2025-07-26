@@ -12,4 +12,13 @@ const ContainerStyles = styled(motion.div)`
     z-index: 10;
 `
 
-export {ContainerStyles};
+const CloseButtonWrapper = styled.div`
+    position: absolute;
+    top: 0.5em;
+    right: 0.5em;
+`
+
+export {
+    ContainerStyles,
+    CloseButtonWrapper
+};

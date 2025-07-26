@@ -28,30 +28,14 @@ const PopUpContainerStyles = styled(motion.div)`
     overflow: hidden;
 `;
 
-const PopUpHeaderStyles = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
-
-    h3 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-`;
-
 const MainContentStyles = styled.div`
     position: relative;
     padding: 1.5rem;
     overflow-y: auto;
 `;
 
-
 export {
     PopUpBackdropStyles,
     PopUpContainerStyles,
-    PopUpHeaderStyles,
     MainContentStyles
 }

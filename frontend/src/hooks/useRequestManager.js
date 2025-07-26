@@ -33,10 +33,20 @@ const useRequestManager = () => {
         abortControllers.current.delete(controller);
     }, []);
 
+    /**
+     * Aborts all active requests
+     */
+    const abortAllRequests = useCallback(() => {
+        abortControllers.current.forEach(controller => controller.abort());
+        abortControllers.current.clear();
+    }, []);
+
+
     return useMemo(() => ({
         createAbortController,
-        removeAbortController
-    }), [createAbortController, removeAbortController]);
+        removeAbortController,
+        abortAllRequests
+    }), [createAbortController, removeAbortController, abortAllRequests]);
 };
 
 export default useRequestManager;

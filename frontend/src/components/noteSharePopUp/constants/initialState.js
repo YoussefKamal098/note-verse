@@ -1,4 +1,4 @@
-import {roles} from "../../../constants/roles";
+import {roles} from "@/constants/roles";
 
 export const INIT_STATE = {
     noteId: null,
@@ -13,5 +13,6 @@ export const INIT_STATE = {
     newCollaboratorsMessage: '',
     isLoading: false,
     initLoading: true,
+    initError: null,
     error: null,
 };

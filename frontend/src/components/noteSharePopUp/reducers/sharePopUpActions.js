@@ -1,13 +1,13 @@
 import {ACTION_TYPES} from "../constants/actionTypes";
-import {API_CLIENT_ERROR_CODES} from '../../../api/apiClient';
-import noteService from '../../../api/noteService';
-import userService from '../../../api/userService';
+import {API_CLIENT_ERROR_CODES} from '@/api/apiClient';
+import noteService from '@/api/noteService';
+import userService from '@/api/userService';
 
 export const createSharePopUpActions = (dispatch, getState, dependencies) => {
     const {user, requestManager, notify} = dependencies;
 
     const handleError = (error) => {
-        if (error.name !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+        if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
             notify.error(error.message);
             dispatch({
                 type: ACTION_TYPES.UPDATE_STATUS,
@@ -22,9 +22,15 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
 
     return {
         fetchInitialData: async () => {
+            requestManager.abortAllRequests();
             const controller = requestManager.createAbortController();
 
             try {
+                dispatch({
+                    type: ACTION_TYPES.UPDATE_STATUS,
+                    payload: {initLoading: true}
+                });
+
                 const [permissionsResponse, grantedPermissionsResponse] = await Promise.all([
                     noteService.getNotePermissions(getState().noteId, {}, {signal: controller.signal}),
                     userService.getPermissionsGrantedByUser(user?.id, {}, {signal: controller.signal})
@@ -55,6 +61,10 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
                     }
                 });
             } catch (error) {
+                dispatch({
+                    type: ACTION_TYPES.UPDATE_STATUS,
+                    payload: {initError: error.message}
+                });
                 handleError(error);
             } finally {
                 requestManager.removeAbortController(controller);

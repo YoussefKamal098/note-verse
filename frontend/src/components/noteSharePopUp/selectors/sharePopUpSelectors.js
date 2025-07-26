@@ -67,6 +67,10 @@ export const createSharePopUpSelectors = () => {
         getError: createSelector(
             [selectBase],
             state => state.error
+        ),
+        getInitError: createSelector(
+            [selectBase],
+            state => state.initError
         )
     };
 };

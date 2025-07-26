@@ -49,8 +49,10 @@ export const sharePopUpReducer = produce((draft, action) => {
         case ACTION_TYPES.INITIAL_DATA_LOADED:
             draft.collaborators = new Map(action.payload.collaborators.map(c => [c.id, c]));
             draft.suggestions = action.payload.suggestions;
-            draft.error = null;
             draft.initLoading = false;
+            draft.initError = null;
+            draft.error = null;
+            
             break;
 
         case ACTION_TYPES.APPLY_CHANGES_TO_COLLABORATORS: {
@@ -107,6 +109,7 @@ export const sharePopUpReducer = produce((draft, action) => {
 
         case ACTION_TYPES.UPDATE_STATUS:
             draft.initLoading = action.payload.initLoading !== undefined ? action.payload.initLoading : draft.initLoading;
+            draft.initError = action.payload.initError !== undefined ? action.payload.initError : draft.initError;
             draft.isLoading = action.payload.isLoading !== undefined ? action.payload.isLoading : draft.isLoading;
             draft.error = action.payload.error !== undefined ? action.payload.error : draft.error;
             break;
