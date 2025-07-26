@@ -7,7 +7,7 @@ import {BsPersonFillAdd} from "react-icons/bs";
 import {RiPushpin2Fill, RiUnpinLine} from "react-icons/ri";
 import {IconButton} from '@mui/material';
 import {MoreVert} from '@mui/icons-material';
-import Menu from "..";
+import Menu from "@/components/menus";
 
 const NoteMenu = ({
                       onDelete,

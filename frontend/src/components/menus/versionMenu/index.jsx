@@ -4,7 +4,7 @@ import {TiArrowLoop} from "react-icons/ti";
 import {MdNote} from "react-icons/md";
 import {IconButton} from '@mui/material';
 import {MoreVert} from '@mui/icons-material';
-import Menu from "..";
+import Menu from "@/components/menus";
 
 const VersionMenu = ({
                          onRestore,

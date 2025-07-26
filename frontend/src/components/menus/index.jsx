@@ -4,9 +4,9 @@ import {MdKeyboardArrowLeft, MdKeyboardArrowRight} from "react-icons/md";
 import {BsThreeDots} from "react-icons/bs";
 import {TiTickOutline} from "react-icons/ti";
 import {CSSTransition, TransitionGroup} from "react-transition-group";
-import useOutsideClick from "../../hooks/useOutsideClick";
-import useMediaSize from "../../hooks/useMediaSize";
-import useMobileDrag from "../../hooks/useMobileDrag";
+import useOutsideClick from "@/hooks/useOutsideClick";
+import useMediaSize from "@/hooks/useMediaSize";
+import useMobileDrag from "@/hooks/useMobileDrag";
 import {
     DynamicMenuContainerStyled,
     DynamicMenuHeaderStyled,
@@ -22,7 +22,7 @@ import {
     OptionWrapperStyled
 } from "./MenuStyled";
 
-const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, mobileSize = 600}) => {
+const Menu = ({children, containerStyle, options, triggerIcon = <BsThreeDots/>, triggerElement, mobileSize = 600}) => {
     const [menuStack, setMenuStack] = useState([options]);
     const [direction, setDirection] = useState("left");
     const [menuOpen, setMenuOpen] = useState(false);
@@ -208,7 +208,7 @@ const Menu = ({children, options, triggerIcon = <BsThreeDots/>, triggerElement, 
                     <DynamicMenuContainerStyled
                         ref={menuRef}
                         $mobileSize={mobileSize}
-                        style={{...(isMobile ? {translate: `0 ${dragOffset}px`} : {})}}
+                        style={{...(!isMobile ? containerStyle : {}), ...(isMobile ? {translate: `0 ${dragOffset}px`} : {})}}
                         role="presentation"
                         aria-live="polite"
                         onPointerDown={handlePointerDown}

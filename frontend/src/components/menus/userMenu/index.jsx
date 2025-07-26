@@ -4,16 +4,15 @@ import {MdNoteAlt} from "react-icons/md";
 import {LuLightbulb, LuLightbulbOff} from "react-icons/lu";
 import {RiUserSettingsLine} from "react-icons/ri";
 import {FaArrowRightFromBracket} from "react-icons/fa6";
-import Overlay from "../../common/Overlay";
-import Spinner from "../../buttons/LoadingSpinnerButton";
-import {useAuth} from "../../../contexts/AuthContext";
-import {useTheme} from "../../../contexts/ThemeContext";
-import {useToastNotification} from "../../../contexts/ToastNotificationsContext";
-import Avatar from '../../common/Avatar';
-import routesPaths from "../../../constants/routesPaths";
-import authService from "../../../api/authService";
-import Menu from "..";
-
+import Overlay from "@/components/common/Overlay";
+import Spinner from "@/components/buttons/LoadingSpinnerButton";
+import {useAuth} from "@/contexts/AuthContext";
+import {useTheme} from "@/contexts/ThemeContext";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
+import Avatar from '@/components/common/Avatar';
+import routesPaths from "@/constants/routesPaths";
+import authService from "@/api/authService";
+import Menu from "@/components/menus";
 import {AvatarStyled, FullNameStyled, HeaderStyled, UserMenuAvatarStyled} from "./UserMenuStyled";
 
 const UserMenu = () => {
@@ -99,6 +98,7 @@ const UserMenu = () => {
         <>
             <Overlay isVisible={isLoggingOut}/>
             <Menu
+                containerStyle={{minWidth: "250px"}}
                 options={options}
                 triggerElement={triggerElement}
             >
