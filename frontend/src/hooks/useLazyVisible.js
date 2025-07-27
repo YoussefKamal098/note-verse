@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 
-const useLazyVisible = (margin = '100px') => {
+const useLazyVisible = (margin = 100, scrollContainer = null) => {
     const ref = useRef(null);
     const [visible, setVisible] = useState(false);
 
@@ -12,7 +12,10 @@ const useLazyVisible = (margin = '100px') => {
                     observer.disconnect();
                 }
             },
-            {rootMargin: margin}
+            {
+                root: scrollContainer,
+                rootMargin: `${margin}px`
+            }
         );
 
         if (ref.current) {
@@ -20,7 +23,7 @@ const useLazyVisible = (margin = '100px') => {
         }
 
         return () => observer.disconnect();
-    }, [margin]);
+    }, [margin, ref, scrollContainer]);
 
     return [ref, visible];
 };

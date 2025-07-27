@@ -1,9 +1,9 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
 import {useTheme} from '@/contexts/ThemeContext';
 import useCopyLink from "@/hooks/useCopyLink";
-import {AnimatedTabSwitch} from "@/components/animations/ContainerAnimation"
+import {AnimatedTabSwitch} from "@/components/animations/ContainerAnimation";
 import DiffViewer from "@/components/diffViewer";
 import PreviewPopupTap from "@/components/previewPopupTap";
 import Header from "./Header";
@@ -50,6 +50,10 @@ const Version = () => {
         onGoToNote: handleGoToNote
     };
 
+    const diffs = useMemo(() => (
+        {diff: version.patch}
+    ), [version.patch]);
+
     return (
         <PageContainer>
             <PreviewPopupTap
@@ -61,7 +65,7 @@ const Version = () => {
             <Header user={version.user} version={version} actions={headerActions}/>
             <CommitMessage message={version.commitMessage}/>
             <AnimatedTabSwitch>
-                <DiffViewer diffs={{diff: version.patch}} showHeader={false} theme={theme}/>
+                <DiffViewer diffs={diffs} showHeader={false} theme={theme}/>
             </AnimatedTabSwitch>
         </PageContainer>
     );

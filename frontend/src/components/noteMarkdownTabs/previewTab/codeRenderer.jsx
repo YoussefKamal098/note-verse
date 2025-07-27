@@ -29,11 +29,11 @@ export const createCodeRenderer = (theme) => ({node, inline, className = '', chi
     if (components[language]) {
         return (
             <div ref={ref}>
-                {visible && (
+                {visible && (<pre className={className} {...props}>
                     <Suspense fallback={<Loader size={20} isAbsolute={true}/>}>
                         {components[language]}
                     </Suspense>
-                )}
+                </pre>)}
             </div>
         );
     }

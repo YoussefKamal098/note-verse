@@ -1,6 +1,7 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useRef} from 'react';
 import Line from './Line';
 import SplitView from './SplitView';
+import VirtualizedLine from './VirtualizedLine';
 
 /**
  * Performance Optimization Notes:
@@ -22,6 +23,8 @@ import SplitView from './SplitView';
  */
 
 const Hunk = React.memo(({hunk, viewType, showWordDiff, filePath, darkMode}) => {
+    const containerRef = useRef(null);
+
     const changesWithNumbers = useMemo(() => {
         let oldLine = hunk.oldStart;
         let newLine = hunk.newStart;
@@ -41,21 +44,22 @@ const Hunk = React.memo(({hunk, viewType, showWordDiff, filePath, darkMode}) => 
     }, [hunk]);
 
     return (
-        <div className="diff-viewer-hunk">
+        <div className="diff-viewer-hunk" ref={containerRef}>
             {viewType === 'unified' ? (
                 <div className="diff-viewer-changes">
                     {changesWithNumbers.map((line, index) => (
-                        <Line
-                            key={index}
-                            line={line}
-                            lineLang={line.lineLang}
-                            isComment={line.isComment}
-                            showWordDiff={showWordDiff}
-                            nextLine={index < hunk.changes.length - 1 ? changesWithNumbers[index + 1] : null}
-                            prevLine={index > 0 ? changesWithNumbers[index - 1] : null}
-                            filePath={filePath}
-                            darkMode={darkMode}
-                        />
+                        <VirtualizedLine key={index} scrollContainer={containerRef.current}>
+                            <Line
+                                line={line}
+                                lineLang={line.lineLang}
+                                isComment={line.isComment}
+                                showWordDiff={showWordDiff}
+                                nextLine={index < hunk.changes.length - 1 ? changesWithNumbers[index + 1] : null}
+                                prevLine={index > 0 ? changesWithNumbers[index - 1] : null}
+                                filePath={filePath}
+                                darkMode={darkMode}
+                            />
+                        </VirtualizedLine>
                     ))}
                 </div>
             ) : (
@@ -64,6 +68,7 @@ const Hunk = React.memo(({hunk, viewType, showWordDiff, filePath, darkMode}) => 
                     showWordDiff={showWordDiff}
                     filePath={filePath}
                     darkMode={darkMode}
+                    containerRef={containerRef}
                 />
             )}
         </div>

@@ -156,6 +156,22 @@
     border-radius: 25px;
 }
 
+.wmde-markdown table {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.wmde-markdown pre.language-mermaid,
+.wmde-markdown pre.language-graph {
+    min-height: 150px;
+}
+
+.wmde-markdown pre code {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
 .wmde-markdown pre *, code * {
     font-family: "Quicksand", sans-serif !important;
     font-weight: bold !important;

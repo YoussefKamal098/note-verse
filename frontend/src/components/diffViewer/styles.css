@@ -127,7 +127,8 @@
 
 .diff-viewer-hunk {
     font-size: 1.1em;
-    overflow: auto;
+    max-height: 375px;
+    overflow-y: auto;
 }
 
 .diff-viewer-changes, .diff-viewer-split-changes {
@@ -135,6 +136,7 @@
     line-height: var(--diff-viewer-line-height);
     font-size: var(--diff-viewer-font-size);
     font-weight: 600;
+    height: 100%;
     width: 100%;
 }
 
@@ -153,7 +155,7 @@
 }
 
 .diff-viewer-line {
-    display: table-row;
+    display: flex;
 }
 
 .diff-viewer-split-changes .diff-viewer-line {
@@ -240,6 +242,7 @@
     padding-left: 10px;
     white-space: pre-wrap;
     word-break: break-word;
+    flex: 1;
 }
 
 .diff-viewer-line-content:hover {
