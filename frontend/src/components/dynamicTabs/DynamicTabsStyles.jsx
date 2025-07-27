@@ -15,12 +15,12 @@ const TabsListWrapperStyled = styled.div`
         position: relative;
         display: inline-block;
         padding: 0.6em 0.9em;
-        font-size: 0.9em;
+        font-size: 0.8em;
         font-weight: 600;
         color: var(--color-text);
         background: var(--color-background);
         border: var(--border-width) solid var(--color-border-secondary);
-        border-radius: 8px;
+        border-radius: var(--border-radius);
         box-shadow: var(--box-shadow);
         transition: 0.3s ease;
     }

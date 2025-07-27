@@ -107,8 +107,9 @@ const OverflowIndicator = styled.div`
 const Title = styled.h3`
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
     color: var(--color-text);
+    margin-bottom: 5px;
 `;
 
 const NoContributorsMessage = styled.div`

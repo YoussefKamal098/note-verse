@@ -55,8 +55,9 @@ const ToggleKnob = styled.div`
         content: ${({$checked}) => ($checked ? '"ON"' : '"OFF"')};
         position: absolute;
         color: var(--color-background);
-        font-size: 0.7em;
-        font-weight: bold;
+        font-size: 0.6em;
+        font-weight: bolder;
+        font-family: Pacifico, sans-serif;
     }
 `;
 

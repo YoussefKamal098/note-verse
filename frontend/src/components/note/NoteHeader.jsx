@@ -33,7 +33,7 @@ const HeaderRightPartContainerStyles = styled.div`
 `
 
 const SettingsIcon = styled(TbSettings)`
-    font-size: 0.9em;
+    font-size: 1em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,7 +74,7 @@ const NoteHeader = ({actions}) => {
             <HeaderRightPartContainerStyles>
                 {isNew || editMode || hasChanges ? (
                     <TranslateTransitionContainer keyProp={"note_save_discard"}>
-                        <ButtonsContainerStyles>
+                        <ButtonsContainerStyles style={{fontSize: "0.9em"}}>
                             <Button
                                 type={BUTTON_TYPE.SECONDARY}
                                 onClick={actions.onDiscard}
@@ -108,7 +108,7 @@ const NoteHeader = ({actions}) => {
                 {isOwner && isMobile && <IconButton
                     onClick={actions.onSettingsIconClick}
                     aria-label="settings"
-                    sx={{color: 'var(--color-text)'}}
+                    sx={{color: 'var(--color-text)', fontSize: "1.3em"}}
                 >
                     <SettingsIcon/>
                 </IconButton>}

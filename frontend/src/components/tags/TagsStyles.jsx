@@ -6,7 +6,7 @@ const TagStyled = styled.span`
     border-radius: 10px;
     border: var(--border-width) solid var(--color-border-secondary);
     padding: 0.1em 0.4em;
-    font-size: 0.75em;
+    font-size: 0.7em;
     font-weight: 600;
     display: flex;
     align-items: center;

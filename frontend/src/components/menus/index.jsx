@@ -22,7 +22,14 @@ import {
     OptionWrapperStyled
 } from "./MenuStyled";
 
-const Menu = ({children, containerStyle, options, triggerIcon = <BsThreeDots/>, triggerElement, mobileSize = 600}) => {
+const Menu = ({
+                  children,
+                  containerStyle,
+                  options,
+                  triggerIcon = <BsThreeDots style={{fontSize: "1em"}}/>,
+                  triggerElement,
+                  mobileSize = 600
+              }) => {
     const [menuStack, setMenuStack] = useState([options]);
     const [direction, setDirection] = useState("left");
     const [menuOpen, setMenuOpen] = useState(false);

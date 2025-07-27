@@ -36,7 +36,7 @@ const TitleInputStyled = styled.textarea`
     resize: none;
     overflow: hidden;
     position: relative;
-    font-size: 2em;
+    font-size: 1.75em;
     font-weight: 600;
     color: var(--color-text);
     text-align: center;

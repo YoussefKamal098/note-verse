@@ -62,7 +62,7 @@ const SettingsContainerStyles = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-    font-size: 0.9em;
+    font-size: 0.8em;
 `;
 
 const RightSettingsPanel = ({show, onClose}) => {

@@ -9,7 +9,7 @@ const NotePage = () => {
     return (
         <div className="page">
             <Navbar showSearch={false}/>
-            <div className="wrapper">
+            <div className="wrapper" style={{display: "flex", justifyContent: "center"}}>
                 <Note id={id} key={id}/>
             </div>
         </div>

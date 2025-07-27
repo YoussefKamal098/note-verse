@@ -34,6 +34,7 @@ const GridContainerStyles = styled.div`
     grid-template-rows: auto 1fr;
     gap: 10px;
     width: 100%;
+    max-width: ${({$showRightPanel}) => !$showRightPanel ? "775px" : "900px"};
     align-items: start;
 `;
 
@@ -177,7 +178,7 @@ const Note = () => {
     }, []);
 
     return (
-        <GridContainerStyles $showTop={!isNew && !editMode}>
+        <GridContainerStyles $showTop={!isNew && !editMode} $showRightPanel={showSettings}>
             {!isNew && !editMode && <TopContainerStyles>
                 <ContributorsList
                     noteId={id}

@@ -121,24 +121,24 @@ const DynamicMenuContainerStyled = styled.div`
     }
 `;
 
-const DynamicMenuTriggerButton = styled.button`
+const DynamicMenuTriggerButton = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
     width: 1.5em;
     max-width: 1.5em;
-    aspect-ratio: 1/1;
+    height: 1.5em;
+    min-height: 1.5em;
     border-radius: 50%;
     background: transparent;
     color: var(--color-placeholder);
     border: none;
     cursor: pointer;
-    font-size: 1.5em;
+    font-size: 1.4em;
     transition: 300ms ease;
 
     &:hover {
         background-color: var(--color-background-secondary);
-        //rotate: 180deg;
     }
 
     ${(props) => (props.$isOpen ? `

@@ -29,6 +29,7 @@ const AccessInfoStyles = styled.div`
 `;
 
 const AccessRightStyles = styled.div`
+    font-size: 0.85em;
     display: flex;
     align-items: center;
     gap: 0.5rem;
