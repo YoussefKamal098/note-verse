@@ -12,6 +12,7 @@ const PopUpOverlay = styled(motion.div)`
     height: 100vh;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(0.1em);
+    will-change: backdrop-filter;
     z-index: 2000;
 `;
 

@@ -56,6 +56,7 @@ const ModalOverlay = styled(motion.div)`
     bottom: 0;
     background-color: ${({$transparentOverly}) => $transparentOverly ? "transparent" : "rgba(0, 0, 0, 0.5)"};
     backdrop-filter: ${({$transparentOverly}) => $transparentOverly ? "none" : "blur(5px)"};
+    will-change: backdrop-filter;
     display: flex;
     justify-content: center;
     align-items: center;

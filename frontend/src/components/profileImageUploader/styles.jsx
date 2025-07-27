@@ -169,6 +169,7 @@ const ModalOverlayStyled = styled(motion.div)`
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
+    will-change: backdrop-filter;
     overflow-y: auto;
     z-index: 2000;
 `;
