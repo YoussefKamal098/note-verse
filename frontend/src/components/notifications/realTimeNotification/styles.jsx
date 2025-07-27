@@ -61,11 +61,12 @@ export const NotificationContainer = styled.div`
 export const BellButtonStyles = styled(BaseIconButton)`
     font-size: 1.5em;
     color: var(--color-placeholder);
+    transition: 0.2s;
 
     &:hover {
         background: var(--color-background-secondary);
         color: var(--color-primary);
-        box-shadow: var(--box-shadow-hover);
+        scale: 0.8;
     }
 `;
 
