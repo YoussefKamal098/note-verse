@@ -12,7 +12,6 @@ export const lazyMarkdownElements = {
     ul: autoDir(lazyWrapper('ul')),
     ol: autoDir(lazyWrapper('ol')),
     li: autoDir(lazyWrapper('li')),
-    pre: autoDir(lazyWrapper('pre')),
     blockquote: autoDir(lazyWrapper('blockquote')),
     table: autoDir(lazyWrapper('table')),
     thead: autoDir(lazyWrapper('thead')),
