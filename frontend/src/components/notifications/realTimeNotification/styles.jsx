@@ -17,11 +17,11 @@ export const BaseIconButton = styled(motion.button)`
 
 export const BaseBadge = styled(motion.span)`
     position: absolute;
-    width: 20px;
-    height: 20px;
+    width: 2.1em;
+    height: 2.1em;
     font-size: 0.5em;
-    top: -2px;
-    right: -2px;
+    top: -0.3em;
+    right: -0.1em;
     border-radius: 50%;
     display: flex;
     align-items: center;
