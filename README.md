@@ -51,7 +51,7 @@ note search, filtering, and CRUD operations.
 
 ### 🔔 Real-time Notifications
 
-- **📡 Instant Updates**: Receive notifications for new shares, or edits in real time
+- **📡 Instant Updates**: Receive notifications for new shares, or edits in real time, New logins
 - **📱 Socket.IO Integration**: Efficient WebSocket-based delivery system
 - **🔐 Login Detection**: Get notified when your account is accessed from another device or location
 
@@ -406,6 +406,7 @@ notes_app/
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── selection/         # Custom selection/dropdown components
 │   │   │   ├── sessions/          # Components for displaying and managing user sessions, including session list and session item with revoke actions
+│   │   │   ├── slider/            # Custom slider input components (e.g. range sliders for numeric values)
 │   │   │   ├── tabs/              # Filtering tabs components
 │   │   │   ├── tags/              # Components for managing tags on notes
 │   │   │   ├── texterea/          # Custom textarea components with enhanced features   
@@ -481,8 +482,33 @@ notes_app/
 
 - Create a **user settings page** where users can:
     - Update their email and password.
-    - View and manage active sessions.
+    - Restore previously used avatars from upload history.
     - Customize preferences like theme, language, etc.
+
+### 8. **Social Features: Comments and Likes**
+
+- Add support for **likes** and **comments** on notes.
+- Show real-time updates via **WebSockets**.
+
+### 9. **Markdown Enhancements**
+
+- Allow users to **upload images** and automatically embed them in the Markdown content.
+
+### 10. **Shared Notes View**
+
+- Introduce a dedicated section for **notes shared with the user**.
+- Allow users to **like**, **comment**, or **save shared notes** to their own library.
+
+### 11. **User Blocking and Privacy Controls**
+
+- Allow users to **block other users** to prevent:
+    - Viewing each other’s public notes
+    - Sending collaboration invites
+    - Interacting via likes or comments
+
+- Blocked users should not receive notifications from or about the blocker.
+- Add a **"Blocked Users" management panel** in user settings to review and unblock users.
+- Ensure proper backend-level enforcement of blocking logic across endpoints (likes, shares, comments, search, etc.).
 
 ---
 
