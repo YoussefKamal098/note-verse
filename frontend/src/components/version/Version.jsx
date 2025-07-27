@@ -8,7 +8,9 @@ import DiffViewer from "@/components/diffViewer";
 import PreviewPopupTap from "@/components/previewPopupTap";
 import Header from "./Header";
 import CommitMessage from "./CommitMessage";
+import {useConfirmation} from "@/contexts/ConfirmationContext";
 import {useVersionContext, useVersionSelector} from "./hooks/useVersionContext";
+import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
 
 const PageContainer = styled.div`
     background-color: var(--color-background);
@@ -21,6 +23,7 @@ const Version = () => {
     const {theme} = useTheme();
     const copyLink = useCopyLink();
     const {actions, selectors} = useVersionContext();
+    const {showConfirmation} = useConfirmation();
     const [fullContentOpen, setFullContentOpen] = useState(false);
 
     const version = useVersionSelector(selectors.getVersion);
@@ -29,8 +32,12 @@ const Version = () => {
     const {isFullContentLoading} = useVersionSelector(selectors.getStatus);
 
     const handleRestoreVersion = useCallback(async () => {
-        actions.restoreVersion();
-    }, [actions.restoreVersion])
+        showConfirmation({
+            type: POPUP_TYPE.INFO,
+            confirmationMessage: "Are you sure you want to restore this version? This will overwrite the current content.",
+            onConfirm: actions.restoreVersion
+        });
+    }, [actions.restoreVersion, showConfirmation]);
 
     const handleGetFullContent = useCallback(async () => {
         setFullContentOpen(true);
