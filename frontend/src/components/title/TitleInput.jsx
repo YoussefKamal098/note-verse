@@ -7,6 +7,7 @@ import noteValidationSchema from "../../validations/noteValidtion";
 const InputWrapperStyled = styled.div`
     position: relative;
     width: 90%;
+    max-width: 375px;
     margin: 0 auto;
 
     &::before {
