@@ -14,7 +14,7 @@ import {
     EditButtonStyled,
     HiddenInputStyled,
     ProfileImageContainerStyled
-} from './ProfileImageUploaderStyles';
+} from './styles';
 
 const ProfileImageUploader = ({
                                   onSaveImage,

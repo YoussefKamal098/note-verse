@@ -1,5 +1,5 @@
 import React from "react";
-import {CircleStyled, SvgLoaderStyled} from "./ProfileImageUploaderStyles";
+import {CircleStyled, SvgLoaderStyled} from "./styles";
 
 const Loader = React.memo(() => (
     <SvgLoaderStyled viewBox="0 0 50 50">

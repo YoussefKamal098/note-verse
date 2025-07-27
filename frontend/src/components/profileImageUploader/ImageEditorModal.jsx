@@ -2,10 +2,11 @@ import React, {useCallback, useRef, useState} from 'react';
 import PropTypes from 'prop-types';
 import {AnimatePresence} from 'framer-motion';
 import {FaArrowRotateLeft, FaArrowRotateRight} from 'react-icons/fa6';
-import Button, {BUTTON_TYPE} from '../buttons/Button';
-import useImageProcessor from '../../hooks/useImageProcessor';
-import Overlay from '../common/Overlay';
-import CloseButton from "../buttons/CloseButton";
+import Button, {BUTTON_TYPE} from '@/components/buttons/Button';
+import Overlay from '@/components/common/Overlay';
+import CloseButton from "@/components/buttons/CloseButton";
+import CustomSlider from '@/components/slider';
+import useImageProcessor from '@/hooks/useImageProcessor';
 
 import {
     AvatarEditorStyled,
@@ -20,7 +21,10 @@ import {
     TitleStyled,
     ToolsStyled,
     ToolStyled
-} from './ProfileImageUploaderStyles';
+} from './styles';
+
+const SCALE_MIN = 0.5;
+const SCALE_MAX = 3;
 
 const ImageEditorModal = ({
                               editingImage,
@@ -41,7 +45,7 @@ const ImageEditorModal = ({
     const handleWheel = useCallback((e) => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 0.1 : -0.1;
-        setScale(prev => Math.min(Math.max(prev + delta, 0.5), 3));
+        setScale(prev => Math.min(Math.max(prev + delta, SCALE_MIN), SCALE_MAX));
     }, []);
 
     return (
@@ -69,6 +73,7 @@ const ImageEditorModal = ({
                                 <TitleStyled>Upload a New Avatar</TitleStyled>
                                 <CloseButton onClick={onCancel}/>
                             </HeaderStyled>
+
                             <EditorContainerStyled>
                                 <AvatarEditorStyled
                                     ref={editorRef}
@@ -82,6 +87,17 @@ const ImageEditorModal = ({
                                     rotate={rotate}
                                     onWheel={handleWheel}
                                 />
+
+                                <CustomSlider
+                                    style={{marginBottom: "1.5rem"}}
+                                    min={SCALE_MIN}
+                                    max={SCALE_MAX}
+                                    step={0.01}
+                                    showLabel={false}
+                                    defaultValue={parseFloat(scale.toFixed(1))}
+                                    onChange={(e) => setScale(parseFloat(e.target.value))}
+                                />
+
                                 <ControlsStyled>
                                     <ToolsStyled>
                                         <ToolStyled onClick={() => setRotate(prev => prev - 90)}>

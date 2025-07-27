@@ -1,7 +1,7 @@
 import React from "react";
 import {useOutletContext} from "react-router-dom";
 import {Field, Form, Formik} from "formik";
-import ProfileImageUploader from "@/components/profileImageUploader/ProfileImageUploader";
+import ProfileImageUploader from "@/components/profileImageUploader";
 import Button, {BUTTON_TYPE} from "@/components/buttons/Button";
 import FirstNameInput from "@/components/forms/FirstNameInput";
 import LastNameInput from "@/components/forms/LastNameInput";
