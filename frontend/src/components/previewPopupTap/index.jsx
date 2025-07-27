@@ -6,7 +6,7 @@ import PopUpTap from '@/components/popUpTap';
 import Loader from "@/components/common/Loader";
 import styled from "styled-components";
 
-const PreviewTab = React.lazy(() => import("../noteMarkdownTabs/PreviewTab"));
+const PreviewTab = React.lazy(() => import("../noteMarkdownTabs/previewTab"));
 const EditorTab = React.lazy(() => import("../noteMarkdownTabs/EditorTab"));
 
 const BookIcon = styled(FcReadingEbook)`

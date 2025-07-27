@@ -1,7 +1,7 @@
 import React, {useState, useMemo} from 'react';
 import MarkdownEditor, {defaultCommands} from "@uiw/react-markdown-editor";
 import '@uiw/react-markdown-editor/markdown-editor.css';
-import "./customMarkdownStyles.css";
+import "./styles.css";
 import {useTheme} from "@/contexts/ThemeContext";
 
 const EditorTab = ({

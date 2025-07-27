@@ -8,7 +8,6 @@ export function detectLangDirection(text) {
     return 'ltr'; // default fallback
 }
 
-
 export function detectLangCode(text) {
     const rtlLangs = [
         {pattern: /\p{Script=Arabic}/u, lang: 'ar'},
@@ -27,43 +26,10 @@ export function detectLangCode(text) {
 }
 
 // Generic direction-aware wrapper
-export const AutoDir = (Tag) => ({node, children, ...props}) => {
+export const autoDir = (Tag) => ({node, children, ...props}) => {
     const text = extractTextFromChildren(children);
     const dir = detectLangDirection(text);
     const lang = detectLangCode(text);
 
     return <Tag dir={dir} lang={lang} {...props}>{children}</Tag>;
-};
-
-
-// Exporting components map
-export const directionAwareComponents = {
-    // Block-level elements
-    p: AutoDir('p'),
-    h1: AutoDir('h1'),
-    h2: AutoDir('h2'),
-    h3: AutoDir('h3'),
-    h4: AutoDir('h4'),
-    h5: AutoDir('h5'),
-    h6: AutoDir('h6'),
-    ul: AutoDir('ul'),
-    ol: AutoDir('ol'),
-    li: AutoDir('li'),
-    pre: AutoDir('pre'),
-    blockquote: AutoDir('blockquote'),
-    table: AutoDir('table'),
-    thead: AutoDir('thead'),
-    tbody: AutoDir('tbody'),
-    tr: AutoDir('tr'),
-    th: AutoDir('th'),
-    td: AutoDir('td'),
-    dl: AutoDir('dl'),
-    dt: AutoDir('dt'),
-    dd: AutoDir('dd'),
-
-    // Inline elements
-    // span: AutoDir('span'),
-    // strong: AutoDir('strong'),
-    // em: AutoDir('em'),
-    // del: AutoDir('del'),
 };

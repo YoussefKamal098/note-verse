@@ -4,7 +4,7 @@ import {CardContent} from '@mui/material';
 import '@uiw/react-markdown-preview/markdown.css';
 import {MarkdownContainerStyles} from './Styles';
 import Overlay from "../common/Overlay";
-import PreviewTap from "@/components/noteMarkdownTabs/PreviewTab";
+import PreviewTap from "@/components/noteMarkdownTabs/previewTab";
 import routesPaths from "../../constants/routesPaths";
 
 const contentStyles = {

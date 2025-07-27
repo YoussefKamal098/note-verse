@@ -4,7 +4,7 @@ import {HiOutlineWrenchScrewdriver} from "react-icons/hi2";
 import {FaBookOpenReader} from "react-icons/fa6";
 import useDebounce from "../../hooks/useDebounce";
 import DynamicTabs from "../dynamicTabs/DynamicTabs";
-import PreviewTab from "./PreviewTab";
+import PreviewTab from "./previewTab";
 import EditorTab from "./EditorTab";
 
 const NoteMarkdownTabsWrapperStyled = styled.div`
