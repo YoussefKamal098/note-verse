@@ -6,19 +6,19 @@ const ToggleGroupStyles = styled.div`
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: 0.85em;
 `
 
 const ToggleButtonStyles = styled.div`
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 10px 16px !important;
+    gap: 0.25em;
+    padding: 0.9em 1.1em !important;
     background-color: var(--color-background);
     border: 2px solid var(--color-border);
     border-radius: 10px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     font-weight: 600;
     color: var(--color-text);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
