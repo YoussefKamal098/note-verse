@@ -200,14 +200,14 @@ const Note = () => {
                 <EditableTags
                     tags={current.tags}
                     onSave={useCallback((tags) => actions.updateContent({tags}), [actions.updateContent])}
-                    canEdit={editMode && canEdit}
+                    canEdit={editMode && isOwner}
                 />
 
                 <NoteMarkdownTabs
                     ref={markdownTabsRef}
                     content={current.content}
                     onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
-                    canEdit={editMode && canEdit}
+                    canEdit={editMode && isOwner}
                 />
             </LeftContainerStyles>
 

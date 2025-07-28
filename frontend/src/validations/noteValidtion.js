@@ -4,20 +4,20 @@ const noteValidationSchema = {
     title: yup.string()
         .trim()
         .test('not-empty', 'Title cannot be empty or just spaces', (value) => value && value.trim().length > 0)
-        .max(100, 'Title cannot exceed 100 characters')
+        .max(150, 'Title cannot exceed 150 characters')
         .required('Title is required'),
 
     tag: yup.string()
         .trim()
         .test('not-empty', 'Tag cannot be empty or just spaces', (value) => value && value.trim().length > 0)
-        .min(3, 'Tag must be at least 3 characters')
+        .min(1, 'Tag must be at least 1 characters')
         .max(50, 'Tag cannot exceed 50 characters')
         .required('Tag is required'),
 
     tags: yup.array()
         .of(
             yup.string()
-                .min(3, 'Each tag must be at least 3 characters')
+                .min(1, 'Each tag must be at least 1 characters')
                 .max(50, 'Each tag cannot exceed 50 characters')
                 .required('Each tag is required'),
         )

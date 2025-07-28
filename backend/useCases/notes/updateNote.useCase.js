@@ -95,19 +95,19 @@ class UpdateNoteUseCase {
                     session
                 );
 
-                if (updatedNote && updatedNote.userId !== userId) {
+                if (updatedNote && updatedNote.userId !== userId && version) {
                     await this.#notificationBatcher.add({
                         recipient: updatedNote.userId,
                         type: NotificationType.NOTE_UPDATE,
                         payload: {
                             noteId,
                             userId,
-                            versionId: version?.id
+                            versionId: version.id
                         },
                     });
                 }
-
-                await this.#noteRoomEmitter.emitNoteUpdate(noteId, {versionId: version.id});
+                
+                version && await this.#noteRoomEmitter.emitNoteUpdate(noteId, {versionId: version.id});
 
                 return {note: updatedNote, version};
             }, {

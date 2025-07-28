@@ -29,6 +29,8 @@ const baseSchema = Joi.object({
 const noteUpdateByRoleSchema = {
     [roles.OWNER]: baseSchema,
     [roles.EDITOR]: baseSchema.keys({
+        title: Joi.forbidden(),
+        tags: Joi.forbidden(),
         isPinned: Joi.forbidden(),
         isPublic: Joi.forbidden()
     }),

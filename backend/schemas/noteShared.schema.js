@@ -10,20 +10,20 @@ const schema = {
             }
             return value;
         })
-        .max(100)
+        .max(150)
         .messages({
             'string.base': 'Title must be a string',
             'string.empty': 'Title is required',
             'string.onlySpaces': 'Title cannot be empty or just spaces',
             'string.min': 'Title must be at least 10 bytes long',
-            'string.max': 'Title cannot exceed 100 characters',
+            'string.max': 'Title cannot exceed 150 characters',
         }),
     tags: Joi.array()
         .items(Joi.string()
-            .min(3)
+            .min(1)
             .max(50)
             .messages({
-                'string.min': 'Each tag must be at least 3 characters',
+                'string.min': 'Each tag must be at least 1 characters',
                 'string.max': 'Each tag cannot exceed 50 characters',
                 'string.base': 'Each tag must be a string'
             })
@@ -48,7 +48,7 @@ const schema = {
             'string.empty': 'Content is required',
             'string.onlySpaces': 'Content cannot be empty or just spaces',
             'string.min': 'Content must be at least 25 bytes long',
-            'string.max': 'Content cannot exceed 500 KB',
+            'string.max': 'Content cannot exceed 500KB',
         }),
     isPinned: Joi.boolean(),
     isPublic: Joi.boolean()
