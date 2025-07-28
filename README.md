@@ -83,8 +83,8 @@ note search, filtering, and CRUD operations.
 1. Clone the repository:
 
 ```shell script
-git clone https://github.com/YoussefKamal098/note_app.git
-   cd note-app
+git clone https://github.com/YoussefKamal098/note-verse.git
+   cd note-verse
 ```
 
 2. Set up the environment variables:
