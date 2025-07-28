@@ -13,6 +13,12 @@ async function shutdownServices() {
                 console.log('🧹 Cleared all online users from Redis');
             }
 
+            if (container.hasRegistration('onlineNoteService')) {
+                const onlineUserService = container.resolve('onlineNoteService');
+                await onlineUserService.clearAllOnlineNotes();
+                console.log('🧹 Cleared all online notes from Redis');
+            }
+
             if (container.hasRegistration('cacheService')) {
                 const cacheService = container.resolve('cacheService');
                 if (cacheService?.isConnected?.() === true) {

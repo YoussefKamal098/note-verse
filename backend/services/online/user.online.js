@@ -27,16 +27,16 @@ class OnlineUserService {
     /**
      * @private
      * @type {RedisService}
-     * @description Redis client instance
+     * @description Redis Service instance
      */
     #redis;
 
     /**
      * Creates an OnlineUserService instance
-     * @param {RedisService} redisService - Configured Redis client
-     * @throws {Error} If redisService is not provided
+     * @param {Object} dependencies
+     * @param {RedisService} dependencies.redisService - Redis Service instance
      */
-    constructor(redisService) {
+    constructor({redisService}) {
         this.#redis = redisService;
     }
 

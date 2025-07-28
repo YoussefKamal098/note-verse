@@ -3,6 +3,11 @@ const {CHANNELS, EVENT_TYPES} = require('./redis.constants');
 /** @readonly */
 const SOCKET_EVENTS = Object.freeze({
     NEW_NOTIFICATION: 'new_notification',
+    NOTE: Object.freeze({
+        JOIN: 'note_join',
+        LEAVE: 'note_leave',
+        UPDATE: 'note_update',
+    }),
     CONNECTION: 'connection',
     DISCONNECT: 'disconnect'
 });
@@ -19,9 +24,11 @@ const REDIS = Object.freeze({
  * @returns {string}
  */
 const getUserRoom = (userId) => `user_${userId}`;
+const getNoteRoom = (noteId) => `note:${noteId}`;
 
 module.exports = {
     SOCKET_EVENTS,
     REDIS,
-    getUserRoom
+    getUserRoom,
+    getNoteRoom
 };

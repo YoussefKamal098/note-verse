@@ -11,6 +11,8 @@ const registerHelpers = require('./helpers');
 const registerAuth = require('./auth');
 const registerStorage = require('./storage');
 const registerServices = require('./services');
+const registerSocketEvents = require('./socketEvents');
+const registerOnline = require('./online');
 const registerSocketEventEmitters = require('./socketEventEmitters');
 const registerUseCases = require('./useCases');
 
@@ -26,6 +28,8 @@ registerHelpers(container);
 registerAuth(container);
 registerStorage(container);
 registerServices(container);
+registerSocketEvents(container);
+registerOnline(container);
 registerSocketEventEmitters(container);
 registerUseCases(container);
 

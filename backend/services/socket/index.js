@@ -41,6 +41,12 @@ class SocketService {
 
     /**
      * @private
+     * @type {ISocketModule[]}
+     */
+    #socketModules = [];
+
+    /**
+     * @private
      * @type {boolean}
      */
     #isInitialized = false;
@@ -223,6 +229,10 @@ class SocketService {
             this.#handleDisconnect(userId, socket.id);
         });
 
+        this.#socketModules.forEach((module) => {
+            module.registerSocket(socket);
+        });
+
         socket.on('error', (err) => {
             console.error(`[Socket] Error (user ${userId}):`, err.message);
         });
@@ -237,6 +247,16 @@ class SocketService {
     async #handleDisconnect(userId, socketId) {
         await this.#onlineUserService.remove(userId, socketId);
         this.#metrics.connectionCount--;
+    }
+
+    /**
+     * Registers socket feature modules (e.g., NoteRoomSocket, NotificationSocket)
+     * @param {ISocketModule[]} modules
+     * @return SocketService
+     */
+    registerSocketModules(modules) {
+        this.#socketModules = modules;
+        return this;
     }
 
     /**

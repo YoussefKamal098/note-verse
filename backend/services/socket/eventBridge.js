@@ -1,5 +1,5 @@
-const {REDIS} = require('../../constants/socket.constants');
-const SocketEventDispatcher = require('./socketEventDispatcher.service');
+const {REDIS} = require('@/constants/socket.constants');
+const SocketEventDispatcher = require('./socketEventDispatcher');
 
 /**
  * @class EventBridge

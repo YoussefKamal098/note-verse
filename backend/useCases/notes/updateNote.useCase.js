@@ -26,7 +26,12 @@ class UpdateNoteUseCase {
      * @private
      * @type {NotificationBatcher}
      */
-    #notificationBatcher;
+    #notificationBatcher
+    /**
+     * @private
+     * @type {NoteRoomEmitter}
+     */
+    #noteRoomEmitter;
 
     /**
      * Creates an instance of UpdateNoteUseCase.
@@ -36,6 +41,7 @@ class UpdateNoteUseCase {
      * @param {BaseTransactionService} dependencies.transactionService - Transaction service
      * @param {ValidateUserNoteUpdateUseCase} dependencies.validateUserNoteUpdateUseCase - validate note update use case
      * @param {NotificationBatcher} dependencies.notificationBatcher - Notification batcher
+     * @param {NoteRoomEmitter} dependencies.noteRoomEmitter - online Note room emitter
      */
     constructor({
                     noteRepo,
@@ -43,12 +49,14 @@ class UpdateNoteUseCase {
                     transactionService,
                     validateUserNoteUpdateUseCase,
                     notificationBatcher,
+                    noteRoomEmitter,
                 }) {
         this.#noteRepo = noteRepo;
         this.#versionRepo = versionRepo;
         this.#transactionService = transactionService;
         this.#notificationBatcher = notificationBatcher;
         this.#validator = validateUserNoteUpdateUseCase;
+        this.#noteRoomEmitter = noteRoomEmitter;
     }
 
     /**
@@ -98,6 +106,8 @@ class UpdateNoteUseCase {
                         },
                     });
                 }
+
+                await this.#noteRoomEmitter.emitNoteUpdate(noteId, {versionId: version.id});
 
                 return {note: updatedNote, version};
             }, {

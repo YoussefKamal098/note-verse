@@ -5,6 +5,7 @@ module.exports = Object.freeze({
         NOTIFICATIONS: 'socket:notifications'
     }),
     EVENT_TYPES: Object.freeze({
-        NOTIFICATION: 'notification'
+        NOTIFICATION: 'event:notification',
+        NOTE: 'event:note'
     })
 });

@@ -14,6 +14,7 @@ async function startServer({server: expressApp, port = 5000}) {
         const cacheService = container.resolve('cacheService');
         const redisService = container.resolve('redisService');
         const onlineUserService = container.resolve('onlineUserService');
+        const noteRoomSocket = container.resolve('noteRoomSocket');
         const jwtAuthService = container.resolve('jwtAuthService');
 
         const socketService = new SocketService({
@@ -25,7 +26,7 @@ async function startServer({server: expressApp, port = 5000}) {
 
         // Connect to both cache service and DB concurrently
         await Promise.all([connectDB(), cacheService.connect(), redisService.connect()]);
-        await socketService.initialize();
+        await socketService.registerSocketModules([noteRoomSocket]).initialize();
 
         // Start the server once both services are connected
         httpServer.listen(port, () => {

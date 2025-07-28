@@ -1,4 +1,4 @@
-const {SOCKET_EVENTS, REDIS, getUserRoom} = require('../../constants/socket.constants');
+const {SOCKET_EVENTS, REDIS, getUserRoom} = require('@/constants/socket.constants');
 
 /**
  * @class NotificationEmitter

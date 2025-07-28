@@ -1,4 +1,4 @@
-const {REDIS} = require('../../constants/socket.constants');
+const {REDIS} = require('@/constants/socket.constants');
 
 /**
  * @typedef {Object} SocketEvent
@@ -60,6 +60,7 @@ class SocketEventDispatcher {
     dispatch(event) {
         switch (event.type) {
             case REDIS.EVENT_TYPES.NOTIFICATION:
+            case REDIS.EVENT_TYPES.NOTE:
                 this.#io.to(event.room).emit(event.event, event.data);
                 break;
             default:
