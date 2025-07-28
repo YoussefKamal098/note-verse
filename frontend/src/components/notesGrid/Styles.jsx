@@ -10,7 +10,6 @@ export const NoteCardsContainerStyles = styled.div`
 
     @media (max-width: 600px) {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        padding: 16px;
         gap: 12px;
     }
 

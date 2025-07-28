@@ -13,8 +13,8 @@ import usePersistedState from "../hooks/usePersistedState";
 const ContainerStyles = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    margin: 15px;
+    gap: 1.25rem;
+    margin: 20px;
 `
 const HomePage = () => {
     const notesPerPage = AppConfig.NOTES_PER_PAGE;
