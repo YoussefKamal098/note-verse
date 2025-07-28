@@ -64,4 +64,3 @@ const NoteCard = React.memo(({note, onTogglePin, onDelete}) => {
 });
 
 export default React.memo(NoteCard);
-

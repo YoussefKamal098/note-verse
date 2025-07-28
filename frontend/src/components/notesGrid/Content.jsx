@@ -26,15 +26,20 @@ const contentStyles = {
 const NoteCardContent = React.memo(({note}) => {
     const navigate = useNavigate();
 
+    const previewContent = React.useMemo(() => {
+        return note.content.slice(0, 1000) + (note.content.length > 1000 ? '...' : '');
+    }, [note.content]);
+
+    const previewStyle = React.useMemo(() => ({padding: "0", fontSize: "0.6em"}), []);
+
     return (
         <CardContent sx={contentStyles}>
             <MarkdownContainerStyles onClick={() => navigate(routesPaths.NOTE(note.id))}>
                 <Overlay isVisible={true} isAbsolute={true}/>
-                <PreviewTap style={{padding: "0", fontSize: "0.6em"}}
-                            content={note.content.slice(0, 1000) + (note.content.length > 1000 ? '...' : '')}/>
+                <PreviewTap style={previewStyle} content={previewContent}/>
             </MarkdownContainerStyles>
         </CardContent>
-    )
+    );
 });
 
 export default NoteCardContent;

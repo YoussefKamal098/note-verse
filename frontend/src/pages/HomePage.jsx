@@ -2,7 +2,7 @@ import React, {useCallback, useRef} from "react";
 import styled from "styled-components";
 import Loader from "../components/common/Loader";
 import Pagination from "../components/pagination";
-import NoteCards from "../components/noteCards";
+import NoteCards from "../components/notesGrid";
 import Navbar from "../components/navbar/Navbar";
 import usePaginatedNotes from "../hooks/usePaginatedNotes";
 import AppConfig from "../config/config";
