@@ -2,9 +2,11 @@ import React from "react";
 import {useParams} from "react-router-dom";
 import Navbar from "../components/navbar/Navbar";
 import Note from "../components/note";
+import useNetworkStatusNotifier from "@/hooks/useNetworkStatusNotifier";
 
 const NotePage = () => {
     const {id} = useParams();
+    useNetworkStatusNotifier();
 
     return (
         <div className="page">
