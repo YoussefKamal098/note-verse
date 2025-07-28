@@ -81,9 +81,11 @@ function DynamicTabs({
             selectedIndex={tabIndex}
             onSelect={handleTabChange}
         >
-            <TabsListWrapperStyled tabs_count={tabs.length}>
-                <TabList role="presentation">{renderTabsList()}</TabList>
-            </TabsListWrapperStyled>
+            {tabs.length > 1 && (
+                <TabsListWrapperStyled tabs_count={tabs.length}>
+                    <TabList role="presentation">{renderTabsList()}</TabList>
+                </TabsListWrapperStyled>
+            )}
 
             {renderTabsBody()}
         </Tabs>

@@ -8,11 +8,11 @@ export const lazyWrapper = (Tag, options = {}) => {
         const [ref, visible] = useLazyVisible(margin);
 
         if (!visible) {
-            return <Tag ref={ref}/>;
+            return <div ref={ref} style={{height: "20px"}}/>;
         }
 
         return (
-            <Tag ref={ref} {...props}>
+            <Tag {...props}>
                 {children}
             </Tag>
         );
