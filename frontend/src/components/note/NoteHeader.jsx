@@ -1,14 +1,15 @@
 import React from "react";
 import styled from 'styled-components';
 import {TbSettings} from "react-icons/tb";
+import {SiSocketdotio} from "react-icons/si";
 import {IconButton} from '@mui/material';
 import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
-import BackHomeButton from "../buttons/BackHomeButton";
-import NoteMenu from "../menus/noteMenu";
-import UserDetailsWithNoteMeta from "../userDetails/UserDetailsWithNoteMeta";
-import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../buttons/Button";
-import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext"
+import BackHomeButton from "@/components/buttons/BackHomeButton";
+import NoteMenu from "@/components/menus/noteMenu";
+import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "@/components/buttons/Button";
+import UserDetailsWithNoteMeta from "@/components/userDetails/UserDetailsWithNoteMeta";
 import useMediaSize from "@/hooks/useMediaSize";
+import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 
 const HeaderWrapperStyles = styled.div`
@@ -32,7 +33,7 @@ const HeaderRightPartContainerStyles = styled.div`
     gap: 0.25em
 `
 
-const SettingsIcon = styled(TbSettings)`
+const IconWrapper = styled.span`
     font-size: 1em;
     display: flex;
     align-items: center;
@@ -46,6 +47,12 @@ const SettingsIcon = styled(TbSettings)`
         color: var(--color-accent);
     }
 `;
+
+const iconsStyles = {
+    color: 'var(--color-text)',
+    fontSize: "1.3em",
+    padding: "0.15em"
+}
 
 const NoteHeader = ({actions}) => {
     const {selectors} = useNoteContext();
@@ -108,9 +115,21 @@ const NoteHeader = ({actions}) => {
                 {isOwner && isMobile && <IconButton
                     onClick={actions.onSettingsIconClick}
                     aria-label="settings"
-                    sx={{color: 'var(--color-text)', fontSize: "1.3em"}}
+                    sx={iconsStyles}
                 >
-                    <SettingsIcon/>
+                    <IconWrapper>
+                        <TbSettings/>
+                    </IconWrapper>
+                </IconButton>}
+
+                {isMobile && <IconButton
+                    onClick={actions.onRealTimeUpdateIconClick}
+                    aria-label="real-time-updates"
+                    sx={iconsStyles}
+                >
+                    <IconWrapper>
+                        <SiSocketdotio/>
+                    </IconWrapper>
                 </IconButton>}
             </HeaderRightPartContainerStyles>
 
