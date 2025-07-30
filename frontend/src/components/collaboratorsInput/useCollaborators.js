@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {emailValidation} from '../../validations/userValidation';
-import userService from '../../api/userService';
+import {emailValidation} from '@/validations/userValidation';
+import userService from '@/api/userService';
 
 const useCollaborators = ({
                               collaborator,
@@ -102,6 +102,13 @@ const useCollaborators = ({
             return newMap;
         });
         setErrorMessage("");
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            selectedCollaborators.clear();
+            suggestionsMap.clear()
+        };
     }, []);
 
     return {
