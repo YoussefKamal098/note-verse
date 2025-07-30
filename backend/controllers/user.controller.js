@@ -69,6 +69,7 @@ class UserController {
                 httpCodes.NOT_FOUND.code,
                 httpCodes.NOT_FOUND.name
             ));
+            return;
         }
 
         res.status(httpCodes.OK.code).json({
