@@ -29,9 +29,16 @@ const useCollaborators = ({
         const searchTerm = inputEmail.toLowerCase();
         return Array.from(suggestionsMap.values())
             .filter(suggestion => {
-                const matchesName = suggestion.firstname.toLowerCase().includes(searchTerm) ||
-                    suggestion.lastname.toLowerCase().includes(searchTerm);
-                return matchesName && !selectedCollaborators.has(suggestion.id);
+                const matchesName =
+                    suggestion.firstname.toLowerCase().startsWith(searchTerm) ||
+                    suggestion.lastname.toLowerCase().startsWith(searchTerm);
+
+                const matchesEmailPrefix = suggestion.email
+                    ?.toLowerCase()
+                    .startsWith(searchTerm);
+
+                return (matchesName || matchesEmailPrefix) &&
+                    !selectedCollaborators.has(suggestion.id);
             })
             .slice(0, maxSuggestions);
     }, [inputEmail, selectedCollaborators, suggestionsMap, maxSuggestions]);
@@ -102,13 +109,6 @@ const useCollaborators = ({
             return newMap;
         });
         setErrorMessage("");
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            selectedCollaborators.clear();
-            suggestionsMap.clear()
-        };
     }, []);
 
     return {
