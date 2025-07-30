@@ -16,8 +16,14 @@ const Index = ({onClose, onVisibilityChange, show = true}) => {
     const initError = useSharePopUpSelector(selectors.getInitError);
 
     useEffect(() => {
+        return () => {
+            actions.cleanupState(); // Clears all data on unmount
+        };
+    }, []);
+
+    useEffect(() => {
         onVisibilityChange?.(state.isPublic);
-    }, [state.isPublic])
+    }, [state.isPublic]);
 
     useEffect(() => {
         if ((show && firstTimeShow.current) || initError) {

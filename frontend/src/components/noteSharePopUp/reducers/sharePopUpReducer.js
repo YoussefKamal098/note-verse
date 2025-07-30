@@ -1,4 +1,5 @@
 import {produce} from "immer";
+import {roles} from "@/constants/roles";
 import {ACTION_TYPES} from "../constants/actionTypes";
 
 export const sharePopUpReducer = produce((draft, action) => {
@@ -52,7 +53,7 @@ export const sharePopUpReducer = produce((draft, action) => {
             draft.initLoading = false;
             draft.initError = null;
             draft.error = null;
-            
+
             break;
 
         case ACTION_TYPES.APPLY_CHANGES_TO_COLLABORATORS: {
@@ -112,6 +113,21 @@ export const sharePopUpReducer = produce((draft, action) => {
             draft.initError = action.payload.initError !== undefined ? action.payload.initError : draft.initError;
             draft.isLoading = action.payload.isLoading !== undefined ? action.payload.isLoading : draft.isLoading;
             draft.error = action.payload.error !== undefined ? action.payload.error : draft.error;
+            break;
+
+        case ACTION_TYPES.CLEANUP_STATE:
+            draft.newCollaborators.clear();
+            draft.updatedCollaborators.clear();
+            draft.removedCollaborators.clear();
+            draft.newCollaboratorsMessage = '';
+            draft.newCollaboratorsRole = roles.VIEWER;
+            draft.notifyNewCollaborators = true;
+            draft.collaborators = new Map();
+            draft.suggestions = [];
+            draft.isLoading = false;
+            draft.initLoading = true;
+            draft.initError = null;
+            draft.error = null;
             break;
     }
 });

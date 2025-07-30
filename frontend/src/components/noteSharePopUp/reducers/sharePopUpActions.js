@@ -252,5 +252,8 @@ export const createSharePopUpActions = (dispatch, getState, dependencies) => {
                 dispatch({type: ACTION_TYPES.UPDATE_STATUS, payload: {isLoading: false}});
             }
         },
+        cleanupState: () => {
+            dispatch({type: ACTION_TYPES.CLEANUP_STATE});
+        },
     };
 };
