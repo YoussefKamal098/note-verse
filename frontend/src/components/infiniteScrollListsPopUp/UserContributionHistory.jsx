@@ -56,7 +56,7 @@ const UserContributionHistory = ({userId, noteId, noteOwnerId, isOpen = false, o
     const {user: authUser} = useAuth();
     const {notify} = useToastNotification();
     const infiniteScrollRef = useRef(null);
-    const [isUserLoading, setIsUserLoading] = useState(false);
+    const [isUserLoading, setIsUserLoading] = useState(true);
     const [user, setUser] = useState(null);
 
     const fetchUser = useCallback(async () => {
@@ -95,21 +95,20 @@ const UserContributionHistory = ({userId, noteId, noteOwnerId, isOpen = false, o
     ), []);
 
     const Title = useMemo(() => (
-        user ?
-            <TitleWrapper>
-                Contributions of User
-                <UserWrapper>
-                    <Tooltip title={isUserLoading ? "loading..." : `${user.firstname} ${user.lastname}`}>
-                        <AvatarWrapper>
-                            <Avatar avatarUrl={user.avatarUrl} isLoading={isUserLoading}/>
-                        </AvatarWrapper>
-                    </Tooltip>
-                    <BadgesContainer>
-                        {authUser.id === userId && <Badge label={"you"}/>}
-                        {userId === noteOwnerId && <Badge label={"owner"}/>}
-                    </BadgesContainer>
-                </UserWrapper>
-            </TitleWrapper> : ""
+        <TitleWrapper>
+            Contributions of
+            <UserWrapper>
+                <Tooltip title={isUserLoading ? "loading..." : `${user?.firstname} ${user?.lastname}`}>
+                    <AvatarWrapper>
+                        <Avatar avatarUrl={user?.avatarUrl} isLoading={isUserLoading}/>
+                    </AvatarWrapper>
+                </Tooltip>
+                <BadgesContainer>
+                    {authUser.id === userId && <Badge label={"you"}/>}
+                    {userId === noteOwnerId && <Badge label={"owner"}/>}
+                </BadgesContainer>
+            </UserWrapper>
+        </TitleWrapper>
     ), [user, isUserLoading]);
 
     useEffect(() => {

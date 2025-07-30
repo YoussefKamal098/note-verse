@@ -444,7 +444,7 @@ notes_app/
 
 ---
 
-## Potential Improvements
+## Potential Improvements and Features
 
 ### 1. **Unit Tests**
 
@@ -509,6 +509,29 @@ notes_app/
 - Blocked users should not receive notifications from or about the blocker.
 - Add a **"Blocked Users" management panel** in user settings to review and unblock users.
 - Ensure proper backend-level enforcement of blocking logic across endpoints (likes, shares, comments, search, etc.).
+
+### 12. ** Online View Indicators**
+
+* Show which users are currently **viewing the note** (like Google Docs presence).
+* Reuse Redis + Socket.IO infra to track active viewers.
+* Show avatars or initials with hover tooltips in UI.
+
+### 13. ** Total Views Tracking**
+
+* Count and display the **total number of times a note has been viewed**.
+* Store view count in Redis or DB, incrementing only once per user per session.
+
+### 14. ** Commit Confirmation & Permissions**
+
+* Require the **note owner** to confirm commits from collaborators.
+* Allow owner to:
+
+    * Accept/reject individual commits
+    * Mark specific users as **trusted** (auto-confirm commits)
+    * Grant permission to confirm others’ commits (like moderators)
+
+> UI can show a "Pending Confirmation" section, and owner can approve/reject via a panel.
+
 
 ---
 

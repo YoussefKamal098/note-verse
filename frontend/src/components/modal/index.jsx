@@ -111,6 +111,7 @@ const Modal = ({
                             $maxHeight={maxHeight}
                             variants={shockwaveVariants}
                             style={contentStyle}
+                            onClick={(e) => e.stopPropagation()}
                         >
                             {children}
                         </ModalContent>

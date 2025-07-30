@@ -1,10 +1,7 @@
 import React from "react";
 import "react-loading-skeleton/dist/skeleton.css";
-import {formatDateTime} from "@/utils/date";
-import Avatar from "../../common/Avatar";
-import Badge from '@/components/common/Badge';
-import * as S from "../styles";
-import * as UserVersionS from "./styles";
+import Details from "./Details";
+import Skeleton from "./Skeleton";
 
 const UserDetailsWithVersionMeta = ({
                                         firstname,
@@ -14,32 +11,22 @@ const UserDetailsWithVersionMeta = ({
                                         showYouBadge = false,
                                         showOwnerBadge = false,
                                         commitMessage,
+                                        isLoading = false
                                     }) => {
     return (
-        <S.UserCard>
-            <S.AvatarContainer>
-                <Avatar avatarUrl={avatarUrl}/>
-            </S.AvatarContainer>
-            <UserVersionS.VersionUserDetails>
-                <S.UserName>
-                    {firstname && lastname &&
-                        <div>
-                            Made by <S.NameHighlight>{firstname}</S.NameHighlight> {' '}
-                            <S.NameHighlight>{lastname}</S.NameHighlight>
-                        </div>
-                    }
-                    {showYouBadge && <Badge label={"you"}/>}
-                    {showOwnerBadge && <Badge label={"owner"}/>}
-                </S.UserName>
-                <S.MetaInfo>
-                    {createdAt && formatDateTime(createdAt)}
-                </S.MetaInfo>
-                {commitMessage &&
-                    <UserVersionS.CommitMessage>
-                        {`"${commitMessage}"`}
-                    </UserVersionS.CommitMessage>}
-            </UserVersionS.VersionUserDetails>
-        </S.UserCard>
+        <>
+            {isLoading ? <Skeleton/>
+                : <Details
+                    firstname={firstname}
+                    lastname={lastname}
+                    avatarUrl={avatarUrl}
+                    createdAt={createdAt}
+                    showYouBadge={showYouBadge}
+                    showOwnerBadge={showOwnerBadge}
+                    commitMessage={commitMessage}
+                />}
+        </>
+
     );
 };
 

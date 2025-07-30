@@ -15,27 +15,31 @@ import useMediaSize from "@/hooks/useMediaSize";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
 import Contributors from "./Contributors";
 import RightSettingsPanel from './SettingsPanel';
-import RealTimeUpdatePanel from './RealTimeUpdatePanel';
+import RealTimeUpdatePanel from './realTimeUpdatePanel';
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 import routesPaths from "@/constants/routesPaths";
 
 const GridContainerStyles = styled.div`
     display: grid;
-    grid-template-areas: ${({$showContributors, $showSettingsPanel}) => $showContributors ? `
-        "contributors  ${$showSettingsPanel ? "settings_panel" : "realtime_updates_panel"}"
-        "main_content  ${$showSettingsPanel ? "settings_panel" : "realtime_updates_panel"}"
-        "main_content realtime_updates_panel"` : `
-        "main_content ${$showSettingsPanel ? "settings_panel" : "realtime_updates_panel"}"
-        "main_content realtime_updates_panel"`
+    grid-template-areas: ${({$showContributors}) => $showContributors ? `
+        "realtime_updates_panel contributors settings_panel"
+        "realtime_updates_panel main_content settings_panel"
+        "realtime_updates_panel main_content settings_panel"` : `
+        "realtime_updates_panel main_content settings_panel"
+        `
     };
 
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     grid-template-rows: ${({$showContributors}) => $showContributors ? "auto auto 1fr" : "auto 1fr"};
 
     gap: 10px;
     width: 100%;
-    max-width: ${({$showSettingsPanel, $showRealTimeUpdatesPanel}) =>
-            $showSettingsPanel || $showRealTimeUpdatesPanel ? "900px" : "775px"};
+
+    ${({$isMobile}) => $isMobile && "max-width: 775px"};
+
+    ${({$isMobile, $showSettingsPanel, $showRealTimeUpdatesPanel}) =>
+            (!$showSettingsPanel || !$showRealTimeUpdatesPanel) && !$isMobile && "max-width: 900px"};
+
     align-items: start;
 `;
 
@@ -44,12 +48,12 @@ const Note = () => {
     const copyLink = useCopyLink();
     const {showConfirmation} = useConfirmation();
     const {validateNote} = useNoteValidation();
-    const isMobile = useMediaSize(DEVICE_SIZES.tablet);
+    const isMobile = useMediaSize(DEVICE_SIZES.laptop);
     const {actions, selectors} = useNoteContext();
     const [showShare, setShowShare] = useState(false);
     const [commitHistoryOpen, setCommitHistoryOpen] = useState(false);
     const [contributorsOpen, setContributorsOpen] = useState(false);
-    const [showSettings, setShowSettingsPanel] = useState(true);
+    const [showSettingsPanel, setShowSettingsPanel] = useState(true);
     const [userContributionHistoryOpen, setUserContributionHistoryOpen] = useState(false);
     const [currentUserContributionHistoryId, setCurrentUserContributionHistoryId] = useState(null);
     const [commitMessageOpen, setCommitMessageOpen] = useState(false);
@@ -64,13 +68,13 @@ const Note = () => {
 
     useEffect(() => {
         if (!isMobile) {
-            setShowSettingsPanel(true);
-            setShowRealTimeUpdatesPanel(true);
+            setShowSettingsPanel(isOwner);
+            setShowRealTimeUpdatesPanel(!isNew);
         } else {
             setShowSettingsPanel(false);
             setShowRealTimeUpdatesPanel(false);
         }
-    }, [isMobile]);
+    }, [isMobile, isNew, isOwner]);
 
     const handleDelete = useCallback(() => {
         showConfirmation({
@@ -172,8 +176,13 @@ const Note = () => {
         }
     }, []);
 
+    const handleOnPull = useCallback((pulledContent) => {
+        actions.resetContent(pulledContent);
+        markdownTabsRef.current?.resetContent?.(pulledContent);
+    }, [actions.resetContent]);
+
     const handleCommitClick = useCallback((id) => navigate(routesPaths.NOTE_VERSION(id)), [])
-    
+
     const headerActions = useMemo(() => ({
         onSave: handleOnSave,
         onDelete: handleDelete,
@@ -199,12 +208,12 @@ const Note = () => {
     return (
         <GridContainerStyles
             $showContributors={!isNew && !editMode}
-            $showSettingsPanel={showSettings}
+            $showSettingsPanel={showSettingsPanel}
             $showRealTimeUpdatesPanel={showRealTimeUpdatesPanel}
             $isMobile={isMobile}
         >
             <Contributors onContributorClick={handleOnContributorClick}/>
-            <MainContent headerActions={headerActions} markdownTabsRef={markdownTabsRef}/>
+            <MainContent headerActions={headerActions} isMobile={isMobile} markdownTabsRef={markdownTabsRef}/>
 
             {isOwner && <SharePopUp
                 noteMeta={{id, isPublic}}
@@ -241,16 +250,17 @@ const Note = () => {
             />
 
             {isOwner && <RightSettingsPanel
-                show={showSettings}
+                show={showSettingsPanel}
                 onClose={handleCloseSettingsPanel}
                 isMobile={isMobile}
             />}
 
-            <RealTimeUpdatePanel
+            {!isNew && <RealTimeUpdatePanel
                 show={showRealTimeUpdatesPanel}
+                onPull={handleOnPull}
                 onClose={handleCloseRealTimePanel}
                 isMobile={isMobile}
-            />
+            />}
         </GridContainerStyles>
     );
 }

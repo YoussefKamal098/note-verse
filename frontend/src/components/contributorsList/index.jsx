@@ -18,7 +18,7 @@ const ContributorsContainer = styled.div`
 `;
 
 const ContributorsIcons = styled(FaUsers)`
-    color: var(--color-primary);
+    color: var(--color-placeholder);
     font-size: 0.9em;
 `;
 

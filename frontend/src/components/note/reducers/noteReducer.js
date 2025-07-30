@@ -59,6 +59,11 @@ export const noteReducer = (draft, action) => {
             draft.status.editMode = !draft.status.editMode;
             break;
 
+        case ACTION_TYPES.CONTENT.RESET_CONTENT:
+            draft.originalContent.content = action.payload;
+            draft.currentContent.content = action.payload;
+            break;
+
         default:
             throw new Error(`Unhandled action type: ${action.type}`);
     }

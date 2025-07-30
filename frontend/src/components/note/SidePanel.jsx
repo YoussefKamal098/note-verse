@@ -1,12 +1,13 @@
 import React, {useRef} from 'react';
 import styled from 'styled-components';
+import Tooltip from "@/components/tooltip/Tooltip";
 import CloseButton from '@/components/buttons/CloseButton';
 import useOutsideClick from '@/hooks/useOutsideClick';
 import {ContainerStyles} from './styles';
 
 const SidePanelContainer = styled(ContainerStyles)`
     grid-area: ${({area}) => area || 'right'};
-    max-width: ${({$show}) => ($show ? '275px' : '0')};
+    max-width: ${({$show}) => ($show ? '300px' : '0')};
     ${({$show}) => !$show && 'padding-right: 0; padding-left: 0;'}
     transition: max-width 0.3s ease, padding 0.5s ease;
 
@@ -14,8 +15,8 @@ const SidePanelContainer = styled(ContainerStyles)`
         position: fixed;
         top: 0;
         right: 0;
-        width: 60vw;
-        max-width: 60vw;
+        width: 80vw;
+        max-width: 350px;
         height: 100vh;
         border-left: 1px solid var(--color-border);
         border-radius: 0;
@@ -36,7 +37,7 @@ const SidePanelHeader = styled.div`
 const Title = styled.h2`
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 0.25em;
     font-size: 1.25em;
     font-weight: 600;
     color: var(--color-text);
@@ -46,10 +47,10 @@ const IconWrapper = styled.span`
     display: flex;
     font-size: 0.9em;
     font-weight: 600;
-    color: var(--color-primary);
+    color: var(--color-placeholder);
 `;
 
-const SidePanel = ({show, onClose, title, Icon, area, children, isMobile}) => {
+const SidePanel = ({show, onClose, title, Icon, area, children, isMobile, iconTooltip, ...props}) => {
     const panelRef = useRef(null);
 
     useOutsideClick(panelRef, () => {
@@ -57,12 +58,18 @@ const SidePanel = ({show, onClose, title, Icon, area, children, isMobile}) => {
     });
 
     return (
-        <SidePanelContainer $show={show} ref={panelRef} area={area} $isMobile={isMobile}>
+        <SidePanelContainer $show={show} ref={panelRef} area={area} $isMobile={isMobile} {...props}>
             <SidePanelHeader>
                 <Title>
                     {title}
                     <IconWrapper>
-                        <Icon/>
+                        {Icon && iconTooltip ? <Tooltip containerStyle={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }} title={iconTooltip}>
+                            <Icon/>
+                        </Tooltip> : Icon && <Icon/>}
                     </IconWrapper>
                 </Title>
                 {isMobile && <CloseButton onClick={onClose}/>}

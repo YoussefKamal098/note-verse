@@ -206,6 +206,15 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
             }
         },
 
+        resetContent: async (content) => {
+            await cacheService.delete(getCacheKey()).catch(() => null);
+
+            dispatch({
+                type: ACTION_TYPES.CONTENT.RESET_CONTENT,
+                payload: normalizeContent(content)
+            });
+        },
+
         togglePin: async () => {
             const controller = requestManager.createAbortController();
             try {

@@ -8,9 +8,7 @@ import BackHomeButton from "@/components/buttons/BackHomeButton";
 import NoteMenu from "@/components/menus/noteMenu";
 import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "@/components/buttons/Button";
 import UserDetailsWithNoteMeta from "@/components/userDetails/UserDetailsWithNoteMeta";
-import useMediaSize from "@/hooks/useMediaSize";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
-import {DEVICE_SIZES} from "@/constants/breakpoints";
 
 const HeaderWrapperStyles = styled.div`
     display: flex;
@@ -54,7 +52,7 @@ const iconsStyles = {
     padding: "0.15em"
 }
 
-const NoteHeader = ({actions}) => {
+const NoteHeader = ({actions, isMobile}) => {
     const {selectors} = useNoteContext();
     const {isNew, isLoading, editMode} = useNoteSelector(selectors.getStatus);
     const isOwner = useNoteSelector(selectors.isOwner);
@@ -63,7 +61,6 @@ const NoteHeader = ({actions}) => {
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
     const {isPublic, createdAt} = useNoteSelector(selectors.getMeta);
-    const isMobile = useMediaSize(DEVICE_SIZES.tablet);
 
     return (
         <HeaderWrapperStyles>
@@ -122,7 +119,7 @@ const NoteHeader = ({actions}) => {
                     </IconWrapper>
                 </IconButton>}
 
-                {isMobile && <IconButton
+                {!isNew && isMobile && <IconButton
                     onClick={actions.onRealTimeUpdateIconClick}
                     aria-label="real-time-updates"
                     sx={iconsStyles}
