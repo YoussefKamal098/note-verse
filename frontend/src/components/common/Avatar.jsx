@@ -78,4 +78,4 @@ const Avatar = ({avatarUrl, isLoading = false}) => {
     );
 };
 
-export default Avatar;
+export default React.memo(Avatar);

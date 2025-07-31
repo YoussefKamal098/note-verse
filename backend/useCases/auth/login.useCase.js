@@ -1,3 +1,6 @@
+const AppError = require("@/errors/app.error");
+const statusMessages = require("@/constants/statusMessages");
+const httpCodes = require("@/constants/httpCodes");
 const LoginUseCaseBase = require('./loginBase.useCase');
 
 /**
@@ -37,6 +40,14 @@ class LoginUseCase extends LoginUseCaseBase {
      * @throws {AppError} When authentication fails
      */
     async execute({email, password, sessionInfo}) {
+        if (!email || !password) {
+            throw new AppError(
+                statusMessages.CREDENTIALS_REQUIRED,
+                httpCodes.BAD_REQUEST.code,
+                httpCodes.BAD_REQUEST.name
+            );
+        }
+
         const {accessToken, refreshToken, userId, sessionId} = await this.#jwtAuthService.login({
             email,
             password

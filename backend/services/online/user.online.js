@@ -52,7 +52,7 @@ class OnlineUserService {
     async add(userId, socketId) {
         // Add user to online list and store the socketId under a set
         await this.#redis.sadd(OnlineUserService.#ONLINE_USERS, userId);
-        await this.#redis.sadd(`${OnlineUserService.#USER_SOCKETS}:${userId}`, socketId);
+        await this.#redis.sadd(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`, socketId);
     }
 
     /**
@@ -66,13 +66,13 @@ class OnlineUserService {
      */
     async remove(userId, socketId) {
         // Remove just the current socket
-        await this.#redis.srem(`${OnlineUserService.#USER_SOCKETS}:${userId}`, socketId);
+        await this.#redis.srem(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`, socketId);
 
         // If no sockets left for the user, remove them from online_users
-        const remainingSockets = await this.#redis.scard(`${OnlineUserService.#USER_SOCKETS}:${userId}`);
+        const remainingSockets = await this.#redis.scard(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
         if (remainingSockets === 0) {
             await this.#redis.srem(OnlineUserService.#ONLINE_USERS, userId);
-            await this.#redis.del(`${OnlineUserService.#USER_SOCKETS}:${userId}`);
+            await this.#redis.del(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
         }
     }
 
@@ -99,7 +99,7 @@ class OnlineUserService {
      * sockets.forEach(socket => { ... });
      */
     async getUserSockets(userId) {
-        return this.#redis.smembers(`${OnlineUserService.#USER_SOCKETS}:${userId}`);
+        return this.#redis.smembers(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
     }
 
     /**
@@ -121,12 +121,12 @@ class OnlineUserService {
      */
     async clearAllOnlineUsers() {
         const userIds = await this.#redis.smembers(OnlineUserService.#ONLINE_USERS);
-        const pipeline = this.#redis.pipeline();
+        // Delete keys one by one (safe in cluster)
         for (const userId of userIds) {
-            pipeline.del(`${OnlineUserService.#USER_SOCKETS}:${userId}`);
+            await this.#redis.del(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
         }
-        pipeline.del(OnlineUserService.#ONLINE_USERS);
-        await pipeline.exec();
+
+        await this.#redis.del(OnlineUserService.#ONLINE_USERS);
     }
 }
 

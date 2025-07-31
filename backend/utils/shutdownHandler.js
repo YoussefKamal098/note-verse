@@ -1,6 +1,7 @@
 const {disconnectDB, isDBConnected} = require('../services/db.service');
 const {gracefulShutdown} = require('./system.utils');
 const container = require('../container');
+const shutdownAllConsumers = require('@/consumers/shutdownAllConsumers');
 
 async function shutdownServices() {
     console.log('🔄 Cleaning up resources before shutting down...');
@@ -42,6 +43,10 @@ async function shutdownServices() {
                     console.log('✅ Socket server disconnected.');
                 }
             }
+
+            // ✅ Shutdown all Redis/BullMQ consumers
+            await shutdownAllConsumers();
+            console.log('✅ All consumers shut down.');
 
             if (await isDBConnected()) {
                 await disconnectDB();

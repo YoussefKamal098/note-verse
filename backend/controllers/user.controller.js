@@ -112,7 +112,6 @@ class UserController {
             ));
         }
 
-        req.updatedUser = updatedUser;
         res.status(httpCodes.CREATED.code).json({avatarUrl: updatedUser.avatarUrl});
     }
 
@@ -143,7 +142,7 @@ class UserController {
             ));
         }
 
-        req.updatedUser = await this.#userService.updateUser(
+        await this.#userService.updateUser(
             userId,
             {
                 avatar: null
@@ -178,7 +177,6 @@ class UserController {
             ));
         }
 
-        req.updatedUser = user;
         res.status(httpCodes.OK.code).json({
             id: user.id,
             firstname: user.firstname,

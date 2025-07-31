@@ -5,7 +5,7 @@ const {deepFreeze} = require('shared-utils/obj.utils');
 const {generateSecureOTP} = require("../utils/otp.utils");
 const AppError = require('../errors/app.error');
 const dbErrorCodes = require('../constants/dbErrorCodes');
-
+const cacheKeys = require('../utils/cacheKeys');
 
 /**
  * Service for managing user operations.
@@ -57,6 +57,19 @@ class UserService {
      */
     #getUnverifiedUserCacheKey(email) {
         return `user:unverified:${email}`;
+    }
+
+    /**
+     * Clears cached user data based on user ID and email.
+     * @param {Object} user - The user object
+     */
+    async clearUserCache(user) {
+        if (!user) return;
+
+        await Promise.all([
+            this.#cacheService.delete(cacheKeys.userProfileById(user.id)),
+            this.#cacheService.delete(cacheKeys.userProfileByEmail(user.email))
+        ]);
     }
 
     /**
@@ -276,6 +289,7 @@ class UserService {
      * @param {string} [updateData.firstname] - The new first name.
      * @param {string} [updateData.lastname] - The new last name.
      * @param {string | null} [updateData.avatar] - The new avatar ID.
+     * @param {string} [updateData.avatarPlaceholder] - The new avatarPlaceholder ID.
      * @param {string} [updateData.email] - The new email address.
      * @param {string} [updateData.password] - The new password (will be hashed).
      * @returns {Promise<Readonly<Object>>} The updated user object, deep-frozen.
@@ -285,8 +299,15 @@ class UserService {
      * - The email is already in use by another account (409)
      * - There's a database error (500)
      */
-    async updateUser(userId, {firstname, lastname, avatar, email, password} = {}) {
-        const updates = {firstname, lastname, avatar, email, password};
+    async updateUser(userId, {
+        firstname,
+        lastname,
+        avatar,
+        avatarPlaceholder,
+        email,
+        password
+    } = {}) {
+        const updates = {firstname, lastname, avatar, email, password, avatarPlaceholder};
 
         try {
             // Create update object with only defined properties
@@ -307,7 +328,10 @@ class UserService {
                 cleanUpdateData.password = await this.passwordHasherService.hash(cleanUpdateData.password);
             }
 
-            return await this.#userRepository.findByIdAndUpdate(userId, cleanUpdateData);
+
+            const updatedUser = await this.#userRepository.findByIdAndUpdate(userId, cleanUpdateData);
+            await this.clearUserCache(updatedUser);
+            return updatedUser;
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
                 throw new AppError(

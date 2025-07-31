@@ -1,6 +1,7 @@
-const {sanitizeMongoObject, convertToObjectId} = require('../utils/obj.utils');
-const dbErrorCodes = require('../constants/dbErrorCodes');
+const {sanitizeMongoObject, convertToObjectId} = require('@/utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
+const dbErrorCodes = require('@/constants/dbErrorCodes');
+const BaseRepository = require("@/repositories/base.repository");
 
 /**
  * Repository for performing CRUD operations on the File collection.
@@ -15,15 +16,9 @@ const {deepFreeze} = require('shared-utils/obj.utils');
  *
  * @class FileRepository
  */
-class FileRepository {
-    /**
-     * @private
-     * @type {import('mongoose').Model}
-     */
-    #model;
-
+class FileRepository extends BaseRepository {
     constructor(model) {
-        this.#model = model;
+        super(model);
     }
 
     /**
@@ -56,7 +51,7 @@ class FileRepository {
     async createFile(fileData, {session} = {}) {
         try {
             const options = session ? {session} : {};
-            const file = await this.#model.create([fileData], options);
+            const file = await this._model.create([fileData], options);
             return deepFreeze(this.#sanitizeFileMongoObject(file[0].toObject()));
         } catch (error) {
             if (error.code === dbErrorCodes.DUPLICATE_KEY) {
@@ -80,7 +75,7 @@ class FileRepository {
      */
     async findByFileId(fileId, {session, projection} = {}) {
         try {
-            const query = this.#model.findById(convertToObjectId(fileId));
+            const query = this._model.findById(convertToObjectId(fileId));
             if (projection) query.select(projection);
             if (session) query.session(session);
 
@@ -107,7 +102,7 @@ class FileRepository {
             if (session) options.session = session;
             if (projection) options.projection = projection;
 
-            const deletedFile = await this.#model.findByIdAndDelete(
+            const deletedFile = await this._model.findByIdAndDelete(
                 convertToObjectId(fileId),
                 options
             );
@@ -129,7 +124,7 @@ class FileRepository {
      */
     async findByFileIdAndOwner(fileId, userId, {session, projection} = {}) {
         try {
-            const query = this.#model.findOne({
+            const query = this._model.findOne({
                 _id: convertToObjectId(fileId),
                 userId: convertToObjectId(userId)
             });
@@ -160,7 +155,7 @@ class FileRepository {
             if (session) options.session = session;
             if (projection) options.projection = projection;
 
-            const deletedFile = await this.#model.findOneAndDelete({
+            const deletedFile = await this._model.findOneAndDelete({
                 _id: convertToObjectId(fileId),
                 userId: convertToObjectId(userId)
             }, options);
@@ -188,7 +183,7 @@ class FileRepository {
             if (session) options.session = session;
             if (projection) options.projection = projection;
 
-            const updatedFile = await this.#model.findOneAndUpdate(
+            const updatedFile = await this._model.findOneAndUpdate(
                 {
                     _id: convertToObjectId(fileId),
                     userId: convertToObjectId(userId)

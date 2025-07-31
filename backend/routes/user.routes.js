@@ -2,7 +2,7 @@ const express = require('express');
 const {makeClassInvoker} = require("awilix-express");
 const container = require('../container');
 const cacheKeys = require('../utils/cacheKeys');
-const {createCacheMiddleware, clearCache} = require('../middlewares/cache.middleware');
+const {createCacheMiddleware} = require('../middlewares/cache.middleware');
 const asyncRequestHandler = require('../utils/asyncHandler');
 const resolveMeIdentifier = require('../middlewares/resolveMeIdentifier.middleware');
 const {createUploadMiddleware} = require('../middlewares/fileUpload.middleware');
@@ -43,22 +43,6 @@ const userCacheMiddleware = createCacheMiddleware({
     }
 });
 
-const clearUserCaches = async (req, res, next) => {
-    res.on('finish', async () => {
-        try {
-            if (req.updatedUser) {
-                await Promise.all([
-                    clearCache(cacheKeys.userProfileById(req.updatedUser.id)),
-                    clearCache(cacheKeys.userProfileByEmail(req.updatedUser.email))
-                ]);
-            }
-        } catch (error) {
-            console.error("Post-response cache clear failed", error);
-        }
-    });
-    next();
-};
-
 router.get('/',
     asyncRequestHandler(validateRequestMiddlewares(getUserQuerySchema, {isQuery: true})),
     asyncRequestHandler(resolveMeIdentifier()),
@@ -70,14 +54,12 @@ router.patch('/:userId/avatar',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(uploadUserImageMiddleWare),
     asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
-    asyncRequestHandler(clearUserCaches),
     asyncRequestHandler(api('uploadUserAvatar'))
 );
 
 router.delete('/:userId/avatar',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
-    asyncRequestHandler(clearUserCaches),
     asyncRequestHandler(api('removeUserAvatar'))
 );
 
@@ -86,7 +68,6 @@ router.patch('/:userId/profile',
     asyncRequestHandler(verifyAuthUserOwnershipMiddleware()),
     asyncRequestHandler(validateRequestMiddlewares(updateUserProfileSchema)),
     asyncRequestHandler(resolveMeIdentifier({fields: ["userId"]})),
-    asyncRequestHandler(clearUserCaches),
     asyncRequestHandler(api('updateUserProfile'))
 );
 

@@ -10,6 +10,7 @@ module.exports = container => {
         restoreVersionUseCase: asClass(require('../useCases/versions/restoreVersion.useCase')).transient(),
         validateVersionAccessUseCase: asClass(require('../useCases/versions/validateVersionAccess.useCase')).transient(),
         loginUseCase: asClass(require('../useCases/auth/login.useCase')).transient(),
-        googleCallbackUseCase: asClass(require('../useCases/auth/googleCallback.useCase')).transient()
+        googleCallbackUseCase: asClass(require('../useCases/auth/googleCallback.useCase')).transient(),
+        verifyEmailUseCase: asClass(require('../useCases/auth/verifyEmail.useCase')).transient(),
     });
 };

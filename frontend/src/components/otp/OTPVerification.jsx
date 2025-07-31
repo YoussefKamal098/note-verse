@@ -87,7 +87,7 @@ const OTPVerification = ({
             setAnimationState("success");
             setTimeout(() => onSuccess?.(), 3000);
         } catch (err) {
-            setError("An error occurred during verification. Please try again later.");
+            setError(err?.message ? `Verification failed, ${err.message}` : "An error occurred during verification. Please try again later.");
             handleError();
         }
 

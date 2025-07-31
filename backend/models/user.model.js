@@ -23,10 +23,13 @@ const userSchema = new Schema({
             return this.provider === authProvider.LOCAL;
         }
     },
+    avatarPlaceholder: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'File'
+    },
     avatar: {
         type: Schema.Types.ObjectId,
-        ref: 'File',
-        default: undefined,
+        ref: 'File'
     },
     provider: {
         type: String,
@@ -55,6 +58,13 @@ userSchema.virtual('authProvider', {
 });
 
 userSchema.index({avatar: 1}, {
+    unique: true,
+    partialFilterExpression: {
+        avatar: {$type: 'objectId'} // Only enforce uniqueness for ObjectId values
+    }
+});
+
+userSchema.index({avatarPlaceholder: 1}, {
     unique: true,
     partialFilterExpression: {
         avatar: {$type: 'objectId'} // Only enforce uniqueness for ObjectId values

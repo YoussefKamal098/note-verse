@@ -1,10 +1,10 @@
 require('module-alias/register');
 const {Worker} = require('bullmq');
-const QUEUE_NAMES = require('../constants/queueNames.constant');
-const JOB_NAMES = require('../constants/jobNames.constant');
-const {BULLMQ_PREFIX} = require("../constants/bullmq.constants");
-const container = require('../container');
-const redis = require('../config/redis');
+const QUEUE_NAMES = require('@/constants/queueNames.constant');
+const JOB_NAMES = require('@/constants/jobNames.constant');
+const {BULLMQ_PREFIX} = require("@/constants/bullmq.constants");
+const container = require('@/container');
+const redis = require('@/config/redis');
 
 // Resolve notification service from DI container
 const notificationService = container.resolve('notificationService');

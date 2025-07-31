@@ -290,7 +290,7 @@ class JwtAuthService {
      * @param {string} email - User's email address.
      * @param {string} otpCode - The one-time password provided by the user.
      * @param {SessionInfo} sessionInfo - Session context information.
-     * @returns {Promise<{accessToken: string, refreshToken: string}>} Token pair upon successful verification.
+     * @returns {Promise<{user: {id:string, firstname:string, lastname:string}, accessToken: string, refreshToken: string}>} Token pair upon successful verification.
      * @throws {AppError} If verification fails.
      */
     async verifyEmail(email, otpCode, sessionInfo) {
@@ -333,9 +333,16 @@ class JwtAuthService {
 
         // Mark the email as verified.
         const updatedUser = await this.#userService.verifyEmail(email);
-
+        
         // Generate and return session tokens.
-        return this.generateSessionTokens(updatedUser.id, sessionInfo);
+        return {
+            user: {
+                id: updatedUser.id,
+                firstname: updatedUser.firstname,
+                lastname: updatedUser.lastname
+            },
+            ...(await this.generateSessionTokens(updatedUser.id, sessionInfo))
+        }
     }
 
     /**

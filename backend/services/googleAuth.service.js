@@ -123,12 +123,7 @@ class GoogleAuthService {
      * @param {string} code - Authorization code from Google.
      * @param {string} stateToken - State token for CSRF protection.
      * @param {SessionInfo} sessionInfo - Client session information.
-     * @returns {Promise<{accessToken: string, refreshToken: string, sessionId:string, userId: string, new: boolean}>}
-     * @property {string} accessToken - Short-lived JWT for API authorization
-     * @property {string} refreshToken - Long-lived token for session renewal
-     * @property {string} userId - Authenticated user's unique identifier
-     * @property {string} sessionId - Unique identifier for the authenticated session
-     * @property {boolean} isNew - Indicates if this is a newly registered user
+     * @returns {Promise<{user: {id:string, firstname:string, lastname:string}, accessToken: string, refreshToken: string, sessionId:string, isNew: boolean}>}
      * @throws {AppError} When validation or token exchange fails.
      */
     async handleGoogleCallback(code, stateToken, sessionInfo) {
@@ -147,7 +142,11 @@ class GoogleAuthService {
 
         // Generate session tokens for the authenticated user
         return {
-            userId: user.id,
+            user: {
+                id: user.id,
+                firstname: user.firstname,
+                lastname: user.lastname
+            },
             isNew: !result.exist,
             ...(await this.#jwtAuthService.generateSessionTokens(user.id, sessionInfo))
         };

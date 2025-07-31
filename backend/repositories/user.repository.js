@@ -68,6 +68,52 @@ class UserRepository {
     }
 
     /**
+     * Determines whether the user's avatar should fall back to the generated placeholder.
+     *
+     * This is true when:
+     * - The user has no custom avatar (`null` or `undefined`)
+     * - The user has no third-party (e.g., Google) avatar
+     * - A placeholder avatar has been generated and stored
+     *
+     * @private
+     * @param {Object} user - The user object.
+     * @param {string|null|undefined} user.avatar - The user's custom avatar filename, if any.
+     * @param {Object} [user.authProvider] - Optional third-party auth provider info.
+     * @param {string} [user.authProvider.avatarUrl] - The avatar URL from the auth provider (e.g., Google).
+     * @param {string} [user.avatarPlaceholder] - The generated placeholder avatar filename.
+     * @returns {boolean} Whether to use the placeholder avatar.
+     */
+    #shouldUsePlaceholder(user) {
+        const noCustomAvatar = user.avatar === null ||
+            (user.avatar === undefined && !user.authProvider?.avatarUrl);
+
+        return noCustomAvatar && !!user.avatarPlaceholder;
+    }
+
+    /**
+     * Resolves the avatar URL source for the user.
+     *
+     * Priority:
+     * 1. Custom uploaded avatar (stored in your storage engine)
+     * 2. Third-party auth provider avatar (e.g., Google)
+     * 3. Returns `null` if no avatar source is available
+     *
+     * @private
+     * @param {Object} user - The user object.
+     * @param {string|null|undefined} user.avatar - The custom avatar filename, if uploaded.
+     * @param {Object} [user.authProvider] - Optional third-party auth provider data.
+     * @param {string} [user.authProvider.avatarUrl] - Avatar URL provided by auth provider.
+     * @returns {string|null} The resolved avatar URL or null.
+     */
+    #resolveAvatarSource(user) {
+        if (user.avatar) {
+            return config.storage.constructFileUrl(user.avatar);
+        }
+
+        return user.authProvider?.avatarUrl || null;
+    }
+
+    /**
      * Constructs the avatar URL for a user document.
      * @private
      * @param {Object} user - The user document
@@ -78,15 +124,14 @@ class UserRepository {
 
         const userWithAvatar = {...user};
 
-        if (user.avatar !== null) {
-            userWithAvatar.avatarUrl = user.avatar
-                ? config.storage.constructFileUrl(user.avatar)
-                : user.authProvider?.avatarUrl;
-        }
+        userWithAvatar.avatarUrl = this.#shouldUsePlaceholder(user)
+            ? config.storage.constructFileUrl(user.avatarPlaceholder)
+            : this.#resolveAvatarSource(user);
 
         delete userWithAvatar?.authProvider;
         delete userWithAvatar.provider;
         delete userWithAvatar.avatar;
+        delete userWithAvatar.avatarPlaceholder;
 
         return userWithAvatar;
     }

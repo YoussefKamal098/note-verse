@@ -15,6 +15,8 @@ const registerSocketEvents = require('./socketEvents');
 const registerOnline = require('./online');
 const registerSocketEventEmitters = require('./socketEventEmitters');
 const registerUseCases = require('./useCases');
+const registerConsumers = require('./consumers');
+const registerConsumerHandlers = require('./consumerHandlers');
 
 const container = createContainer({injectionMode: InjectionMode.PROXY});
 
@@ -32,5 +34,7 @@ registerSocketEvents(container);
 registerOnline(container);
 registerSocketEventEmitters(container);
 registerUseCases(container);
+registerConsumers(container);
+registerConsumerHandlers(container);
 
 module.exports = container;

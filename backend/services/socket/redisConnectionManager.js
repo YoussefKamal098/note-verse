@@ -162,7 +162,7 @@ class RedisConnectionManager {
      * @returns {Promise<void>}
      */
     async ensureConnection(conn, type) {
-        if (conn.status === 'ready') return;
+        if (conn.status === 'connect' || conn.status === 'ready' || conn.status === 'connecting') return;
 
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(

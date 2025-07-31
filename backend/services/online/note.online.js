@@ -108,11 +108,11 @@ class OnlineNoteUserService {
     async clearAllOnlineNotes() {
         const keys = await this.#redis.scanKeys(NOTE_VIEWERS_SCAN_PATTERN);
         if (keys.length === 0) return;
-        const pipeline = this.#redis.pipeline();
+
+        // Delete keys one by one (safe in cluster)
         for (const key of keys) {
-            pipeline.del(key);
+            await this.#redis.del(key);
         }
-        await pipeline.exec();
     }
 }
 

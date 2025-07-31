@@ -37,7 +37,12 @@ class AuthController {
      * @description Google Callback UseCase
      */
     #googleCallbackUseCase
-
+    /**
+     * @private
+     * @type {import('@/useCases/auth/verifyEmail.useCase').VerifyEmailUseCase}
+     * @description Google Callback UseCase
+     */
+    #verifyEmailUseCase;
 
     /**
      * Constructs a new AuthController.
@@ -47,13 +52,22 @@ class AuthController {
      * @param {import('@/useCases/auth/login.useCase').LoginUseCase} depndencies.loginUseCase
      * @param {import('@/useCases/auth/googleCallback.useCase').GoogleCallbackUseCase} depndencies.googleCallbackUseCase
      * @param {import('@/services/email.mediator').EmailMediator} depndencies.emailMediator
+     * @param {import('@/useCases/auth/verifyEmail.useCase').VerifyEmailUseCase} depndencies.verifyEmailUseCase
      */
-    constructor({jwtAuthService, googleAuthService, loginUseCase, googleCallbackUseCase, emailMediator}) {
+    constructor({
+                    jwtAuthService,
+                    googleAuthService,
+                    loginUseCase,
+                    googleCallbackUseCase,
+                    emailMediator,
+                    verifyEmailUseCase
+                }) {
         this.#jwtAuthService = jwtAuthService;
         this.#googleAuthService = googleAuthService;
         this.#emailMediator = emailMediator;
         this.#loginUseCase = loginUseCase;
         this.#googleCallbackUseCase = googleCallbackUseCase;
+        this.#verifyEmailUseCase = verifyEmailUseCase;
     }
 
     /**
@@ -142,21 +156,13 @@ class AuthController {
      * Verifies user email with OTP code
      * @param {import('express').Request} req - Request object
      * @param {import('express').Response} res - Response object
-     * @param {Function} next - Next middleware
      */
-    async verifyEmail(req, res, next) {
+    async verifyEmail(req, res) {
         const {email, otpCode} = req.body;
-
-        if (!email || !otpCode) {
-            next(new AppError(
-                statusMessages.MISSING_VERIFICATION_DATA,
-                httpCodes.BAD_REQUEST.code,
-                httpCodes.BAD_REQUEST.name
-            ));
-        }
-
         const sessionInfo = this.#getSessionInfo(req);
-        const {accessToken, refreshToken} = await this.#jwtAuthService.verifyEmail(email, otpCode, sessionInfo);
+
+        const {accessToken, refreshToken} = await this.#verifyEmailUseCase.execute({email, otpCode, sessionInfo});
+
         this.#sendTokens(res, accessToken, refreshToken);
     }
 
@@ -167,19 +173,11 @@ class AuthController {
      *
      * @param {import('express').Request} req - The Express request object.
      * @param {import('express').Response} res - The Express response object.
-     * @param {Function} next - The Express next middleware function.
      * @returns {Promise<void>}
      * @throws {AppError} If credentials are missing or invalid.
      */
-    async login(req, res, next) {
+    async login(req, res) {
         const {email, password} = req.body;
-        if (!email || !password) {
-            return next(new AppError(
-                statusMessages.CREDENTIALS_REQUIRED,
-                httpCodes.BAD_REQUEST.code,
-                httpCodes.BAD_REQUEST.name
-            ));
-        }
 
         const sessionInfo = this.#getSessionInfo(req);
         const {accessToken, refreshToken} = await this.#loginUseCase.execute({email, password, sessionInfo});
@@ -222,14 +220,6 @@ class AuthController {
     handleGoogleCallback = async (req, res) => {
         const {code} = req.body;
         const stateToken = req.cookies[this.#googleAuthService.config.cookiesName];
-
-        if (!code || !stateToken) {
-            throw new AppError(
-                statusMessages.MISSING_GOOGLE_AUTH_DATA,
-                httpCodes.BAD_REQUEST.code,
-                httpCodes.BAD_REQUEST.name
-            );
-        }
 
         const sessionInfo = this.#getSessionInfo(req);
         const tokens = await this.#googleCallbackUseCase.execute({code, stateToken, sessionInfo});

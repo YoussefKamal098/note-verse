@@ -1,8 +1,8 @@
 const {Queue} = require('bullmq');
-const QUEUE_NAMES = require('../constants/queueNames.constant');
-const JOB_NAMES = require('../constants/jobNames.constant');
-const {BULLMQ_PREFIX} = require("../constants/bullmq.constants");
-const NotificationType = require('../enums/notifications.enum');
+const QUEUE_NAMES = require('@/constants/queueNames.constant');
+const JOB_NAMES = require('@/constants/jobNames.constant');
+const {BULLMQ_PREFIX} = require("@/constants/bullmq.constants");
+const NotificationType = require('@/enums/notifications.enum');
 
 /**
  * A queue service for managing notification jobs in BullMQ.
@@ -46,8 +46,8 @@ class NotificationQueue {
         });
 
         // Add event listeners for queue-level logging
-        this.#queue.on('waiting', (jobId) => {
-            console.debug(`[NotificationQueue] Job ${jobId} is waiting`, {queue: QUEUE_NAMES.NOTIFICATIONS});
+        this.#queue.on('waiting', (id) => {
+            console.debug(`[NotificationQueue] Job ${id} is waiting`, {queue: QUEUE_NAMES.NOTIFICATIONS});
         });
 
         this.#queue.on('error', (err) => {
