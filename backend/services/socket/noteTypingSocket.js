@@ -43,6 +43,9 @@ class NoteTypingSocket {
     registerSocket(socket) {
         const joinedNotes = new Set();
 
+        // TODO: validate a note edit permission for a user before start or stop typing using validateUserNoteUpdateUseCase
+        // TODO: validate a note view permission for a user before get note typing users using validateNoteViewUseCase
+
         socket.on(SOCKET_EVENTS.NOTE_TYPING.START, async ({noteId}) => {
             if (!noteId || !socket.userId) return;
 
