@@ -17,6 +17,8 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
     const {actions, selectors} = useNoteContext();
     const {editMode} = useNoteSelector(selectors.getStatus);
     const {current} = useNoteSelector(selectors.getContent);
+    const owner = useNoteSelector(selectors.getOwner);
+
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
     const {id} = useNoteSelector(selectors.getMeta);
@@ -46,7 +48,7 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
                 canEdit={editMode && canEdit}
             />
 
-            <TypingIndicatorsPopUp users={typingUsers}/>
+            <TypingIndicatorsPopUp users={typingUsers} noteOwnerId={owner?.id}/>
         </MainContentContainerStyles>
     );
 };

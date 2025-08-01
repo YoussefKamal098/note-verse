@@ -4,6 +4,8 @@ import styled, {keyframes} from 'styled-components';
 import Avatar from "@/components/common/Avatar";
 import Tooltip from "@/components/tooltip/Tooltip";
 import CloseButton from "@/components/buttons/CloseButton";
+import Badge from "@/components/common/Badge";
+import {useAuth} from "@/contexts/AuthContext";
 
 export const getColorForUserId = (userId) => {
     const colors = ['#ff5722', '#03a9f4', '#4caf50', '#e91e63', '#9c27b0'];
@@ -63,6 +65,9 @@ const Dot = styled.span`
 `;
 
 const Name = styled.span`
+    display: flex;
+    align-items: center;
+    gap: 0.25em;
     font-weight: 600;
     font-size: 0.8em;
     color: ${({$color}) => $color};
@@ -103,7 +108,8 @@ const wrapperVariants = {
     exit: {opacity: 0, scale: 0.95, y: -20},
 };
 
-const TypingIndicatorsPopUp = ({users}) => {
+const TypingIndicatorsPopUp = ({users, noteOwnerId}) => {
+    const {user: authUser} = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const previousIds = useRef([]);
 
@@ -156,8 +162,12 @@ const TypingIndicatorsPopUp = ({users}) => {
                                         </Tooltip>
                                     </AvatarWrapper>
                                     <Name $color={getColorForUserId(user.id)}>
-                                        {user.firstname} is typing
+                                        {user.firstname}
+                                        {user?.id === authUser.id && <Badge label={"you"}/>}
+                                        {user?.id === noteOwnerId && <Badge label={"owner"}/>}
+                                        is typing
                                     </Name>
+
                                     <Dots>
                                         {[0, 1, 2].map(i => (
                                             <Dot key={i} index={i} $color={getColorForUserId(user.id)}/>
