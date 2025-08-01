@@ -14,5 +14,11 @@ module.exports = container => {
                 onlineNoteService
             })
         ).singleton(),
+        noteTypingEmitter: asFunction(({redisService, onlineNoteService}) =>
+            new (require('@/services/emitters/noteTyping.emitter'))({
+                redisClient: redisService.client,
+                onlineNoteService
+            })
+        ).singleton(),
     });
 };

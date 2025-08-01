@@ -5,7 +5,9 @@ const {deepFreeze} = require('shared-utils/obj.utils');
 const {generateSecureOTP} = require("../utils/otp.utils");
 const AppError = require('../errors/app.error');
 const dbErrorCodes = require('../constants/dbErrorCodes');
-const cacheKeys = require('../utils/cacheKeys');
+const cacheMiddlewareKeys = require('../utils/cacheKeys');
+
+const USER_CACHE_KEY = (id) => `cache:user:{${id}}`;
 
 /**
  * Service for managing user operations.
@@ -67,9 +69,58 @@ class UserService {
         if (!user) return;
 
         await Promise.all([
-            this.#cacheService.delete(cacheKeys.userProfileById(user.id)),
-            this.#cacheService.delete(cacheKeys.userProfileByEmail(user.email))
+            this.#cacheService.delete(cacheMiddlewareKeys.userProfileById(user.id)),
+            this.#cacheService.delete(cacheMiddlewareKeys.userProfileByEmail(user.email))
         ]);
+    }
+
+    /**
+     * Retrieves cached user profiles from the cache for the given array of user IDs.
+     * If a user is not found in the cache or an error occurs, `null` is returned in its place.
+     *
+     * @private
+     * @async
+     * @param {string[]} userIds - Array of user IDs to retrieve from the cache.
+     * @returns {Promise<(Object|null)[]>} - Array of parsed user objects or null if not cached or error occurred.
+     */
+    async #getUsersCache(userIds) {
+        const results = [];
+
+        for (const id of userIds) {
+            try {
+                const cached = await this.#cacheService.get(USER_CACHE_KEY(id));
+                results.push(cached ? JSON.parse(cached) : null);
+            } catch (err) {
+                results.push(null); // Skip erroring keys gracefully
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Stores a list of user profiles in the cache.
+     * Converts each user object to JSON and stores it using a user-specific cache key.
+     * Errors during caching are silently ignored.
+     *
+     * @private
+     * @async
+     * @param {Object[]} users - Array of user objects to cache.
+     * @param {string|ObjectId} users[].id - The user ID or MongoDB ObjectId.
+     * @returns {Promise<void>}
+     */
+    async #setUsersCache(users) {
+        for (const user of users) {
+            const userId = user?.id;
+            const key = USER_CACHE_KEY(userId);
+            const value = JSON.stringify(user);
+
+            try {
+                await this.#cacheService.set(key, value);
+            } catch (err) {
+                // Skip erroring keys gracefully
+            }
+        }
     }
 
     /**
@@ -277,6 +328,34 @@ class UserService {
     }
 
     /**
+     * Finds multiple users by their IDs in a single query
+     * @param {Array<string>} userIds - Array of user IDs to find
+     * @returns {Promise<ReadonlyArray<Readonly<Object>>>} Array of user documents
+     */
+    async findByIds(userIds) {
+        const uniqueIds = [...new Set(userIds.map(String))];
+        const cachedUsers = await this.#getUsersCache(uniqueIds);
+
+        const found = [];
+        const missingIds = [];
+
+        cachedUsers.forEach((user, index) => {
+            if (user) {
+                found.push(user);
+            } else {
+                missingIds.push(uniqueIds[index]);
+            }
+        });
+
+        if (missingIds.length === 0) return deepFreeze(found);
+
+        const freshUsers = await this.#userRepository.findByIds(missingIds);
+        await this.#setUsersCache(freshUsers);
+
+        return deepFreeze([...found, ...freshUsers]);
+    }
+
+    /**
      * Updates a user's information.
      *
      * This method updates the specified user's details in the database. It can update
@@ -327,7 +406,6 @@ class UserService {
             if (cleanUpdateData.password) {
                 cleanUpdateData.password = await this.passwordHasherService.hash(cleanUpdateData.password);
             }
-
 
             const updatedUser = await this.#userRepository.findByIdAndUpdate(userId, cleanUpdateData);
             await this.clearUserCache(updatedUser);

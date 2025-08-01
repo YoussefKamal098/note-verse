@@ -11,6 +11,7 @@ async function init({httpServer}) {
     const redisService = container.resolve('redisService');
     const onlineUserService = container.resolve('onlineUserService');
     const noteRoomSocket = container.resolve('noteRoomSocket');
+    const noteTypingSocket = container.resolve('noteTypingSocket');
     const jwtAuthService = container.resolve('jwtAuthService');
 
     const socketService = new SocketService({
@@ -20,7 +21,7 @@ async function init({httpServer}) {
         jwtAuthService
     });
 
-    await socketService.registerSocketModules([noteRoomSocket]).initialize();
+    await socketService.registerSocketModules([noteRoomSocket, noteTypingSocket]).initialize();
     return socketService;
 }
 

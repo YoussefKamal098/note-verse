@@ -11,7 +11,7 @@ const NoteMarkdownTabsWrapperStyled = styled.div`
     margin-top: 2em;
 `;
 
-const NoteMarkdownTabs = forwardRef(({content, canEdit, onContentChange}, ref) => {
+const NoteMarkdownTabs = forwardRef(({content, canEdit, onContentChange, onTyping}, ref) => {
     const [value, setValue] = useState(content);
 
     // Debounced content update handler
@@ -30,6 +30,7 @@ const NoteMarkdownTabs = forwardRef(({content, canEdit, onContentChange}, ref) =
     // Editor change handlers
     const handleOnChange = useCallback((newValue) => {
         setValue(newValue);
+        onTyping?.();
     }, []);
 
     const handleOnKeyUp = useCallback(() => {

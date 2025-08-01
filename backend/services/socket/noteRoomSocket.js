@@ -22,12 +22,12 @@ class NoteRoomSocket {
 
     /**
      * Registers listeners for a connected socket.
-     * @param {import('socket.io').Socket} socket
+     * @param {import('socket.io').Socket & {userId: string}} socket
      */
     registerSocket(socket) {
         /** @type {Set<string>} */
         const joinedNotes = new Set();
-
+        
         socket.on(SOCKET_EVENTS.NOTE.JOIN, async ({noteId}) => {
             if (!noteId || !socket.userId) return;
             await this.#onlineNoteService.addViewer(noteId, socket.userId, socket.id);

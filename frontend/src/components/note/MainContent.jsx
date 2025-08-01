@@ -4,8 +4,10 @@ import NoteHeader from "./NoteHeader";
 import EditableTitle from "../title/EditableTitle";
 import EditableTags from "../tags/EditableTags";
 import NoteMarkdownTabs from "../noteMarkdownTabs/NoteMarkdownTabs";
-import {ContainerStyles} from "./styles";
+import TypingIndicatorsPopUp from "@/components/note/TypingIndicatorsPopUp";
 import {useNoteContext, useNoteSelector} from "@/components/note/hooks/useNoteContext";
+import {useNoteTyping} from "./hooks/useNoteTyping"
+import {ContainerStyles} from "./styles";
 
 const MainContentContainerStyles = styled(ContainerStyles)`
     grid-area: main_content;
@@ -17,6 +19,8 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
     const {current} = useNoteSelector(selectors.getContent);
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
+    const {id} = useNoteSelector(selectors.getMeta);
+    const {typingUsers, onUserTyping} = useNoteTyping({noteId: id})
 
     return (
         <MainContentContainerStyles>
@@ -37,9 +41,12 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
             <NoteMarkdownTabs
                 ref={markdownTabsRef}
                 content={current.content}
+                onTyping={onUserTyping}
                 onContentChange={useCallback((content) => actions.updateContent({content}), [actions.updateContent])}
-                canEdit={editMode && isOwner}
+                canEdit={editMode && canEdit}
             />
+
+            <TypingIndicatorsPopUp users={typingUsers}/>
         </MainContentContainerStyles>
     );
 };

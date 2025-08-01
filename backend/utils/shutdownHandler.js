@@ -20,6 +20,12 @@ async function shutdownServices() {
                 console.log('🧹 Cleared all online notes from Redis');
             }
 
+            if (container.hasRegistration('onlineNoteTypingService')) {
+                const onlineNoteTypingService = container.resolve('onlineNoteTypingService');
+                await onlineNoteTypingService.clearAllTypingNotes();
+                console.log('🧹 Cleared all online tying notes from Redis');
+            }
+
             if (container.hasRegistration('cacheService')) {
                 const cacheService = container.resolve('cacheService');
                 if (cacheService?.isConnected?.() === true) {
