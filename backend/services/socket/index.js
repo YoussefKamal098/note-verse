@@ -204,7 +204,7 @@ class SocketService {
     /**
      * @private
      * Handles new socket connection
-     * @param {import('socket.io').Socket} socket - Socket instance
+     * @param {import('socket.io').Socket & {userId: string}} socket - Socket instance
      */
     async #handleNewConnection(socket) {
         const userId = socket.userId;
@@ -221,7 +221,7 @@ class SocketService {
     /**
      * @private
      * Sets up socket event handlers
-     * @param {import('socket.io').Socket} socket - Socket instance
+     * @param {import('socket.io').Socket & {userId: string}} socket - Socket instance
      * @param {string} userId - User ID
      */
     #setupSocketEventHandlers(socket, userId) {

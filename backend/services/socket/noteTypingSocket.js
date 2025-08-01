@@ -1,5 +1,10 @@
 const {SOCKET_EVENTS, getNoteRoom} = require('@/constants/socket.constants');
 
+/**
+ * @implements {ISocketModule}
+ * @class NoteTypingSocket
+ * @description Service for managing real-time typing indicators in note collaboration.
+ */
 class NoteTypingSocket {
     /**
      * @private
