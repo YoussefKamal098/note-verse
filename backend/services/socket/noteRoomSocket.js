@@ -27,7 +27,9 @@ class NoteRoomSocket {
     registerSocket(socket) {
         /** @type {Set<string>} */
         const joinedNotes = new Set();
-        
+
+        // TODO: validate a note view permission for a user before join a note room using validateNoteViewUseCase
+
         socket.on(SOCKET_EVENTS.NOTE.JOIN, async ({noteId}) => {
             if (!noteId || !socket.userId) return;
             await this.#onlineNoteService.addViewer(noteId, socket.userId, socket.id);

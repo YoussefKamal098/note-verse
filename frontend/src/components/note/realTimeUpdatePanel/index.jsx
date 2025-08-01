@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo, useRef, useState, useEffect} from 'react';
 import styled from "styled-components";
 import {useNoteContext, useNoteSelector} from "../hooks/useNoteContext";
-import {useNoteSocket} from "../hooks/useNoteSocket";
+import {useOnlineNoteRoom} from "../hooks/useOnlineNoteRoom";
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import SidePanel from '../SidePanel';
 import {FiInfo} from "react-icons/fi";
@@ -35,7 +35,7 @@ const RealTimeUpdatePanel = ({show, onClose, onPull, isMobile}) => {
         }
     }, [notify]);
 
-    useNoteSocket({
+    useOnlineNoteRoom({
         noteId: id,
         onNoteUpdate: handleNoteUpdate,
     });

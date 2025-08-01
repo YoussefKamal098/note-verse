@@ -6,7 +6,7 @@ import EditableTags from "../tags/EditableTags";
 import NoteMarkdownTabs from "../noteMarkdownTabs/NoteMarkdownTabs";
 import TypingIndicatorsPopUp from "@/components/note/TypingIndicatorsPopUp";
 import {useNoteContext, useNoteSelector} from "@/components/note/hooks/useNoteContext";
-import {useNoteTyping} from "./hooks/useNoteTyping"
+import {useOnlineNoteTyping} from "./hooks/useOnlineNoteTyping"
 import {ContainerStyles} from "./styles";
 
 const MainContentContainerStyles = styled(ContainerStyles)`
@@ -22,7 +22,7 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
     const isOwner = useNoteSelector(selectors.isOwner);
     const canEdit = useNoteSelector(selectors.canEdit);
     const {id} = useNoteSelector(selectors.getMeta);
-    const {typingUsers, onUserTyping} = useNoteTyping({noteId: id})
+    const {typingUsers, onUserTyping} = useOnlineNoteTyping({noteId: id})
 
     return (
         <MainContentContainerStyles>

@@ -2,7 +2,7 @@ import {useEffect, useRef, useCallback, useState} from 'react';
 import {useSocket} from '@/contexts/SocketContext';
 import {SOCKET_EVENTS} from '@/constants/socketEvents';
 
-export const useNoteTyping = ({noteId}) => {
+export const useOnlineNoteTyping = ({noteId}) => {
     const {socket} = useSocket();
     const [typingUsers, setTypingUsers] = useState([]);
     const typing = useRef(false);

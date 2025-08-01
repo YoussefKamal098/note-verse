@@ -2,7 +2,7 @@ import {useEffect, useRef} from 'react';
 import {useSocket} from '@/contexts/SocketContext';
 import {SOCKET_EVENTS} from '@/constants/socketEvents';
 
-export const useNoteSocket = ({noteId, onNoteUpdate}) => {
+export const useOnlineNoteRoom = ({noteId, onNoteUpdate}) => {
     const {socket} = useSocket();
     const hasJoined = useRef(false);
 
