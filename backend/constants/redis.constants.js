@@ -9,6 +9,7 @@ module.exports = Object.freeze({
     }),
     EVENT_TYPES: Object.freeze({
         NOTIFICATION: 'event:notification',
-        NOTE: 'event:note'
+        NOTE: 'event:note',
+        USER: 'event:user'
     })
 });

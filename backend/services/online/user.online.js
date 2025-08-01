@@ -32,12 +32,21 @@ class OnlineUserService {
     #redis;
 
     /**
+     * @private
+     * @type {UserRoomEmitter}
+     */
+    #emitter;
+
+    /**
      * Creates an OnlineUserService instance
      * @param {Object} dependencies
      * @param {RedisService} dependencies.redisService - Redis Service instance
+     * @param {UserRoomEmitter} dependencies.userRoomEmitter - userRoom Emitter instance
+     *
      */
-    constructor({redisService}) {
+    constructor({redisService, userRoomEmitter}) {
         this.#redis = redisService;
+        this.#emitter = userRoomEmitter;
     }
 
     /**
@@ -50,9 +59,18 @@ class OnlineUserService {
      * await onlineService.add('user123', 'socket456');
      */
     async add(userId, socketId) {
+        const key = `${OnlineUserService.#USER_SOCKETS}:{${userId}}`;
         // Add user to online list and store the socketId under a set
+        const socketCount = await this.#redis.scard(key);
+
         await this.#redis.sadd(OnlineUserService.#ONLINE_USERS, userId);
-        await this.#redis.sadd(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`, socketId);
+        await this.#redis.sadd(key, socketId);
+
+
+        if (socketCount === 0) {
+            // First socket for this user
+            await this.#emitter.emitUserOnline(userId);
+        }
     }
 
     /**
@@ -65,14 +83,16 @@ class OnlineUserService {
      * await onlineService.remove('user123', 'socket456');
      */
     async remove(userId, socketId) {
+        const key = `${OnlineUserService.#USER_SOCKETS}:{${userId}}`;
         // Remove just the current socket
-        await this.#redis.srem(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`, socketId);
+        await this.#redis.srem(key, socketId);
 
         // If no sockets left for the user, remove them from online_users
-        const remainingSockets = await this.#redis.scard(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
+        const remainingSockets = await this.#redis.scard(key);
         if (remainingSockets === 0) {
             await this.#redis.srem(OnlineUserService.#ONLINE_USERS, userId);
-            await this.#redis.del(`${OnlineUserService.#USER_SOCKETS}:{${userId}}`);
+            await this.#redis.del(key);
+            await this.#emitter.emitUserOffline(userId);
         }
     }
 

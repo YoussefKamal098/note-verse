@@ -61,6 +61,7 @@ class SocketEventDispatcher {
         switch (event.type) {
             case REDIS.EVENT_TYPES.NOTIFICATION:
             case REDIS.EVENT_TYPES.NOTE:
+            case REDIS.EVENT_TYPES.USER:
                 this.#io.to(event.room).emit(event.event, event.data);
                 break;
             default:

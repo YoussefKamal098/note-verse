@@ -9,6 +9,7 @@ import NoteMenu from "@/components/menus/noteMenu";
 import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "@/components/buttons/Button";
 import UserDetailsWithNoteMeta from "@/components/userDetails/UserDetailsWithNoteMeta";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
+import {useUserOnlineStatus} from "@/hooks/useUserOnlineStatus";
 
 const HeaderWrapperStyles = styled.div`
     display: flex;
@@ -62,6 +63,8 @@ const NoteHeader = ({actions, isMobile}) => {
     const owner = useNoteSelector(selectors.getOwner);
     const {isPublic, createdAt} = useNoteSelector(selectors.getMeta);
 
+    const {isOnline} = useUserOnlineStatus(owner?.id);
+
     return (
         <HeaderWrapperStyles>
             <HeaderLeftPartContainerStyles>
@@ -72,6 +75,7 @@ const NoteHeader = ({actions, isMobile}) => {
                     createdAt={createdAt}
                     avatarUrl={owner?.avatarUrl}
                     isPublic={isPublic}
+                    isOnline={isOnline}
                 />
             </HeaderLeftPartContainerStyles>
 

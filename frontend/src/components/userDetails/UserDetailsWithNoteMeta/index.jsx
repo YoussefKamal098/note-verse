@@ -11,11 +11,12 @@ const UserDetailsWithNoteMeta = ({
                                      avatarUrl,
                                      createdAt,
                                      isPublic = false,
+                                     isOnline = false,
                                  }) => {
     return (
 
         <S.UserCard>
-            <S.AvatarContainer>
+            <S.AvatarContainer $isOnline={isOnline}>
                 <Avatar avatarUrl={avatarUrl}/>
             </S.AvatarContainer>
             <S.UserDetails>

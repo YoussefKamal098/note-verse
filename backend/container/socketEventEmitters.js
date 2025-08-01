@@ -8,17 +8,21 @@ module.exports = container => {
                 onlineUserService
             })
         ).singleton(),
+        userRoomEmitter: asFunction(({redisService}) =>
+            new (require('@/services/emitters/userRoom.emitter'))({
+                redisClient: redisService.client
+            })
+        ).singleton(),
         noteRoomEmitter: asFunction(({redisService, onlineNoteService}) =>
             new (require('@/services/emitters/noteRoom.emitter'))({
                 redisClient: redisService.client,
                 onlineNoteService
             })
         ).singleton(),
-        noteTypingEmitter: asFunction(({redisService, onlineNoteService}) =>
+        noteTypingEmitter: asFunction(({redisService}) =>
             new (require('@/services/emitters/noteTyping.emitter'))({
-                redisClient: redisService.client,
-                onlineNoteService
+                redisClient: redisService.client
             })
-        ).singleton(),
+        ).singleton()
     });
 };

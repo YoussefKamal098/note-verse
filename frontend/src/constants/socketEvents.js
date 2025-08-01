@@ -1,5 +1,12 @@
 export const SOCKET_EVENTS = Object.freeze({
     NEW_NOTIFICATION: 'new_notification',
+    USER: {
+        WATCH: 'user:watch',
+        UNWATCH: 'user:unwatch',
+        STATUS: 'user_status',
+        ONLINE: 'user_online',
+        OFFLINE: 'user_offline'
+    },
     NOTE: Object.freeze({
         JOIN: 'note_join',
         LEAVE: 'note_leave',

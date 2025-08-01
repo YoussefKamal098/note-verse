@@ -19,6 +19,7 @@ export const AvatarContainer = styled.div`
     color: var(--color-placeholder);
     border-radius: 50%;
     border: 0.1em solid var(--color-border);
+    outline: ${({$isOnline}) => $isOnline ? "0.15em" : "0em"} solid var(--color-accent);
     align-self: start;
 `;
 
