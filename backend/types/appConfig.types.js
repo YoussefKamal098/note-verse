@@ -32,6 +32,8 @@
  *      @default process.env.NODE_ENV || 'development'
  * @property {number} port - Port number for the HTTP server
  *      @default process.env.PORT || 5000
+ * @property {number} socketPort - Port number for the Socket.IO server
+ *      @default process.env.SOCKET_PORT || 6000
  * @property {string} logsDir - Directory path for storing log files
  *      @default process.env.LOGS_DIR || '/var/app_logs'
  * @property {string} redisUri - Redis connection URI

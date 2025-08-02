@@ -20,7 +20,10 @@ const shutdownHandler = require('./utils/shutdownHandler');
 
 const app = express();
 
-// I will enable HTTPS (SSL/TLS) later
+// FUTURE: Enable HTTPS (SSL/TLS) support for production
+// FUTURE: Switch to HTTP/2 with fallback to HTTP/1.1 for Socket.IO compatibility
+// HTTP/2 enables multiplexing, header compression, and faster load times.
+// Learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#http2_vs_http11
 
 // Enable response compression
 app.use(compression({

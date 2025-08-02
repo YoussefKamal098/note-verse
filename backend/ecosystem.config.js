@@ -49,6 +49,24 @@ module.exports = {
             max_memory_restart: '500M',
             exp_backoff_restart_delay: 100,
         },
+        {
+            name: 'socket-server',
+            script: './socket-server.js',
+            watch: isDev,
+            ignore_watch: ['node_modules', 'logs', 'redis-cluster'],
+            env: {
+                NODE_ENV: 'development',
+                ...process.env
+            },
+            env_production: {
+                NODE_ENV: 'production',
+                ...process.env
+            },
+            instances: 1,
+            autorestart: true,
+            max_memory_restart: '300M',
+            exp_backoff_restart_delay: 100,
+        },
         ...workerApps,
     ],
 };

@@ -1,8 +1,6 @@
-const http = require('http');
 const {connectDB} = require('./services/db.service');
 const shutdownHandler = require('./utils/shutdownHandler');
 const initConsumers = require("./consumers/init");
-const intSocketService = require("./services/socket/init");
 const container = require("./container");
 
 /**
@@ -10,18 +8,21 @@ const container = require("./container");
  */
 async function startServer({server: expressApp, port = 5000}) {
     try {
-        const httpServer = http.createServer(expressApp);
-
         const cacheService = container.resolve('cacheService');
         const redisService = container.resolve('redisService');
 
-        await intSocketService({httpServer});
-        await initConsumers();
-
         // Connect to both cache service and DB concurrently
         await Promise.all([connectDB(), cacheService.connect(), redisService.connect()]);
+
+        // Initialize background job consumers (e.g., BullMQ workers or Redis pub/sub subscribers).
+        // These consumers listen for asynchronous events and process background tasks.
+        // Example: After user registration, a job is queued to generate an avatar placeholder.
+        // Once generated, the consumer listens for the Redis `avatar_generated:placeholder` channel
+        // and updates the user's profile with the generated avatar.
+        await initConsumers();
+
         // Start the server once both services are connected
-        httpServer.listen(port, () => {
+        expressApp.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
         });
 

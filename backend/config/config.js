@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const appConfig = {
     env: parseString(process.env.NODE_ENV, 'development'),
+    socketPort: parseNumber(process.env.SOCKET_PORT, 4000),
     port: parseNumber(process.env.PORT, 5000),
     logsDir: parseString(process.env.LOGS_DIR, '/var/app_logs'),
     redisUri: parseString(process.env.REDIS_URI, 'redis://localhost:6379'),
