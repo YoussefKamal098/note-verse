@@ -9,7 +9,7 @@ import {SOCKET_EVENTS} from '@/constants/socketEvents';
  * - socket reconnect
  * - browser comes back online
  *
- * 🚫 Prevents duplicate subscriptions & listeners.
+ * Prevents duplicate subscriptions & listeners.
  */
 export function useUserOnlineStatus(userId) {
     const {socket} = useSocket();

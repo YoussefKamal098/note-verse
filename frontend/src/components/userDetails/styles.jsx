@@ -20,6 +20,8 @@ export const AvatarContainer = styled.div`
     border-radius: 50%;
     border: 0.1em solid var(--color-border);
     outline: ${({$isOnline}) => $isOnline ? "0.15em" : "0em"} solid var(--color-accent);
+    box-shadow: ${({$isOnline}) => $isOnline ? 'var(--box-shadow)' : "none"};
+    transition: outline-width 0.25s ease, outline-color 0.25s ease, box-shadow 0.25s ease;
     align-self: start;
 `;
 
