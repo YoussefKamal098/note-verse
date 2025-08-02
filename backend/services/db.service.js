@@ -1,9 +1,24 @@
 const mongoose = require('mongoose');
 const config = require('../config/config');
 
+// Prevent multiple simultaneous connection attempts
+let isConnecting = false;
+
 // Function to connect to DB
 const connectDB = async () => {
+    if (mongoose.connection.readyState === 1) {
+        console.log('MongoDB is already connected');
+        return;
+    }
+
+    if (isConnecting) {
+        console.log('MongoDB connection is already in progress');
+        return;
+    }
+    
     try {
+        isConnecting = true;
+
         await mongoose.connect(config.mongoUri, {
             maxPoolSize: config.dbPoolSize.max,
             minPoolSize: config.dbPoolSize.min,
