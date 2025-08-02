@@ -54,10 +54,11 @@ export function useUserOnlineStatus(userId) {
 
         isSubscribedRef.current = true; // mark subscribed
 
-        socket.emit(SOCKET_EVENTS.USER.WATCH, {userId});
         socket.on(SOCKET_EVENTS.USER.STATUS, handleInitialStatus);
         socket.on(SOCKET_EVENTS.USER.ONLINE, handleOnline);
         socket.on(SOCKET_EVENTS.USER.OFFLINE, handleOffline);
+
+        socket.emit(SOCKET_EVENTS.USER.WATCH, {userId});
     }, [socket, userId, handleInitialStatus, handleOnline, handleOffline]);
 
     const unsubscribe = useCallback(() => {
@@ -70,10 +71,11 @@ export function useUserOnlineStatus(userId) {
 
         isSubscribedRef.current = false; // mark unsubscribed
 
-        socket.emit(SOCKET_EVENTS.USER.UNWATCH, {userId});
         socket.off(SOCKET_EVENTS.USER.STATUS, handleInitialStatus);
         socket.off(SOCKET_EVENTS.USER.ONLINE, handleOnline);
         socket.off(SOCKET_EVENTS.USER.OFFLINE, handleOffline);
+
+        socket.emit(SOCKET_EVENTS.USER.UNWATCH, {userId});
         setIsOnline(false);
     }, [socket, userId, handleInitialStatus, handleOnline, handleOffline]);
 
@@ -99,7 +101,7 @@ export function useUserOnlineStatus(userId) {
             socket.off('disconnect', handleDisconnect)
             unsubscribe();
         };
-    }, [socket, userId, subscribe, unsubscribe, handleDisconnect, handleConnect]);
+    }, [userId, subscribe, unsubscribe, handleDisconnect, handleConnect, socket?.connected]);
 
     return {isOnline, loading};
 }
