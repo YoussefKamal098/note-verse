@@ -1,14 +1,14 @@
 import React, {createContext, useContext, useEffect, useState} from 'react';
-import useRequestManager from "../hooks/useRequestManager";
-import {useConfirmation} from "./ConfirmationContext";
-import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
-import cacheService from "../services/cacheService";
-import authService, {AUTH_EVENTS} from '../api/authService';
-import userService from '../api/userService';
-import {useToastNotification} from "./ToastNotificationsContext";
-import usePersistedState, {clearAllPersistedData} from "../hooks/usePersistedState";
+import cacheService from "@/services/cacheService";
+import authService, {AUTH_EVENTS} from '@/api/authService';
+import {API_CLIENT_ERROR_CODES} from "@/api/apiClient";
+import userService from '@/api/userService';
+import {POPUP_TYPE} from "@/components/confirmationPopup/confirmationMessagePopup";
+import useRequestManager from "@/hooks/useRequestManager";
+import usePersistedState, {clearAllPersistedData} from "@/hooks/usePersistedState";
 import {useOnlineBack} from "@/hooks/useOnlineBack";
-import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
+import {useConfirmation} from "@/contexts/ConfirmationContext";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 
 const AuthContext = createContext({user: null});
 const useAuth = () => useContext(AuthContext);

@@ -1,10 +1,10 @@
 import React, {useRef} from "react";
-import PropTypes from "prop-types";
-import {FadeInAnimation} from "../animations/ContainerAnimation";
-import {FaExclamationTriangle, FaInfoCircle} from "react-icons/fa";
-import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "../buttons/Button";
-import {PopupContainer, PopUpOverlay} from "./ConfirmationPopupStyles";
 import {AnimatePresence} from "framer-motion";
+import PropTypes from "prop-types";
+import {FaExclamationTriangle, FaInfoCircle} from "react-icons/fa";
+import {FadeInAnimation} from "@/components/animations/ContainerAnimation";
+import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "@/components/buttons/Button";
+import {PopupContainer, PopUpOverlay} from "./styles";
 
 const POPUP_TYPE = Object.freeze({
     INFO: "info",
@@ -45,13 +45,13 @@ const renderButtons = (type, onConfirm, onCancel) => {
     );
 };
 
-const ConfirmationPopup = ({
-                               type = POPUP_TYPE.INFO,
-                               confirmationMessage = "Are you sure?",
-                               onConfirm = () => ({}),
-                               onCancel = () => ({}),
-                               show = false
-                           }) => {
+const ConfirmationMessagePopup = ({
+                                      type = POPUP_TYPE.INFO,
+                                      confirmationMessage = "Are you sure?",
+                                      onConfirm = () => ({}),
+                                      onCancel = () => ({}),
+                                      show = false
+                                  }) => {
     const popupRef = useRef(null);
 
     const handleClickOutside = (event) => {
@@ -86,7 +86,7 @@ const ConfirmationPopup = ({
     );
 };
 
-ConfirmationPopup.propTypes = {
+ConfirmationMessagePopup.propTypes = {
     type: PropTypes.oneOf(Object.values(POPUP_TYPE)),
     confirmationMessage: PropTypes.string,
     onConfirm: PropTypes.func.isRequired,
@@ -94,4 +94,4 @@ ConfirmationPopup.propTypes = {
 };
 
 export {POPUP_TYPE};
-export default ConfirmationPopup;
+export default ConfirmationMessagePopup;

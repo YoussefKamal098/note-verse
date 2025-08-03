@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
-import CardHeader from './Header';
-import CardContent from './Content';
-// import NoteTags from './Tags';
-import {CardStyles} from './Styles';
-import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
+import {POPUP_TYPE} from "@/components/confirmationPopup/confirmationMessagePopup";
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import {useConfirmation} from "@/contexts/ConfirmationContext";
 import useNoteActions from "@/hooks/useNoteActions";
 import Overlay from "@/components/common/Overlay";
+import CardHeader from './Header';
+import CardContent from './Content';
+// import NoteTags from './Tags';
+import {CardStyles} from './Styles';
 
 const NoteCard = React.memo(({note, onTogglePin, onDelete}) => {
     const [isPinned, setIsPinned] = useState(note.isPinned);

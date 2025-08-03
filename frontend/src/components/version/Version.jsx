@@ -4,13 +4,13 @@ import styled from 'styled-components';
 import {useTheme} from '@/contexts/ThemeContext';
 import useCopyLink from "@/hooks/useCopyLink";
 import {AnimatedTabSwitch} from "@/components/animations/ContainerAnimation";
+import {useConfirmation} from "@/contexts/ConfirmationContext";
+import {POPUP_TYPE} from "@/components/confirmationPopup/confirmationMessagePopup";
+import {useVersionContext, useVersionSelector} from "./hooks/useVersionContext";
 import DiffViewer from "@/components/diffViewer";
 import PreviewPopupTap from "@/components/previewPopupTap";
 import Header from "./Header";
 import CommitMessage from "./CommitMessage";
-import {useConfirmation} from "@/contexts/ConfirmationContext";
-import {useVersionContext, useVersionSelector} from "./hooks/useVersionContext";
-import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
 
 const PageContainer = styled.div`
     background-color: var(--color-background);

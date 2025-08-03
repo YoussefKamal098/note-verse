@@ -1,7 +1,8 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useNavigate} from "react-router-dom";
 import styled from 'styled-components';
-import {POPUP_TYPE} from '@/components/confirmationPopup/ConfirmationPopup';
+import {POPUP_TYPE} from '@/components/confirmationPopup/confirmationMessagePopup';
+import {BUTTON_TYPE} from "@/components/buttons/Button";
 import {useConfirmation} from "@/contexts/ConfirmationContext";
 import Contributor from "@/components/infiniteScrollListsPopUp/Contributor";
 import CommitHistory from "@/components/infiniteScrollListsPopUp/CommitHistory";
@@ -46,7 +47,7 @@ const GridContainerStyles = styled.div`
 const Note = () => {
     const navigate = useNavigate();
     const copyLink = useCopyLink();
-    const {showConfirmation} = useConfirmation();
+    const {showConfirmation, showTextConfirmation} = useConfirmation();
     const {validateNote} = useNoteValidation();
     const isMobile = useMediaSize(DEVICE_SIZES.laptop);
     const {actions, selectors} = useNoteContext();
@@ -63,6 +64,7 @@ const Note = () => {
     const {current, original} = useNoteSelector(selectors.getContent);
     const owner = useNoteSelector(selectors.getOwner);
     const isOwner = useNoteSelector(selectors.isOwner);
+    const hasChanges = useNoteSelector(selectors.hasChanges);
     const isContentChange = useNoteSelector(selectors.isContentChange);
     const markdownTabsRef = useRef(null);
 
@@ -77,23 +79,30 @@ const Note = () => {
     }, [isMobile, isNew, isOwner]);
 
     const handleDelete = useCallback(() => {
-        showConfirmation({
-            type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Are you sure you want to permanently delete this note? This action cannot be undone.",
+        showTextConfirmation({
+            title: "Delete Note",
+            description: "Are you sure you want to permanently delete this note? This action cannot be undone.",
+            confirmText: original.title,
+            confirmButtonText: "Delete",
+            confirmButtonType: BUTTON_TYPE.DANGER,
             onConfirm: actions.deleteNote,
         });
-    }, [actions.deleteNote, showConfirmation]);
+    }, [actions.deleteNote, showTextConfirmation, original.title]);
 
-    const handleDiscard = useCallback(() => {
-        showConfirmation({
-            type: POPUP_TYPE.WARNING,
-            confirmationMessage: "Are you sure you want to discard all unsaved changes? Your modifications will be lost permanently.",
-            onConfirm: async () => {
-                markdownTabsRef.current.resetContent(original.content);
-                await actions.discardChanges();
-            },
-        });
-    }, [actions.discardChanges, showConfirmation, original.content]);
+    const handleDiscard = useCallback(async () => {
+        if (hasChanges) {
+            showConfirmation({
+                type: POPUP_TYPE.WARNING,
+                confirmationMessage: "Are you sure you want to discard all unsaved changes? Your modifications will be lost permanently.",
+                onConfirm: async () => {
+                    original.content !== current.content && markdownTabsRef.current.resetContent(original.content);
+                    await actions.discardChanges();
+                },
+            });
+        } else {
+            await actions.toggleEditMode();
+        }
+    }, [actions.discardChanges, showConfirmation, original.content, current.content, hasChanges]);
 
     const onVisibilityChange = useCallback((visibility) => {
         actions.updateVisibilityState(visibility);

@@ -4,7 +4,7 @@ import {API_CLIENT_ERROR_CODES} from "@/api/apiClient";
 import useRequestManager from "@/hooks/useRequestManager";
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import {useConfirmation} from "@/contexts/ConfirmationContext";
-import {POPUP_TYPE} from "@/components/confirmationPopup/ConfirmationPopup";
+import {POPUP_TYPE} from "@/components/confirmationPopup/confirmationMessagePopup";
 
 const useUserSessions = () => {
     const [activeSessions, setActiveSessions] = useState([]);
