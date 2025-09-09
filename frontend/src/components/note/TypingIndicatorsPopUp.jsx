@@ -1,27 +1,21 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {AnimatePresence, motion} from 'framer-motion';
 import styled, {keyframes} from 'styled-components';
+import {getColorForUser} from "@/utils/colorHashUtil"
 import Avatar from "@/components/common/Avatar";
 import Tooltip from "@/components/tooltip/Tooltip";
 import CloseButton from "@/components/buttons/CloseButton";
 import Badge from "@/components/common/Badge";
 import {useAuth} from "@/contexts/AuthContext";
 
-export const getColorForUserId = (userId) => {
-    const colors = ['#ff5722', '#03a9f4', '#4caf50', '#e91e63', '#9c27b0'];
-    let hash = 0;
-    for (let i = 0; i < userId.length; i++) {
-        hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-};
-
 const bounceUpDown = keyframes`
-    0%, 80%, 100% {
+    0%, 60%, 100% {
         transform: translateY(0);
+        opacity: 0.4;
     }
-    40% {
-        transform: translateY(-0.4em);
+    30% {
+        transform: translateY(-0.25em);
+        opacity: 1;
     }
 `;
 
@@ -58,8 +52,8 @@ const Dot = styled.span`
     display: inline-block;
     background-color: ${({$color}) => $color};
     border-radius: 50%;
-    width: 0.3em;
-    height: 0.3em;
+    width: 0.35em;
+    height: 0.35em;
     animation: ${bounceUpDown} 1.4s infinite ease-in-out;
     animation-delay: ${({index}) => index * 0.2}s;
 `;
@@ -161,16 +155,21 @@ const TypingIndicatorsPopUp = ({users, noteOwnerId}) => {
                                             <Avatar avatarUrl={user.avatarUrl}/>
                                         </Tooltip>
                                     </AvatarWrapper>
-                                    <Name $color={getColorForUserId(user.id)}>
+                                    <Name
+                                        $color={getColorForUser(user.id, user.firstname, user.lastname)}
+                                    >
                                         {user.firstname}
                                         {user?.id === authUser.id && <Badge label={"you"}/>}
                                         {user?.id === noteOwnerId && <Badge label={"owner"}/>}
-                                        is typing
+                                        {' '}
+                                        is editing
                                     </Name>
 
                                     <Dots>
                                         {[0, 1, 2].map(i => (
-                                            <Dot key={i} index={i} $color={getColorForUserId(user.id)}/>
+                                            <Dot key={i} index={i}
+                                                 $color={getColorForUser(user.id, user.firstname, user.lastname)}
+                                            />
                                         ))}
                                     </Dots>
                                 </UserTyping>

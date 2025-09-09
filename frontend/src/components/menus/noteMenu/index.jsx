@@ -1,5 +1,5 @@
 import React, {useMemo} from "react";
-import {MdDeleteForever} from "react-icons/md";
+import {MdDeleteForever, MdPublic, MdVpnLock} from "react-icons/md";
 import {LuPencilLine} from "react-icons/lu";
 import {TbHistoryToggle} from "react-icons/tb";
 import {FaLink} from "react-icons/fa6";
@@ -16,7 +16,9 @@ const NoteMenu = ({
                       onCopyLink,
                       onShowShare,
                       onShowCommitHistory,
+                      onToggleVisibility,
                       isPinned,
+                      isVisible,
                   }) => {
     const menuOptions = useMemo(() => ([
         {
@@ -24,6 +26,12 @@ const NoteMenu = ({
             icon: isPinned ? <RiPushpin2Fill/> : <RiUnpinLine/>,
             action: onTogglePin,
             disabled: !onTogglePin
+        },
+        {
+            text: isVisible ? "Public" : "Private",
+            icon: isVisible ? <MdPublic/> : <MdVpnLock/>,
+            action: onToggleVisibility,
+            disabled: !onToggleVisibility
         },
         {
             text: "Delete Note",
@@ -62,7 +70,9 @@ const NoteMenu = ({
         onCopyLink,
         onShowShare,
         onShowCommitHistory,
-        isPinned
+        onToggleVisibility,
+        isPinned,
+        isVisible
     ]);
 
     return (

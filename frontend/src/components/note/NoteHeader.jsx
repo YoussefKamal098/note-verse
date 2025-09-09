@@ -1,6 +1,5 @@
 import React from "react";
 import styled from 'styled-components';
-import {TbSettings} from "react-icons/tb";
 import {SiSocketdotio} from "react-icons/si";
 import {IconButton} from '@mui/material';
 import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
@@ -61,7 +60,7 @@ const NoteHeader = ({actions, isMobile}) => {
     const {current} = useNoteSelector(selectors.getContent);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
-    const {isPublic, createdAt} = useNoteSelector(selectors.getMeta);
+    const {isPublic, isPinned, createdAt} = useNoteSelector(selectors.getMeta);
 
     const {isOnline} = useUserOnlineStatus(owner?.id);
 
@@ -109,19 +108,13 @@ const NoteHeader = ({actions, isMobile}) => {
                             onCopyLink={!isNew ? actions.onCopyLink : undefined}
                             onShowShare={!isNew && isOwner ? actions.onShowShare : undefined}
                             onShowCommitHistory={!isNew && !editMode ? actions.onShowCommitHistory : undefined}
+                            onTogglePin={isOwner ? actions.onTogglePin : undefined}
+                            onToggleVisibility={isOwner ? actions.onToggleVisibility : undefined}
+                            isPinned={isPinned}
+                            isVisible={isPublic}
                         />
                     </TranslateTransitionContainer>
                 )}
-
-                {isOwner && isMobile && <IconButton
-                    onClick={actions.onSettingsIconClick}
-                    aria-label="settings"
-                    sx={iconsStyles}
-                >
-                    <IconWrapper>
-                        <TbSettings/>
-                    </IconWrapper>
-                </IconButton>}
 
                 {!isNew && isMobile && <IconButton
                     onClick={actions.onRealTimeUpdateIconClick}

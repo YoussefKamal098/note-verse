@@ -42,7 +42,7 @@ const PreviewPopupTap = ({
             isLoading={isLoading}
             headerButtons={headerButtons}
         >
-            <AnimatedTabSwitch isActive={contentTabActive}>
+            <AnimatedTabSwitch>
                 <div style={{height: "100%"}} key={contentTabActive ? 'editor-tab' : 'preview-tab'}>
                     <Suspense fallback={<Loader isAbsolute={true}/>}>
                         {contentTabActive ? (

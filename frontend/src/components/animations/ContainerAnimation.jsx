@@ -134,38 +134,14 @@ const AnimatedCardsTranslateChildrenFade = ({children, delay, delayAfter}) => {
     );
 };
 
-const AnimatedTabSwitch = ({children, isActive}) => (
+const AnimatedTabSwitch = ({children}) => (
     <AnimatePresence mode="wait">
         <motion.div
             key={children.key}
-            initial={{
-                opacity: 0,
-                x: isActive ? 50 : -50,
-                scale: 0.95,
-                rotate: isActive ? 2 : -2
-            }}
-            animate={{
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                rotate: 0,
-                transition: {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                    velocity: 2
-                }
-            }}
-            exit={{
-                opacity: 0,
-                x: isActive ? -50 : 50,
-                scale: 0.95,
-                rotate: isActive ? -2 : 2,
-                transition: {
-                    duration: 0.15,
-                    ease: "easeIn"
-                }
-            }}
+            initial={{opacity: 0, scale: 0.95}}
+            animate={{opacity: 1, scale: 1}}
+            exit={{opacity: 0, scale: 0.95}}
+            transition={{duration: 0.2}}
             style={{
                 height: '100%',
                 width: '100%',

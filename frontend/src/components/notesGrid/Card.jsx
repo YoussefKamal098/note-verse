@@ -1,5 +1,4 @@
-import React, {useState} from 'react';
-import {POPUP_TYPE} from "@/components/confirmationPopup/confirmationMessagePopup";
+import React, {useCallback, useState} from 'react';
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import {useConfirmation} from "@/contexts/ConfirmationContext";
 import useNoteActions from "@/hooks/useNoteActions";
@@ -8,12 +7,13 @@ import CardHeader from './Header';
 import CardContent from './Content';
 // import NoteTags from './Tags';
 import {CardStyles} from './Styles';
+import {BUTTON_TYPE} from "@/components/buttons/Button";
 
 const NoteCard = React.memo(({note, onTogglePin, onDelete}) => {
     const [isPinned, setIsPinned] = useState(note.isPinned);
     const [loading, setLoading] = useState(false);
     const {notify} = useToastNotification();
-    const {showConfirmation} = useConfirmation();
+    const {showTextConfirmation} = useConfirmation();
     const {saveNoteUpdates, deleteNote: handleNoteDelete} = useNoteActions(note.id);
 
     const handleTogglePin = async () => {
@@ -29,10 +29,13 @@ const NoteCard = React.memo(({note, onTogglePin, onDelete}) => {
         }
     };
 
-    const handleDelete = () => {
-        showConfirmation({
-            type: POPUP_TYPE.DANGER,
-            confirmationMessage: "Are you sure you want to delete this note?",
+    const handleDelete = useCallback(() => {
+        showTextConfirmation({
+            title: "Delete Note",
+            description: "Are you sure you want to permanently delete this note? This action cannot be undone.",
+            confirmText: note.title,
+            confirmButtonText: "Delete",
+            confirmButtonType: BUTTON_TYPE.DANGER,
             onConfirm: async () => {
                 try {
                     setLoading(true);
@@ -45,7 +48,7 @@ const NoteCard = React.memo(({note, onTogglePin, onDelete}) => {
                 }
             }
         });
-    };
+    }, [showTextConfirmation, onDelete, handleNoteDelete]);
 
     return (
         <>

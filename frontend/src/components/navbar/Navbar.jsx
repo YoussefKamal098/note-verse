@@ -24,7 +24,7 @@ const Navbar = ({
         <NavbarContainerStyled>
             <NavbarWrapperContainerStyled className="container">
                 <LeftNavbarSideStyled>
-                    <NavbarLogoStyled>Notes</NavbarLogoStyled>
+                    <NavbarLogoStyled>NoteVerse</NavbarLogoStyled>
                 </LeftNavbarSideStyled>
 
                 <MiddleNavbarSideStyled>

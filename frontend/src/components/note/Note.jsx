@@ -15,7 +15,6 @@ import useCopyLink from "@/hooks/useCopyLink";
 import useMediaSize from "@/hooks/useMediaSize";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
 import Contributors from "./Contributors";
-import RightSettingsPanel from './SettingsPanel';
 import RealTimeUpdatePanel from './realTimeUpdatePanel';
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 import routesPaths from "@/constants/routesPaths";
@@ -23,24 +22,17 @@ import routesPaths from "@/constants/routesPaths";
 const GridContainerStyles = styled.div`
     display: grid;
     grid-template-areas: ${({$showContributors}) => $showContributors ? `
-        "realtime_updates_panel contributors settings_panel"
-        "realtime_updates_panel main_content settings_panel"
-        "realtime_updates_panel main_content settings_panel"` : `
-        "realtime_updates_panel main_content settings_panel"
+        "contributors realtime_updates_panel"
+        "main_content realtime_updates_panel"
+        "main_content realtime_updates_panel"` : `
+        "main_content realtime_updates_panel"
         `
     };
-
-    grid-template-columns: auto 1fr auto;
-    grid-template-rows: ${({$showContributors}) => $showContributors ? "auto auto 1fr" : "auto 1fr"};
-
+    grid-template-columns: 1fr auto;
     gap: 10px;
     width: 100%;
-
     ${({$isMobile}) => $isMobile && "max-width: 775px"};
-
-    ${({$isMobile, $showSettingsPanel, $showRealTimeUpdatesPanel}) =>
-            (!$showSettingsPanel || !$showRealTimeUpdatesPanel) && !$isMobile && "max-width: 900px"};
-
+    ${({$isMobile, $showRealTimeUpdatesPanel}) => !$showRealTimeUpdatesPanel && !$isMobile && "max-width: 900px"};
     align-items: start;
 `;
 
@@ -54,7 +46,6 @@ const Note = () => {
     const [showShare, setShowShare] = useState(false);
     const [commitHistoryOpen, setCommitHistoryOpen] = useState(false);
     const [contributorsOpen, setContributorsOpen] = useState(false);
-    const [showSettingsPanel, setShowSettingsPanel] = useState(true);
     const [userContributionHistoryOpen, setUserContributionHistoryOpen] = useState(false);
     const [currentUserContributionHistoryId, setCurrentUserContributionHistoryId] = useState(null);
     const [commitMessageOpen, setCommitMessageOpen] = useState(false);
@@ -70,10 +61,8 @@ const Note = () => {
 
     useEffect(() => {
         if (!isMobile) {
-            setShowSettingsPanel(isOwner);
             setShowRealTimeUpdatesPanel(!isNew);
         } else {
-            setShowSettingsPanel(false);
             setShowRealTimeUpdatesPanel(false);
         }
     }, [isMobile, isNew, isOwner]);
@@ -138,10 +127,6 @@ const Note = () => {
         setShowShare((prev) => !prev);
     }, []);
 
-    const handleSettingsIconClick = useCallback(() => {
-        setShowSettingsPanel(prev => !prev);
-    }, []);
-
     const handleRealTimeUpdatesIconClick = useCallback(() => {
         setShowRealTimeUpdatesPanel(prev => !prev);
     }, []);
@@ -158,9 +143,13 @@ const Note = () => {
         setShowRealTimeUpdatesPanel(false);
     }, []);
 
-    const handleCloseSettingsPanel = useCallback(() => {
-        setShowSettingsPanel(false);
-    }, []);
+    const handleTogglePin = useCallback(() => {
+        isNew ? actions.togglePinState() : actions.togglePin()
+    }, [isNew, actions.togglePinState, actions.togglePin]);
+
+    const handleToggleVisibility = useCallback(() => {
+        isNew ? actions.toggleVisibilityState() : actions.toggleVisibility()
+    }, [isNew, actions.toggleVisibilityState, actions.toggleVisibility]);
 
     const handleCloseUserContributionHistory = useCallback(() => {
         setUserContributionHistoryOpen(false);
@@ -199,9 +188,10 @@ const Note = () => {
         onEdit: handleEdit,
         onCopyLink: handleCopyLink,
         onShowShare: handleShowShare,
-        onSettingsIconClick: handleSettingsIconClick,
         onRealTimeUpdateIconClick: handleRealTimeUpdatesIconClick,
-        onShowCommitHistory: handleShowCommitHistory
+        onShowCommitHistory: handleShowCommitHistory,
+        onTogglePin: handleTogglePin,
+        onToggleVisibility: handleToggleVisibility
     }), [
         handleEdit,
         handleCopyLink,
@@ -210,14 +200,14 @@ const Note = () => {
         handleShowShare,
         handleOnSave,
         handleShowCommitHistory,
-        handleSettingsIconClick,
-        handleRealTimeUpdatesIconClick
+        handleRealTimeUpdatesIconClick,
+        handleTogglePin,
+        handleToggleVisibility
     ]);
 
     return (
         <GridContainerStyles
             $showContributors={!isNew && !editMode}
-            $showSettingsPanel={showSettingsPanel}
             $showRealTimeUpdatesPanel={showRealTimeUpdatesPanel}
             $isMobile={isMobile}
         >
@@ -257,12 +247,6 @@ const Note = () => {
                 onClose={handleCloseCommitMessagePopup}
                 onSave={handleOnCommitSave}
             />
-
-            {isOwner && <RightSettingsPanel
-                show={showSettingsPanel}
-                onClose={handleCloseSettingsPanel}
-                isMobile={isMobile}
-            />}
 
             {!isNew && <RealTimeUpdatePanel
                 show={showRealTimeUpdatesPanel}

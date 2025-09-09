@@ -3,12 +3,13 @@ import routesPaths from "../constants/routesPaths";
 import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import noteService from "../api/noteService";
 import cacheService from "../services/cacheService";
+import {useCallback} from "react";
 
 const useNoteActions = (noteId, setLoading) => {
     const {notify} = useToastNotification();
     const navigate = useNavigate();
 
-    const saveNoteUpdates = async ({isPinned, tags, title, content}) => {
+    const saveNoteUpdates = useCallback(async ({isPinned, tags, title, content}) => {
         setLoading?.(true);
 
         try {
@@ -24,9 +25,9 @@ const useNoteActions = (noteId, setLoading) => {
         } finally {
             setLoading?.(false);
         }
-    };
+    }, [notify]);
 
-    const deleteNote = async () => {
+    const deleteNote = useCallback(async () => {
         setLoading?.(true);
 
         try {
@@ -43,7 +44,7 @@ const useNoteActions = (noteId, setLoading) => {
             setLoading?.(false);
             notify.error(`Failed to delete note: ${error.message}`);
         }
-    };
+    }, [notify, navigate]);
 
     return {saveNoteUpdates, deleteNote};
 };

@@ -9,43 +9,11 @@ const overlayVariants = {
     hidden: {opacity: 0}
 };
 
-const shockwaveVariants = {
-    hidden: {
-        // opacity: 0,
-        scale: 0.5,
-        y: 60,
-        x: -10,
-        rotate: -5
-    },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        x: 0,
-        rotate: 0,
-        transition: {
-            type: "spring",
-            stiffness: 400,
-            damping: 15,
-            mass: 0.8,
-            velocity: 50,
-            restDelta: 0.001,
-            staggerChildren: 0.1
-        }
-    },
-    // hover: {
-    //     scale: 1.05,
-    //     rotate: [0, 2, -2, 0],
-    //     transition: {
-    //         duration: 0.6,
-    //         repeat: Infinity,
-    //         repeatType: "reverse"
-    //     }
-    // },
-    // tap: {
-    //     scale: 0.95,
-    //     rotate: [0, 1, -1, 0]
-    // }
+const animation = {
+    initial: {opacity: 0, scale: 0.95},
+    animate: {opacity: 1, scale: 1},
+    exit: {opacity: 0, scale: 0.95},
+    transition: {duration: 0.2},
 };
 
 const ModalOverlay = styled(motion.div)`
@@ -109,7 +77,7 @@ const Modal = ({
                             $height={height}
                             $maxWidth={maxWidth}
                             $maxHeight={maxHeight}
-                            variants={shockwaveVariants}
+                            variants={animation}
                             style={contentStyle}
                             onClick={(e) => e.stopPropagation()}
                         >

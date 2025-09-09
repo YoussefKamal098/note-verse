@@ -1,4 +1,4 @@
-import {roles} from "../../../constants/roles";
+import {roles} from "@/constants/roles";
 
 export const NEW_NOTE_KEY = 'new_note';
 
