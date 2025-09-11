@@ -1,6 +1,6 @@
 import React from 'react';
 import {TbError404Off} from "react-icons/tb";
-import ErrorPage from "@/pages/ErrorPage/ErrorPage";
+import ErrorPage from "@/pages/errorPage/ErrorPage";
 
 const NotFoundPage = () => {
     return (

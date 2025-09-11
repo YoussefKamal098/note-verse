@@ -28,7 +28,7 @@ const NoteMenu = ({
             disabled: !onTogglePin
         },
         {
-            text: isVisible ? "Public" : "Private",
+            text: isVisible ? "Make Private" : "Make Public",
             icon: isVisible ? <MdPublic/> : <MdVpnLock/>,
             action: onToggleVisibility,
             disabled: !onToggleVisibility

@@ -4,12 +4,12 @@ import AuthRoute from "./AuthRoute";
 import PrivateRoute from "./PrivateRoute";
 import GeneralErrorPage from "@/pages/GeneralErrorPage";
 import routesPaths from "@/constants/routesPaths";
-import ProfileTabRouter from "@/pages/profile/tabRouter";
+import ProfileTabRouter from "@/pages/profilePage/tabRouter";
 
 // Lazy load components
 const HomePage = React.lazy(() => import('@/pages/HomePage'));
-const ProfilePage = React.lazy(() => import('@/pages/profile'));
-const ProfileTab = React.lazy(() => import('@/pages/profile/tabs/ProfileTab'));
+const ProfilePage = React.lazy(() => import('@/pages/profilePage'));
+const ProfileTab = React.lazy(() => import('@/pages/profilePage/tabs/ProfileTab'));
 const LoginPage = React.lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = React.lazy(() => import('@/pages/RegisterPage'));
 const NotePage = React.lazy(() => import('@/pages/NotePage'));

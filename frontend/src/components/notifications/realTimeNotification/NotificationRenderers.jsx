@@ -10,7 +10,7 @@ import {NOTIFICATION_TYPES} from './constant';
 import BROWSER_ICONS from '@/constants/browserIcons';
 import OS_ICONS from '@/constants/osIcons';
 import routesPaths from "@/constants/routesPaths";
-import {TABS as PROFILE_TABS} from "@/pages/profile/constants"
+import {TABS as PROFILE_TABS} from "@/pages/profilePage/constants"
 
 import {
     AvatarWrapper,
