@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
-import styled from 'styled-components';
+import React, {useEffect} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
+import styled from "styled-components";
 import {FcGoogle} from "react-icons/fc";
-import {MoonLoader} from 'react-spinners';
-import Navbar from "@/components/navbar/Navbar";
-import useRequestManager from '@/hooks/useRequestManager';
-import authService from '@/api/authService';
+import {MoonLoader} from "react-spinners";
+import PageLayout from "@/layouts/PageLayout";
+import useRequestManager from "@/hooks/useRequestManager";
+import authService from "@/api/authService";
 import routesPaths from "@/constants/routesPaths";
 import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
@@ -36,7 +36,6 @@ const IconContainer = styled.span`
     font-size: 3em;
 `;
 
-
 const GoogleCallbackAuthPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -47,8 +46,8 @@ const GoogleCallbackAuthPage = () => {
     const handleGoogleCallback = async () => {
         // Extract the authorization code and any error parameter from the callback URL
         const searchParams = new URLSearchParams(location.search);
-        const code = searchParams.get('code');
-        const errorParam = searchParams.get('error');
+        const code = searchParams.get("code");
+        const errorParam = searchParams.get("error");
 
         // Clear sensitive params from URL
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -57,8 +56,8 @@ const GoogleCallbackAuthPage = () => {
             navigate(routesPaths.ERROR, {
                 state: {
                     title: "Google Authentication Error",
-                    message: `Google authentication failed due to the following error: ${errorParam}`
-                }
+                    message: `Google authentication failed due to the following error: ${errorParam}`,
+                },
             });
             return;
         }
@@ -67,10 +66,11 @@ const GoogleCallbackAuthPage = () => {
             navigate(routesPaths.ERROR, {
                 state: {
                     title: "Missing Authorization Code",
-                    message: "No authorization code was provided in the callback from Google. " +
+                    message:
+                        "No authorization code was provided in the callback from Google. " +
                         "This might indicate an error in the authentication flow or a misconfiguration in the redirect URI. " +
-                        "Please ensure your authentication request is correct and try again."
-                }
+                        "Please ensure your authentication request is correct and try again.",
+                },
             });
             return;
         }
@@ -88,35 +88,31 @@ const GoogleCallbackAuthPage = () => {
                 navigate(routesPaths.ERROR, {
                     state: {
                         title: "Google Authentication Failed",
-                        message: `Google authentication encountered an error: ${err.message}`
-                    }
+                        message: `Google authentication encountered an error: ${err.message}`,
+                    },
                 });
             }
         }
-    }
+    };
 
     useEffect(() => {
         handleGoogleCallback();
     }, [location, navigate]);
 
-
     return (
-        <div className="page">
-            <Navbar/>
-
+        <PageLayout>
             <Container>
                 <MoonLoader color="var(--color-accent)" loading={true} size={45}/>
                 <Message>
                     <IconContainer>
                         <FcGoogle/>
                     </IconContainer>
-                    Authenticating with Google. Please wait while we securely verify your credentials and
-                    connect your account.
+                    Authenticating with Google. Please wait while we securely verify your
+                    credentials and connect your account.
                 </Message>
             </Container>
-        </div>
+        </PageLayout>
     );
 };
 
 export default GoogleCallbackAuthPage;
-

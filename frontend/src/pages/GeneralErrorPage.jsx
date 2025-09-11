@@ -1,7 +1,7 @@
 import React from 'react';
-import ErrorPage from "../components/errors/ErrorPage";
 import {useLocation} from 'react-router-dom';
 import {TbFaceIdError} from "react-icons/tb";
+import ErrorPage from "@/pages/ErrorPage/ErrorPage";
 
 const GeneralErrorPage = () => {
     const {state} = useLocation();

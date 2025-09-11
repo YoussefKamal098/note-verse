@@ -1,6 +1,6 @@
 import React from 'react';
-import ErrorPage from "../components/errors/ErrorPage";
 import {GiTerror} from "react-icons/gi";
+import ErrorPage from "@/pages/ErrorPage/ErrorPage";
 
 const ErrorFallbackPage = () => (
     <ErrorPage

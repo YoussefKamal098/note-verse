@@ -1,17 +1,11 @@
-import React from 'react';
-import Navbar from "../components/navbar/Navbar";
-import LoginForm from "../components/forms/LoginForm";
+import React from "react";
+import PageLayout from "@/layouts/PageLayout";
+import LoginForm from "@/components/forms/LoginForm";
 
-const LoginPage = () => {
-    return (
-        <div className="page">
-            <Navbar/>
-
-            <div className="wrapper">
-                <LoginForm/>
-            </div>
-        </div>
-    );
-}
+const LoginPage = () => (
+    <PageLayout>
+        <LoginForm/>
+    </PageLayout>
+);
 
 export default LoginPage;

@@ -1,10 +1,10 @@
 import React, {useEffect, useMemo} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {maskEmail} from "shared-utils/email.utils";
-import Navbar from "../components/navbar/Navbar";
-import routesPaths from "../constants/routesPaths";
-import OTPVerification from "../components/otp/OTPVerification";
-import authService from "../api/authService";
+import PageLayout from "@/layouts/PageLayout";
+import routesPaths from "@/constants/routesPaths";
+import OTPVerification from "@/components/otp/OTPVerification";
+import authService from "@/api/authService";
 
 /**
  * OTPVerificationPage Component
@@ -38,17 +38,14 @@ const OTPVerificationPage = () => {
     if (!email) return null;
 
     return (
-        <div className="page">
-            <Navbar/>
-            <div className="wrapper">
-                <OTPVerification
-                    maskedTarget={maskedEmail}
-                    verificationType="Email"
-                    onVerify={handleVerify}
-                    onSuccess={handleSuccess}
-                />
-            </div>
-        </div>
+        <PageLayout>
+            <OTPVerification
+                maskedTarget={maskedEmail}
+                verificationType="Email"
+                onVerify={handleVerify}
+                onSuccess={handleSuccess}
+            />
+        </PageLayout>
     );
 };
 
