@@ -14,18 +14,18 @@ class NotificationController {
     }
 
     /**
-     * Get user notifications
+     * Get user notifications (cursor-based)
      */
     async getUserNotifications(req, res) {
         const {userId} = req;
-        const {page, limit, filter, projection} = req.query;
+        const {limit, cursor, filter, projection} = req.query;
 
-        const notifications = await this.#notificationService.getUserNotifications(
+        const result = await this.#notificationService.getUserNotifications(
             {userId},
-            {page, limit, filter, projection}
+            {limit, cursor, filter, projection}
         );
 
-        res.status(httpCodes.OK.code).json(notifications);
+        res.status(httpCodes.OK.code).json(result);
     }
 
     /**
@@ -47,6 +47,15 @@ class NotificationController {
     }
 
     /**
+     * Mark all notifications as seen for user
+     */
+    async markAllAsSeen(req, res) {
+        const {userId} = req;
+        await this.#notificationService.markAllAsSeen({userId});
+        res.status(httpCodes.OK.code).json({success: true});
+    }
+
+    /**
      * Mark all notifications as read for user
      */
     async markAllAsRead(req, res) {
@@ -61,6 +70,15 @@ class NotificationController {
     async getUnreadCount(req, res) {
         const {userId} = req;
         const count = await this.#notificationService.getUnreadCount({userId});
+        res.status(httpCodes.OK.code).json({count});
+    }
+
+    /**
+     * Get unseen notification count
+     */
+    async getUnseenCount(req, res) {
+        const {userId} = req;
+        const count = await this.#notificationService.getUnseenCount({userId});
         res.status(httpCodes.OK.code).json({count});
     }
 }

@@ -25,9 +25,20 @@ router.patch('/read-all',
     asyncRequestHandler(api('markAllAsRead'))
 );
 
+// Mark all notifications as seen for user
+router.patch('/seen-all',
+    asyncRequestHandler(api('markAllAsSeen'))
+);
+
+
 // Get unread notification count
 router.get('/unread-count',
     asyncRequestHandler(api('getUnreadCount'))
+);
+
+// Get unseen notification count
+router.get('/unseen-count',
+    asyncRequestHandler(api('getUnseenCount'))
 );
 
 module.exports = router;

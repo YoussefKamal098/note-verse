@@ -60,6 +60,7 @@
  * @extends {@link NotificationInput}
  * @property {string} id - Auto-generated notification ID
  * @property {boolean} read - Whether notification has been read
+ * @property {boolean} seen - Whether notification has been seen
  * @property {Date} createdAt - Creation timestamp
  * @property {Date} updatedAt - Last update timestamp
  */

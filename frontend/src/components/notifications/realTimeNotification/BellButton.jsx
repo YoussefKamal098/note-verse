@@ -6,7 +6,7 @@ import {BellButtonStyles, Badge} from './styles';
 
 const BellButton = forwardRef(({
                                    onClick,
-                                   unreadCount
+                                   unseenCount
                                }, ref) => {
     return (
         <IconButton aria-label="notification-bell" sx={{color: 'var(--color-text)', fontSize: "1em", padding: "0"}}>
@@ -18,9 +18,9 @@ const BellButton = forwardRef(({
             >
                 <HiOutlineBell/>
                 <AnimatePresence>
-                    {unreadCount > 0 && (
+                    {unseenCount > 0 && (
                         <Badge
-                            key={`unreadCount${unreadCount}`}
+                            key={`unseenCount${unseenCount}`}
                             initial={{scale: 0, rotate: -45}}
                             animate={{
                                 scale: 1,
@@ -33,7 +33,7 @@ const BellButton = forwardRef(({
                             }}
                             exit={{scale: 0}}
                         >
-                            {unreadCount > 9 ? '9+' : unreadCount}
+                            {unseenCount > 9 ? '9+' : unseenCount}
                         </Badge>
                     )}
                 </AnimatePresence>

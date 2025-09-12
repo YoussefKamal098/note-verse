@@ -1,6 +1,6 @@
-const AppError = require('../../errors/app.error');
-const httpCodes = require('../../constants/httpCodes');
-const statusMessages = require('../../constants/statusMessages');
+const AppError = require('@/errors/app.error');
+const httpCodes = require('@/constants/httpCodes');
+const statusMessages = require('@/constants/statusMessages');
 const {deepFreeze} = require("shared-utils/obj.utils");
 const NotificationProcessorFactory = require("./processors/notificationProcessorFactory");
 
@@ -110,11 +110,19 @@ class NotificationService {
         const recipients = new Set(notifications.map(n => n.recipient));
         for (const recipient of recipients) {
             await this.#notificationCache.clear(recipient);
+
             const unreadCount = notifications.filter(
                 n => n.recipient === recipient && !n.read
             ).length;
             if (unreadCount > 0) {
                 await this.#notificationCache.incrementUnreadCount(recipient, unreadCount);
+            }
+
+            const unseenCount = notifications.filter(
+                n => n.recipient === recipient && !n.seen
+            ).length;
+            if (unseenCount > 0) {
+                await this.#notificationCache.incrementUnseenCount(recipient, unseenCount);
             }
         }
     }
@@ -124,7 +132,7 @@ class NotificationService {
      * Handles batch creation retry logic
      * @param {Array<NotificationInput>} notifications
      * @param {Object} session
-     * @returns {Promise<Readonly<Array<Readonly<NotificationOutput>>>>}
+     * @returns {Promise<ReadonlyArray<Readonly<NotificationOutput>>>}
      */
     async #attemptBatchCreateWithRetry(notifications, session) {
         let attempts = 0;
@@ -174,6 +182,7 @@ class NotificationService {
         const result = await this.#notificationRepo.create(data, {session});
         await this.#notificationCache.clear(data.recipient);
         await this.#notificationCache.incrementUnreadCount(data.recipient);
+        await this.#notificationCache.incrementUnseenCount(data.recipient);
 
         const enhanced = await this.#enhanceNotification(result);
         if (await this.#onlineUserService.isOnline(data.recipient)) {
@@ -200,52 +209,70 @@ class NotificationService {
      * Retrieves notifications from cache or falls back to database
      * @param {string} userId
      * @param {Object} options
-     * @returns {Promise<Array<EnhancedNotificationOutput>>}
+     * @returns {Promise<{data: ReadonlyArray<Readonly<EnhancedNotificationOutput>>, nextCursor: string|null}>}
+     * - `data`: Frozen array of sanitized notifications
+     * - `nextCursor`: Encoded cursor for the next page, or null if no more results
      */
     async #retrieveNotifications(userId, options) {
         const cached = await this.#notificationCache.get(
             userId,
-            options.page,
+            options.cursor,
             options.limit,
             options.filter,
             options.projection
         );
-        if (cached) return cached;
 
-        const notifications = await this.#notificationRepo.getUserNotifications(
+        if (cached) return deepFreeze(cached);
+
+        const result = await this.#notificationRepo.getUserNotifications(
             {userId},
             options
         );
 
-        return Promise.all(
-            notifications.map(n => this.#enhanceNotification(n))
-        );
+        const notifications = result.data;
+        const enhancedNotifications = await Promise.all(
+            notifications.map(n => this.#enhanceNotification(n)))
+
+        return deepFreeze({
+            ...result,
+            data: enhancedNotifications
+        });
     }
 
     /**
-     * Gets notifications for a specific user with pagination
+     * Retrieves notifications for a specific user with cursor-based pagination,
+     * sorted from newest to oldest by `createdAt`.
+     *
+     * @async
      * @param {Object} params
-     * @param {string} params.userId - ID of the user to get notifications for
-     * @param {Object} [options] - Options
-     * @param {number} [options.page=0] - Page number (0-based)
-     * @param {number} [options.limit=10] - Results per page
-     * @param {Object} [options.filter] - Filter criteria
-     * @param {boolean} [options.filter.read] - Filter by read status (true/false)
-     * @param {Object|string} [options.projection] - Fields to include/exclude
-     * @returns {Promise<Readonly<Array<Readonly<EnhancedNotificationOutput>>>>} Array of notification documents (empty if none found)
+     * @param {string} params.userId - ID of the user whose notifications to fetch
+     * @param {Object} [options] - Query options
+     * @param {number} [options.limit=10] - Maximum number of notifications to return
+     * @param {string|null} [options.cursor=null] - Encoded cursor representing the last fetched notification's `createdAt`
+     * @param {Object} [options.filter={}] - Additional filter criteria
+     * @param {boolean} [options.filter.read] - Filter notifications by read status
+     * @param {Object|string|null} [options.projection=null] - Fields to include/exclude in results
+     *
+     * @returns {Promise<{data: ReadonlyArray<Readonly<EnhancedNotificationOutput>>, nextCursor: string|null}>}
+     * - `data`: Frozen array of enhanced notifications
+     * - `nextCursor`: Encoded cursor for the next page, or null if no more results
+     *
      * @throws {AppError} When retrieval fails
      */
-    async getUserNotifications({userId}, {page = 0, limit = 10, filter = {}, projection = null} = {}) {
+    async getUserNotifications(
+        {userId},
+        {limit = 10, cursor = null, filter = {}, projection = null} = {}
+    ) {
         try {
             const enhancedNotifications = await this.#retrieveNotifications(
                 userId,
-                {page, limit, filter, projection}
+                {limit, cursor, filter, projection}
             );
 
-            // Cache the result
-            await this.#notificationCache.set(userId, enhancedNotifications, page, limit, filter, projection);
+            // Cache the result (cursor-based instead of page-based)
+            await this.#notificationCache.set(userId, enhancedNotifications, cursor, limit, filter, projection);
 
-            return deepFreeze(enhancedNotifications);
+            return enhancedNotifications;
         } catch (err) {
             throw new AppError(
                 statusMessages.NOTIFICATION_RETRIEVAL_FAILED,
@@ -291,27 +318,36 @@ class NotificationService {
 
     /**
      * @private
-     * Updates all notifications read status for user
-     * @param {string} userId
-     * @param {Object} session
+     * Marks all notifications as seen for a user within a transaction session
+     * and clears the user's notification cache.
+     *
+     * @async
+     * @param {string} userId - ID of the user whose notifications should be marked as seen
+     * @param {import("mongoose").ClientSession} session - The active transaction session
      * @returns {Promise<void>}
      */
-    async #updateAllNotificationsReadStatus(userId, session) {
-        await this.#notificationRepo.markAllAsRead({userId}, {session});
+    async #updateAllNotificationsSeenStatus(userId, session) {
+        await this.#notificationRepo.markAllAsSeen({userId}, {session});
         await this.#notificationCache.clear(userId);
-        await this.#notificationCache.setUnreadCount(userId, 0);
+
+        await this.#notificationCache.clear(userId);
+        await this.#notificationCache.setUnseenCount(userId, 0);
     }
 
     /**
-     * Marks all notifications as read for user
-     * @param {Object} params
-     * @param {string} params.userId
+     * Marks all notifications as seen for a user.
+     * Executes the update inside a transaction and handles cache invalidation.
+     *
+     * @async
+     * @param {Object} params - Parameters object
+     * @param {string} params.userId - ID of the user
      * @returns {Promise<void>}
+     * @throws {AppError} If marking notifications as seen fails
      */
-    async markAllAsRead({userId}) {
+    async markAllAsSeen({userId}) {
         await this.#notificationRepo.executeTransaction(
-            (session) => this.#updateAllNotificationsReadStatus(userId, session),
-            {message: statusMessages.NOTIFICATIONS_MARK_READ_FAILED}
+            (session) => this.#updateAllNotificationsSeenStatus(userId, session),
+            {message: statusMessages.NOTIFICATIONS_MARK_SEEN_FAILED}
         );
     }
 
@@ -347,6 +383,41 @@ class NotificationService {
             );
         }
     }
+
+    /**
+     * Gets unseen notification count
+     * @param {Object} params
+     * @param {string} params.userId - ID of the user
+     * @returns {Promise<number>} Number of unseen notifications
+     * @throws {AppError} When unseen count retrieval fails
+     */
+    async getUnseenCount({userId}) {
+        try {
+            return await this.#fetchUnseenCount(userId);
+        } catch (err) {
+            throw new AppError(
+                statusMessages.NOTIFICATION_UNSEEN_COUNT_FAILED,
+                httpCodes.INTERNAL_SERVER_ERROR.code,
+                httpCodes.INTERNAL_SERVER_ERROR.name
+            );
+        }
+    }
+
+    /**
+     * @private
+     * Gets unseen count from cache or database
+     * @param {string} userId - ID of the user
+     * @returns {Promise<number>} Unseen notification count
+     */
+    async #fetchUnseenCount(userId) {
+        const cachedCount = await this.#notificationCache.getUnseenCount(userId);
+        if (cachedCount !== undefined) return cachedCount;
+
+        const count = await this.#notificationRepo.getUnseenCount({userId});
+        await this.#notificationCache.setUnseenCount(userId, count);
+        return count;
+    }
+
 }
 
 module.exports = NotificationService;

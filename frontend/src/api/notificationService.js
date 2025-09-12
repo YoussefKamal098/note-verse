@@ -4,7 +4,9 @@ const ENDPOINTS = {
     GET_NOTIFICATIONS: `/notifications`,
     MARK_AS_READ: (notificationId) => `/notifications/${notificationId}/read`,
     MARK_ALL_AS_READ: `/notifications/read-all`,
-    GET_UNREAD_COUNT: `/notifications/unread-count`
+    GET_UNREAD_COUNT: `/notifications/unread-count`,
+    MARK_ALL_AS_SEEN: `/notifications/seen-all`,
+    GET_UNSEEN_COUNT: `/notifications/unseen-count`
 };
 
 /**
@@ -24,7 +26,7 @@ class NotificationService {
     /**
      * Fetches user notifications with pagination and filtering
      * @param {Object} queryParams - Query parameters
-     * @param {number} [queryParams.page=0] - Page number (1-based)
+     * @param {string|null} [queryParams.cursor=null] - Encoded cursor for pagination
      * @param {number} [queryParams.limit=10] - Items per page
      * @param {Object} [queryParams.filter] - Filter criteria
      * @param {boolean} [queryParams.filter.read] - Filter by read status
@@ -36,8 +38,8 @@ class NotificationService {
         return await this.#apiClient.get(ENDPOINTS.GET_NOTIFICATIONS, {
             ...config,
             params: {
-                page: queryParams.page || 0,
-                limit: queryParams.limit || 10,
+                limit: queryParams.limit ?? 10,
+                cursor: queryParams.cursor ?? null,
                 filter: queryParams.filter || {},
             }
         });
@@ -75,6 +77,19 @@ class NotificationService {
     }
 
     /**
+     * Marks all notifications as seen for the current user
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Success status
+     */
+    async markAllAsSeen(config = {}) {
+        return await this.#apiClient.patch(
+            ENDPOINTS.MARK_ALL_AS_SEEN,
+            {},
+            config
+        );
+    }
+
+    /**
      * Gets the count of unread notifications for the current user
      * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
      * @returns {Promise<Object>} Response with status code and data.
@@ -83,6 +98,18 @@ class NotificationService {
     async getUnreadCount(config = {}) {
         return await this.#apiClient.get(
             ENDPOINTS.GET_UNREAD_COUNT,
+            config
+        );
+    }
+
+    /**
+     * Gets the count of unseen notifications for the current user
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with status code and data.
+     */
+    async getUnseenCount(config = {}) {
+        return await this.#apiClient.get(
+            ENDPOINTS.GET_UNSEEN_COUNT,
             config
         );
     }

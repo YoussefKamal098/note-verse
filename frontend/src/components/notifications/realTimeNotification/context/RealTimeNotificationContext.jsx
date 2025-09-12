@@ -1,4 +1,11 @@
-import React, {createContext, useContext, useCallback, useState, useEffect, useRef} from 'react';
+import React, {
+    createContext,
+    useContext,
+    useCallback,
+    useState,
+    useEffect,
+    useRef
+} from 'react';
 import {useSocketEvent} from '@/hooks/useSocketEvent';
 import {SOCKET_EVENTS} from "@/constants/socketEvents";
 import notificationService from '@/api/notificationService';
@@ -11,66 +18,39 @@ const NotificationContext = createContext(null);
 
 // Provider Component
 export const RealTimeNotificationProvider = ({children}) => {
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [unseenCount, setUnseenCount] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const notificationCallbacksRef = useRef([]);
     const {createAbortController, removeAbortController} = useRequestManager();
-    const fetchUnreadController = useRef(null)
     const fetchAllController = useRef(null);
 
-    const fetchUnreadCount = useCallback(async () => {
+    // Fetch unseen count
+    const fetchUnseenCount = useCallback(async () => {
         const controller = createAbortController();
 
         try {
-            const result = await notificationService.getUnreadCount({
+            const result = await notificationService.getUnseenCount({
                 signal: controller.signal
             });
-            setUnreadCount(result.data.count);
+
+            setUnseenCount(result.data.count);
         } catch (err) {
+            // Ignore cancelled
         } finally {
             removeAbortController(controller);
         }
     }, [createAbortController, removeAbortController]);
 
-    useOnlineBack(fetchUnreadCount);
+    useOnlineBack(fetchUnseenCount);
 
-    // Fetch initial unread count on mount
+    // Initial unseen count
     useEffect(() => {
-        fetchUnreadCount();
-    }, [fetchUnreadCount]);
+        fetchUnseenCount();
+    }, [fetchUnseenCount]);
 
-    // Fetch unread notifications
-    const fetchUnreadNotifications = useCallback(async (page = 0, perPage = 10) => {
-        const controller = createAbortController();
-        fetchUnreadController.current = controller;
-
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const response = await notificationService.getNotifications({
-                page,
-                limit: perPage,
-                filter: {read: false}
-            }, {
-                signal: controller.signal
-            });
-            return response.data;
-        } catch (err) {
-            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                setError(err.message || 'Failed to fetch unread notifications');
-            }
-            throw err;
-        } finally {
-            setIsLoading(false);
-            removeAbortController(controller);
-            fetchUnreadController.current = null;
-        }
-    }, [createAbortController, removeAbortController]);
-
-    // Fetch all notifications with pagination
-    const fetchNotifications = useCallback(async (page = 0, perPage = 10) => {
+    // Fetch notifications (cursor-based)
+    const fetchNotifications = useCallback(async (limit = 10, cursor) => {
         const controller = createAbortController();
         fetchAllController.current = controller;
 
@@ -78,12 +58,10 @@ export const RealTimeNotificationProvider = ({children}) => {
         setError(null);
 
         try {
-            const response = await notificationService.getNotifications({
-                page,
-                limit: perPage
-            }, {
-                signal: controller.signal
-            });
+            const response = await notificationService.getNotifications(
+                {limit, cursor},
+                {signal: controller.signal}
+            );
             return response.data;
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
@@ -97,19 +75,17 @@ export const RealTimeNotificationProvider = ({children}) => {
         }
     }, [createAbortController, removeAbortController]);
 
-    // Mark notification as read
+    // Mark single notification as read
     const markAsRead = useCallback(async (notificationId) => {
         const controller = createAbortController();
 
         try {
-            setUnreadCount(prev => prev - 1);
             await notificationService.markAsRead(notificationId, {
                 signal: controller.signal
             });
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
                 setError(err.message || 'Failed to mark as read');
-                setUnreadCount(prev => prev + 1);
                 throw err;
             }
         } finally {
@@ -117,31 +93,28 @@ export const RealTimeNotificationProvider = ({children}) => {
         }
     }, [createAbortController, removeAbortController]);
 
-    // Mark all as read
-    const markAllAsRead = useCallback(async () => {
+    // Mark all as seen
+    const markAllAsSeen = useCallback(async () => {
         const controller = createAbortController();
-        let tempUnreadCount = unreadCount;
+        const prevCount = unseenCount;
 
         try {
-            setUnreadCount((pev) => {
-                tempUnreadCount = pev;
-                return 0;
-            });
-            await notificationService.markAllAsRead({
+            setUnseenCount(0);
+            await notificationService.markAllAsSeen({
                 signal: controller.signal
             });
         } catch (err) {
             if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                setError(err.message || 'Failed to mark all as read');
-                setUnreadCount(tempUnreadCount);
+                setError(err.message || 'Failed to mark all as seen');
+                setUnseenCount(prevCount);
                 throw err;
             }
         } finally {
             removeAbortController(controller);
         }
-    }, [createAbortController, removeAbortController]);
+    }, [createAbortController, removeAbortController, unseenCount]);
 
-    // Register notification callback
+    // Register callbacks for new notifications
     const onNotification = useCallback((callback) => {
         if (!notificationCallbacksRef.current.includes(callback)) {
             notificationCallbacksRef.current.push(callback);
@@ -151,32 +124,35 @@ export const RealTimeNotificationProvider = ({children}) => {
         };
     }, []);
 
+    // Handle new notifications
     const handleNewNotification = useCallback((newNotification) => {
-        if (!newNotification.read) {
-            setUnreadCount(prev => prev + 1);
+        if (!newNotification.seen) {
+            setUnseenCount(prev => prev + 1);
         }
         notificationCallbacksRef.current.forEach(cb => cb(newNotification));
     }, []);
 
+    // Abort ongoing fetch requests
     const abortNotificationFetchRequests = useCallback(() => {
-        fetchUnreadController.current && removeAbortController(fetchUnreadController.current);
-        fetchAllController.current && removeAbortController(fetchAllController.current);
-    }, []);
+        fetchAllController.current &&
+        removeAbortController(fetchAllController.current);
+    }, [removeAbortController]);
 
     useSocketEvent(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
 
     return (
-        <NotificationContext.Provider value={{
-            unreadCount,
-            isLoading,
-            error,
-            fetchNotifications,
-            fetchUnreadNotifications,
-            markAsRead,
-            markAllAsRead,
-            onNotification,
-            abortNotificationFetchRequests
-        }}>
+        <NotificationContext.Provider
+            value={{
+                unseenCount,
+                isLoading,
+                error,
+                fetchNotifications,
+                markAsRead,
+                markAllAsSeen,
+                onNotification,
+                abortNotificationFetchRequests
+            }}
+        >
             {children}
         </NotificationContext.Provider>
     );
@@ -184,6 +160,8 @@ export const RealTimeNotificationProvider = ({children}) => {
 
 export const useRealTimeNotifications = () => {
     const context = useContext(NotificationContext);
-    if (!context) throw new Error('useRealTimeNotifications must be used within a RealTimeNotificationProvider');
+    if (!context) {
+        throw new Error('useRealTimeNotifications must be used within a RealTimeNotificationProvider');
+    }
     return context;
 };

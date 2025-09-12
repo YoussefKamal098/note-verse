@@ -1,13 +1,11 @@
 import React, {useCallback, forwardRef, useState, useEffect} from 'react';
 import {AnimatePresence} from 'framer-motion';
 import {HiOutlineBell} from 'react-icons/hi2';
-import {TbChecks} from "react-icons/tb";
 import CloseButton from '@/components/buttons/CloseButton';
 import Tabs from '@/components/tabs';
 import InfiniteScrollLoader from '@/components/infiniteScrollLoader';
 import NotificationItem from './NotificationItem';
 import {NOTIFICATION_TABS, TABS} from "./constant";
-import Button, {BUTTON_TYPE} from '@/components/buttons/Button';
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 import useMediaSize from "@/hooks/useMediaSize";
 import useMobileDrag from "@/hooks/useMobileDrag";
@@ -17,10 +15,8 @@ import {
     DropdownContainer,
     DropdownHeader,
     DropdownTitle,
-    DropdownActions,
     EmptyState
 } from './styles';
-import {deepClone} from "shared-utils/obj.utils";
 
 const EmptyNotification = ({tab}) => (
     <EmptyState>
@@ -38,8 +34,7 @@ const NotificationDropdown = forwardRef(({
                                              onClose,
                                              activeTab,
                                              setActiveTab,
-                                             unreadCount,
-                                             markAllAsRead,
+                                             unseenCount,
                                              markAsRead,
                                              fetchNotifications,
                                              onNotification
@@ -53,11 +48,18 @@ const NotificationDropdown = forwardRef(({
     } = useMobileDrag(isMobile, onClose);
 
     const [notifications, setNotifications] = useState([]);
-    const [page, setPage] = useState(0);
+    const [cursor, setCursor] = useState(null);
 
-    const handleChange = useCallback((newItems, newPage) => {
-        setNotifications(newItems);
-        setPage(newPage);
+    const handleChange = useCallback((newItems, cursor) => {
+        setNotifications((prev) => {
+            // Filter out items that already exist in the current state
+            const uniqueNewItems = newItems.filter(newItem =>
+                !prev.some(existingItem => existingItem.id === newItem.id)
+            );
+
+            return [...prev, ...uniqueNewItems];
+        });
+        setCursor(cursor);
     }, []);
 
     const handleMarkAsRead = useCallback(async (notificationId) => {
@@ -73,31 +75,6 @@ const NotificationDropdown = forwardRef(({
         }
     }, [markAsRead]);
 
-    const handleMarkAllAsRead = useCallback(async () => {
-        // Save the previous state in case we need to roll back
-        const previousNotifications = deepClone(notifications);
-
-        // Update UI optimistically
-        setNotifications(prev => {
-            if (activeTab === NOTIFICATION_TABS.ALL) {
-                return prev.map(n => (n.read ? n : {...n, read: true}));
-            }
-
-            if (activeTab === NOTIFICATION_TABS.UNREAD) {
-                return [];
-            }
-
-            return prev;
-        });
-
-        try {
-            await markAllAsRead();
-        } catch (err) {
-            // Roll back on failure
-            setNotifications(previousNotifications);
-        }
-    }, [markAllAsRead]);
-
     const Item = useCallback((item) => (
         <NotificationItem
             key={item.id}
@@ -106,8 +83,18 @@ const NotificationDropdown = forwardRef(({
         />
     ), [handleMarkAsRead]);
 
+    // Handle real-time notifications
     useEffect(() => {
-        setPage(0);
+        const handleNewNotification = (notification) => {
+            setNotifications((prev) => [notification, ...prev]);
+        };
+
+        const unsubscribe = onNotification(handleNewNotification);
+        return unsubscribe;
+    }, [onNotification]);
+
+    useEffect(() => {
+        setCursor(null);
         setNotifications([]);
     }, [activeTab]);
 
@@ -136,20 +123,7 @@ const NotificationDropdown = forwardRef(({
 
                         <DropdownHeader>
                             <DropdownTitle>Notifications</DropdownTitle>
-                            <DropdownActions>
-                                {unreadCount > 0 &&
-                                    <div style={{fontSize: ".75em"}}>
-                                        <Button
-                                            type={BUTTON_TYPE.INFO} onClick={handleMarkAllAsRead}
-                                            Icon={TbChecks}
-                                        >
-                                            Dismiss All
-                                        </Button>
-                                    </div>
-
-                                }
-                                <CloseButton size="1.75em" color={"var(--color-primary)"} onClick={onClose}/>
-                            </DropdownActions>
+                            <CloseButton size="1.75em" color={"var(--color-primary)"} onClick={onClose}/>
                         </DropdownHeader>
 
                         <Tabs tabs={TABS}
@@ -161,10 +135,11 @@ const NotificationDropdown = forwardRef(({
                         <InfiniteScrollLoader
                             onChange={handleChange}
                             initItems={notifications}
-                            initPage={page}
+                            useCursor={true}
+                            initCursor={cursor}
                             fetchData={fetchNotifications}
                             renderItem={Item}
-                            pageSize={10}
+                            pageSize={4}
                             threshold={10}
                             containerStyle={{gap: "0"}}
                             endMessage={"No more Notifications to load"}

@@ -19,5 +19,5 @@ export const NOTIFICATION_TABS = {
 
 export const TABS = [
     {id: NOTIFICATION_TABS.ALL, label: 'All'},
-    {id: NOTIFICATION_TABS.UNREAD, label: 'Unread'}
+    // {id: NOTIFICATION_TABS.UNREAD, label: 'Unread'}
 ];

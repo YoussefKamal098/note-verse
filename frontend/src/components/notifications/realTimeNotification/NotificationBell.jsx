@@ -12,12 +12,11 @@ const NotificationBell = () => {
     const {showNotification} = usePopupNotifications();
     const {notify} = useToastNotification();
     const {
-        unreadCount,
+        unseenCount,
         error,
         fetchNotifications,
-        fetchUnreadNotifications,
         markAsRead,
-        markAllAsRead,
+        markAllAsSeen,
         onNotification,
         abortNotificationFetchRequests
     } = useRealTimeNotifications();
@@ -53,8 +52,7 @@ const NotificationBell = () => {
     // Create different fetch functions for each tab
     const fetchFunctions = useMemo(() => ({
         [NOTIFICATION_TABS.ALL]: fetchNotifications,
-        [NOTIFICATION_TABS.UNREAD]: fetchUnreadNotifications,
-    }), [fetchNotifications, fetchUnreadNotifications]);
+    }), [fetchNotifications]);
 
     // Get the current fetch function based on active tab
     const currentFetchFunction = useMemo(() => (
@@ -63,12 +61,16 @@ const NotificationBell = () => {
 
     // Handle tab change
     const handleTabChange = useCallback((newTab) => {
-        setActiveTab(newTab);
         // The function reference changes when tab changes
+        setActiveTab(newTab);
+    }, []);
+
+    const toggleClose = useCallback(() => {
+        setIsOpen((prev) => !prev);
+        markAllAsSeen();
     }, []);
 
     const onClose = useCallback(() => setIsOpen(false), []);
-    const toggleClose = useCallback(() => setIsOpen((prev) => !prev), []);
 
     useOutsideClick(dropdownRef, onClose, [], [bellButtonRef]);
 
@@ -77,7 +79,7 @@ const NotificationBell = () => {
             <BellButton
                 ref={bellButtonRef}
                 onClick={toggleClose}
-                unreadCount={unreadCount}
+                unseenCount={unseenCount}
             />
 
             <DropDown
@@ -86,8 +88,8 @@ const NotificationBell = () => {
                 onClose={onClose}
                 activeTab={activeTab}
                 setActiveTab={handleTabChange}
-                unreadCount={unreadCount}
-                markAllAsRead={markAllAsRead}
+                unseenCount={unseenCount}
+                markAllAsSeen={markAllAsSeen}
                 markAsRead={markAsRead}
                 fetchNotifications={currentFetchFunction}
                 onNotification={onNotification}

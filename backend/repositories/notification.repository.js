@@ -1,5 +1,5 @@
 const BaseRepository = require('./base.repository');
-const dbErrorCodes = require("../constants/dbErrorCodes");
+const dbErrorCodes = require("@/constants/dbErrorCodes");
 
 /**
  * @class NotificationRepository
@@ -90,58 +90,101 @@ class NotificationRepository extends BaseRepository {
     }
 
     /**
-     * Gets notifications for a specific user with pagination
+     * Encodes a cursor value (e.g., a timestamp or ID) into a base64url string
+     * for safe transport over HTTP query parameters.
+     *
+     * @private
+     * @param {string|Date|number} value - The value to encode (commonly a date or ObjectId timestamp).
+     * @returns {string} Base64url-encoded cursor string
+     */
+    #encodeCursor(value) {
+        return Buffer.from(value.toString()).toString("base64url");
+    }
+
+    /**
+     * Decodes a base64url-encoded cursor back into its original string value.
+     *
+     * @private
+     * @param {string} cursor - The base64url-encoded cursor string
+     * @returns {string|null} Decoded string value, or null if decoding fails
+     */
+    #decodeCursor(cursor) {
+        try {
+            return Buffer.from(cursor, "base64url").toString("utf8");
+        } catch {
+            return null;
+        }
+    }
+
+
+    /**
+     * Retrieves notifications for a specific user with cursor-based pagination,
+     * sorted from newest to oldest by `createdAt`.
+     *
+     * @async
      * @param {Object} params
-     * @param {string} params.userId - ID of the user to get notifications for
-     * @param {Object} [options] - Options
-     * @param {number} [options.page=0] - Page number (0-based)
-     * @param {number} [options.limit=20] - Results per page
-     * @param {Object|string} [options.projection] - Fields to include/exclude
-     * @param {Object} [options.filter] - Filter criteria
-     * @param {boolean} [options.filter.read] - Filter by read status (true/false)
-     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
-     * @returns {Promise<Readonly<Array<NotificationOutput>>>} Array of notification documents (empty if none found)
-     * @throws {Error} When retrieval fails
+     * @param {string} params.userId - The ID of the user whose notifications to fetch
+     * @param {Object} [options] - Query options
+     * @param {number} [options.limit=20] - Maximum number of notifications to return
+     * @param {string|null} [options.cursor=null] - Encoded cursor representing the last fetched notification's `createdAt`
+     * @param {Object|string|null} [options.projection=null] - Fields to include/exclude in results
+     * @param {Object} [options.filter={}] - Additional filter criteria
+     * @param {boolean} [options.filter.read] - Filter notifications by read status
+     * @param {import("mongoose").ClientSession|null} [options.session=null] - Optional MongoDB transaction session
+     *
+     * @returns {Promise<{data: ReadonlyArray<Readonly<NotificationOutput>>, nextCursor: string|null}>}
+     * - `data`: Frozen array of sanitized notifications
+     * - `nextCursor`: Encoded cursor for the next page, or null if no more results
+     *
+     * @throws {Error} If retrieval fails
      */
     async getUserNotifications({userId}, {
-        page = 0,
         limit = 20,
+        cursor = null,
         projection = null,
         filter = {},
         session = null
     } = {}) {
-        if (!this.isValidId(userId)) return this.freeze([]);
+        if (!this.isValidId(userId)) return {data: Object.freeze([]), nextCursor: null};
 
-        const skip = page * limit;
-
-        // Base query - always filter by recipient
         const queryConditions = {
-            recipient: this.toObjectId(userId)
+            recipient: this.toObjectId(userId),
+            ...((filter && typeof filter.read === "boolean") ? {read: filter.read} : {})
         };
 
-        // Apply additional filters if provided
-        if (filter && typeof filter.read === 'boolean') {
-            queryConditions.read = filter.read;
+        if (cursor) {
+            const decodedCursor = this.#decodeCursor(cursor); // decode base64
+            if (decodedCursor) {
+                queryConditions.createdAt = {$lt: new Date(decodedCursor)};
+            }
         }
 
         try {
             const query = this._model.find(queryConditions)
-                .sort({createdAt: -1})
-                .skip(skip)
-                .limit(limit)
+                .sort({createdAt: -1}) // newest → oldest by createdAt
+                .limit(limit + 1)
                 .session(session);
 
-            if (projection) {
-                query.select(projection);
-            }
+            if (projection) query.select(projection);
 
             const notifications = await query.lean();
-            return this.freeze(this.#sanitizeNotification(notifications));
+            const hasNext = notifications.length > limit;
+            const results = hasNext ? notifications.slice(0, limit) : notifications;
+
+            const nextCursor = hasNext
+                ? this.#encodeCursor(results[results.length - 1].createdAt.toISOString())
+                : null;
+
+            return {
+                data: this.freeze(this.#sanitizeNotification(results)),
+                nextCursor
+            };
         } catch (err) {
             console.error(`Failed to get notifications for user ${userId}:`, err);
-            throw new Error('Failed to retrieve notifications. Please try again later');
+            throw new Error("Failed to retrieve notifications. Please try again later");
         }
     }
+
 
     /**
      * Marks a notification as read
@@ -169,30 +212,18 @@ class NotificationRepository extends BaseRepository {
         }
     }
 
-    /**
-     * Marks all unread notifications for a user as read
-     * @param {Object} params
-     * @param {string} params.userId - ID of the user
-     * @param {Object} [options] - Options
-     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
-     * @returns {Promise<void>}
-     * @throws {Error} When update fails
-     */
-    async markAllAsRead({userId}, {session = null} = {}) {
+    async markAllAsSeen({userId}, {session = null} = {}) {
         if (!this.isValidId(userId)) return;
 
         try {
             await this._model.updateMany(
-                {
-                    recipient: this.toObjectId(userId),
-                    read: false
-                },
-                {$set: {read: true}},
+                {recipient: this.toObjectId(userId), seen: false},
+                {$set: {seen: true}},
                 {session}
             );
         } catch (err) {
-            console.error(`Failed to mark all notifications as read for user ${userId}:`, err);
-            throw new Error('Failed to mark notifications as read. Please try again later');
+            console.error(`Failed to mark all notifications as seen for user ${userId}:`, err);
+            throw new Error('Failed to mark notifications as seen. Please try again later');
         }
     }
 
@@ -216,6 +247,29 @@ class NotificationRepository extends BaseRepository {
         } catch (err) {
             console.error(`Failed to get unread count for user ${userId}:`, err);
             throw new Error('Failed to get unread notification count. Please try again later');
+        }
+    }
+
+    /**
+     * Gets unseen notification count for a user
+     * @param {Object} params
+     * @param {string} params.userId - ID of the user
+     * @param {Object} [options] - Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
+     * @returns {Promise<number>} Count of unseen notifications
+     * @throws {Error} When count fails
+     */
+    async getUnseenCount({userId}, {session = null} = {}) {
+        if (!this.isValidId(userId)) return 0;
+
+        try {
+            return await this._model.countDocuments({
+                recipient: this.toObjectId(userId),
+                seen: false
+            }).session(session);
+        } catch (err) {
+            console.error(`Failed to get unseen count for user ${userId}:`, err);
+            throw new Error('Failed to get unseen notification count. Please try again later');
         }
     }
 }

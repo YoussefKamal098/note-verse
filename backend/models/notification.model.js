@@ -13,7 +13,8 @@ const notificationSchema = new mongoose.Schema({
         index: true
     },
     payload: mongoose.Schema.Types.Mixed,
-    read: {type: Boolean, default: false, index: true}
+    read: {type: Boolean, default: false, index: true},
+    seen: {type: Boolean, default: false, index: true}
 }, {
     timestamps: true
 });
@@ -21,7 +22,7 @@ const notificationSchema = new mongoose.Schema({
 // TTL index on `createdAt` for automatic deletion after 30 days
 notificationSchema.index({createdAt: 1}, {expires: '30d'});
 // Compound indexes
-notificationSchema.index({recipient: 1, read: 1});
+notificationSchema.index({recipient: 1, seen: 1});
 notificationSchema.index({recipient: 1, read: 1, createdAt: -1});
 notificationSchema.index({recipient: 1, createdAt: -1});
 

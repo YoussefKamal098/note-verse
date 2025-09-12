@@ -120,12 +120,6 @@ export const DropdownTitle = styled.h4`
     margin: 0;
 `;
 
-export const DropdownActions = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 5px
-`;
-
 export const NotificationItem = styled(BaseNotificationItem)`
         // border-left: ${({unread}) => unread ? '2px solid var(--color-primary)' : 'none'};
     background: ${({unread}) => unread ? 'var(--background-tertiary)' : 'transparent'};

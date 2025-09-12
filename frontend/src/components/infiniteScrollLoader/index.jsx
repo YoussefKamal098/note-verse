@@ -57,12 +57,15 @@ const InfiniteScrollLoader = ({
                                   initLoader = <Loader isAbsolute={true} size={30} color={"var(--color-primary)"}/>,
                                   initItems = [],
                                   initPage = 0,
+                                  initCursor = null,
+                                  useCursor = false,
                                   onChange,
                                   containerStyle = {},
                                   ...props
                               }) => {
     const [items, setItems] = useState(initItems);
     const [page, setPage] = useState(initPage);
+    const [cursor, setCursor] = useState(initCursor);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [hasInitialLoad, setHasInitialLoad] = useState(initItems.length === 0);
@@ -88,14 +91,32 @@ const InfiniteScrollLoader = ({
         setIsLoading(true);
         setError(null);
         try {
-            const newItems = await fetchData(page, pageSize);
-            if (newItems.length === 0) {
-                setHasMore(false);
+            if (useCursor) {
+                // Cursor-based pagination
+                const response = await fetchData(pageSize, cursor);
+                const newItems = response.data || [];
+                const nextCursor = response.nextCursor || null;
+
+                if (newItems.length !== 0) {
+                    const updatedItems = [...items, ...newItems];
+                    setItems(updatedItems);
+                    setCursor(nextCursor);
+                    onChange?.(newItems, cursor);
+                }
+
+                if (!nextCursor) {
+                    setHasMore(false);
+                }
             } else {
-                const updatedItems = [...items, ...newItems];
-                setItems(updatedItems);
-                setPage(page + 1);
-                onChange?.(updatedItems, page + 1);
+                const newItems = await fetchData(page, pageSize);
+                if (newItems.length === 0) {
+                    setHasMore(false);
+                } else {
+                    const updatedItems = [...items, ...newItems];
+                    setItems(updatedItems);
+                    setPage(page + 1);
+                    onChange?.(updatedItems, page + 1);
+                }
             }
 
             if (hasInitialLoad) setHasInitialLoad(false);
@@ -126,7 +147,11 @@ const InfiniteScrollLoader = ({
     }, [isLoading, hasMore, error]);
 
     useEffect(() => {
-        hasInitialLoad && initItems.length === 0 && loadMore();
+        if ((hasInitialLoad && initItems.length === 0) ||
+            (initItems.length < pageSize && hasMore)
+        ) {
+            loadMore();
+        }
     }, [hasInitialLoad, initItems.length]);
 
     const renderErrorState = () => (
