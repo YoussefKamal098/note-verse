@@ -1,3 +1,9 @@
+.idea/dataSources.xml
 node_modules
+redis-cluster
 package-lock.json
+test
 .env
+main.js
+scripts
+main.html

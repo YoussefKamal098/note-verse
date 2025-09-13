@@ -56,6 +56,7 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
     const textAreaRef = useRef(null);
     const isValueFromInside = useRef(false);
 
+
     useEffect(() => {
         if (isValueFromInside.current) {
             isValueFromInside.current = false;
@@ -114,6 +115,7 @@ const TitleInput = ({title, setTitle, disabled = false}) => {
                 onKeyUp={onKeyUpUp}
                 placeholder="📝 Title your note!"
                 disabled={disabled}
+                autoFocus={true}
             />
         </InputWrapperStyled>
     );

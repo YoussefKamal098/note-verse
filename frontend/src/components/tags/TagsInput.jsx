@@ -78,6 +78,7 @@ const TagsInput = ({tags, setTags}) => {
             placeholder="Add Tag for your note!📌"
             onKeyDown={onTagChange}
             animate={animate ? "true" : undefined}
+            autoFocus={true}
         />
     );
 };
