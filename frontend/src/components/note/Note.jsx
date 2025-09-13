@@ -1,41 +1,36 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useNavigate} from "react-router-dom";
-import styled from 'styled-components';
-import {POPUP_TYPE} from '@/components/confirmationPopup/confirmationMessagePopup';
-import {BUTTON_TYPE} from "@/components/buttons/Button";
 import {useConfirmation} from "@/contexts/ConfirmationContext";
-import Contributor from "@/components/infiniteScrollListsPopUp/Contributor";
-import CommitHistory from "@/components/infiniteScrollListsPopUp/CommitHistory";
-import UserContributionHistory from "@/components/infiniteScrollListsPopUp/UserContributionHistory";
-import SharePopUp from "@/components/noteSharePopUp";
-import CommitMessagePopup from "@/components/commitMessagePopup";
+import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
 import useNoteValidation from "@/hooks/useNoteValidation";
-import MainContent from "@/components/note/MainContent";
 import useCopyLink from "@/hooks/useCopyLink";
 import useMediaSize from "@/hooks/useMediaSize";
-import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
-import Contributors from "./Contributors";
-import RealTimeUpdatePanel from './realTimeUpdatePanel';
 import {DEVICE_SIZES} from "@/constants/breakpoints";
 import routesPaths from "@/constants/routesPaths";
+import NoteView from './NoteView';
+import {useNotePopupManager} from './hooks/useNotePopupManager';
+import {useNoteActions} from './hooks/useNoteActions';
+import NoteLayout from './NoteLayout';
 
-const GridContainerStyles = styled.div`
-    display: grid;
-    grid-template-areas: ${({$showContributors}) => $showContributors ? `
-        "contributors realtime_updates_panel"
-        "main_content realtime_updates_panel"
-        "main_content realtime_updates_panel"` : `
-        "main_content realtime_updates_panel"
-        `
-    };
-    grid-template-columns: 1fr auto;
-    gap: 10px;
-    width: 100%;
-    ${({$isMobile}) => $isMobile && "max-width: 775px"};
-    ${({$isMobile, $showRealTimeUpdatesPanel}) => !$showRealTimeUpdatesPanel && !$isMobile && "max-width: 900px"};
-    align-items: start;
-`;
 
+/**
+ * Main Note component that handles note viewing, editing, and management
+ *
+ * @component
+ * @example
+ * return <Note />
+ *
+ * @description
+ * This component serves as the main container for note operations including:
+ * - Displaying note content
+ * - Handling edit mode
+ * - Managing note actions (save, delete, share, etc.)
+ * - Controlling various popups and modals
+ * - Responsive layout management
+ *
+ * It utilizes several custom hooks for state management and separates concerns
+ * through a well-structured component hierarchy.
+ */
 const Note = () => {
     const navigate = useNavigate();
     const copyLink = useCopyLink();
@@ -43,13 +38,8 @@ const Note = () => {
     const {validateNote} = useNoteValidation();
     const isMobile = useMediaSize(DEVICE_SIZES.laptop);
     const {actions, selectors} = useNoteContext();
-    const [showShare, setShowShare] = useState(false);
-    const [commitHistoryOpen, setCommitHistoryOpen] = useState(false);
-    const [contributorsOpen, setContributorsOpen] = useState(false);
-    const [userContributionHistoryOpen, setUserContributionHistoryOpen] = useState(false);
-    const [currentUserContributionHistoryId, setCurrentUserContributionHistoryId] = useState(null);
-    const [commitMessageOpen, setCommitMessageOpen] = useState(false);
-    const [showRealTimeUpdatesPanel, setShowRealTimeUpdatesPanel] = useState(!isMobile);
+
+    // Select various pieces of state from the note context
     const {editMode, isNew} = useNoteSelector(selectors.getStatus);
     const {id, isPublic} = useNoteSelector(selectors.getMeta);
     const {current, original} = useNoteSelector(selectors.getContent);
@@ -57,204 +47,146 @@ const Note = () => {
     const isOwner = useNoteSelector(selectors.isOwner);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const isContentChange = useNoteSelector(selectors.isContentChange);
+
     const markdownTabsRef = useRef(null);
 
+    // Manage all popup states with a custom hook
+    const {
+        popups,
+        realTimeUpdatesPanel,
+        togglePopup,
+        closePopup,
+        setCurrentUserContributionHistoryId
+    } = useNotePopupManager(isMobile, isNew);
+
+    // Centralize all note-related action
+    const {
+        handleDelete,
+        handleDiscard,
+        handleEdit,
+        handleCopyLink,
+        handleTogglePin,
+        handleToggleVisibility,
+        handleOnPull,
+        handleOnSave,
+        handleOnCommitSave
+    } = useNoteActions({
+        actions,
+        showConfirmation,
+        showTextConfirmation,
+        validateNote,
+        copyLink,
+        original,
+        current,
+        isNew,
+        isContentChange,
+        hasChanges,
+        markdownTabsRef,
+        togglePopup,
+        closePopup
+    });
+
+    // Control real-time updates panel visibility based on device and note status
     useEffect(() => {
         if (!isMobile) {
-            setShowRealTimeUpdatesPanel(!isNew);
+            realTimeUpdatesPanel.setShow(!isNew);
         } else {
-            setShowRealTimeUpdatesPanel(false);
+            realTimeUpdatesPanel.setShow(false);
         }
     }, [isMobile, isNew, isOwner]);
 
-    const handleDelete = useCallback(() => {
-        showTextConfirmation({
-            title: "Delete Note",
-            description: "Are you sure you want to permanently delete this note? This action cannot be undone.",
-            confirmText: original.title,
-            confirmButtonText: "Delete",
-            confirmButtonType: BUTTON_TYPE.DANGER,
-            onConfirm: actions.deleteNote,
-        });
-    }, [actions.deleteNote, showTextConfirmation, original.title]);
-
-    const handleDiscard = useCallback(async () => {
-        if (hasChanges) {
-            showConfirmation({
-                type: POPUP_TYPE.WARNING,
-                confirmationMessage: "Are you sure you want to discard all unsaved changes? Your modifications will be lost permanently.",
-                onConfirm: async () => {
-                    original.content !== current.content && markdownTabsRef.current.resetContent(original.content);
-                    await actions.discardChanges();
-                },
-            });
-        } else {
-            await actions.toggleEditMode();
-        }
-    }, [actions.discardChanges, showConfirmation, original.content, current.content, hasChanges]);
-
+    /**
+     * Handle visibility change for the note
+     * @param {boolean} visibility - New visibility state
+     */
     const onVisibilityChange = useCallback((visibility) => {
         actions.updateVisibilityState(visibility);
-    }, [actions.updateVisibilityState]);
+    }, [actions]);
 
-    const handleOnSave = useCallback(async () => {
-        const isValid = validateNote(current);
+    /**
+     * Navigate to a specific note version
+     * @param {string} id - Note version ID
+     */
+    const handleCommitClick = useCallback((id) => navigate(routesPaths.NOTE_VERSION(id)), [navigate]);
 
-        if (isContentChange && !isNew && isValid) {
-            setCommitMessageOpen(true);
-            return;
-        }
-
-        if (!isValid) return;
-
-        await actions.persistNote();
-    }, [actions.persistNote, isContentChange, current]);
-
-    const handleOnCommitSave = useCallback(async (message) => {
-        setCommitMessageOpen(false);
-        await actions.persistNote({commitMessage: message});
-    }, [actions.persistNote]);
-
-    const handleEdit = useCallback(() => {
-        actions.toggleEditMode();
-    }, [actions.toggleEditMode]);
-
-    const handleCopyLink = useCallback(async () => {
-        await copyLink();
-    }, []);
-
-    const handleShowShare = useCallback(() => {
-        setShowShare((prev) => !prev);
-    }, []);
-
-    const handleRealTimeUpdatesIconClick = useCallback(() => {
-        setShowRealTimeUpdatesPanel(prev => !prev);
-    }, []);
-
-    const handleShowCommitHistory = useCallback(() => {
-        setCommitHistoryOpen(prev => !prev);
-    }, []);
-
-    const handleShowContributors = useCallback(() => {
-        setContributorsOpen(prev => !prev);
-    }, []);
-
-    const handleCloseRealTimePanel = useCallback(() => {
-        setShowRealTimeUpdatesPanel(false);
-    }, []);
-
-    const handleTogglePin = useCallback(() => {
-        isNew ? actions.togglePinState() : actions.togglePin()
-    }, [isNew, actions.togglePinState, actions.togglePin]);
-
-    const handleToggleVisibility = useCallback(() => {
-        isNew ? actions.toggleVisibilityState() : actions.toggleVisibility()
-    }, [isNew, actions.toggleVisibilityState, actions.toggleVisibility]);
-
-    const handleCloseUserContributionHistory = useCallback(() => {
-        setUserContributionHistoryOpen(false);
-    }, []);
-
-    const handleCloseCommitMessagePopup = useCallback(() => {
-        setCommitMessageOpen(false);
-    }, []);
-
-    const handleContributorClick = useCallback((userId) => {
-        setContributorsOpen(false);
-        setCurrentUserContributionHistoryId(userId);
-        setUserContributionHistoryOpen(true);
-    }, []);
-
-    const handleOnContributorClick = useCallback((userId) => {
-        if (userId === 'overflow') {
-            handleShowContributors();
-        } else {
-            setCurrentUserContributionHistoryId(userId);
-            setUserContributionHistoryOpen(true);
-        }
-    }, []);
-
-    const handleOnPull = useCallback((pulledContent) => {
-        actions.resetContent(pulledContent);
-        markdownTabsRef.current?.resetContent?.(pulledContent);
-    }, [actions.resetContent]);
-
-    const handleCommitClick = useCallback((id) => navigate(routesPaths.NOTE_VERSION(id)), [])
-
+    // Memoize header actions to prevent unnecessary re-renders
     const headerActions = useMemo(() => ({
         onSave: handleOnSave,
         onDelete: handleDelete,
         onDiscard: handleDiscard,
         onEdit: handleEdit,
         onCopyLink: handleCopyLink,
-        onShowShare: handleShowShare,
-        onRealTimeUpdateIconClick: handleRealTimeUpdatesIconClick,
-        onShowCommitHistory: handleShowCommitHistory,
+        onShowShare: () => togglePopup('share'),
+        onRealTimeUpdateIconClick: realTimeUpdatesPanel.toggle,
+        onShowCommitHistory: () => togglePopup('commitHistory'),
         onTogglePin: handleTogglePin,
         onToggleVisibility: handleToggleVisibility
     }), [
-        handleEdit,
-        handleCopyLink,
+        handleOnSave,
         handleDelete,
         handleDiscard,
-        handleShowShare,
-        handleOnSave,
-        handleShowCommitHistory,
-        handleRealTimeUpdatesIconClick,
+        handleEdit,
+        handleCopyLink,
+        togglePopup,
+        realTimeUpdatesPanel.toggle,
         handleTogglePin,
         handleToggleVisibility
     ]);
 
+    /**
+     * Handle contributor click with special handling for overflow case
+     * @param {string} userId - User ID or 'overflow' for overflow menu
+     */
+    const handleOnContributorClick = useCallback((userId) => {
+        if (userId === 'overflow') {
+            togglePopup('contributors');
+        } else {
+            setCurrentUserContributionHistoryId(userId);
+            togglePopup('userContributionHistory');
+        }
+    }, [togglePopup, setCurrentUserContributionHistoryId]);
+
+    /**
+     * Handle contributor selection from contributors popup
+     * @param {string} userId - Selected user ID
+     */
+    const handleContributorClick = useCallback((userId) => {
+        closePopup('contributors');
+        setCurrentUserContributionHistoryId(userId);
+        togglePopup('userContributionHistory');
+    }, [closePopup, togglePopup, setCurrentUserContributionHistoryId]);
+
     return (
-        <GridContainerStyles
-            $showContributors={!isNew && !editMode}
-            $showRealTimeUpdatesPanel={showRealTimeUpdatesPanel}
-            $isMobile={isMobile}
+        <NoteLayout
+            showContributors={!isNew && !editMode}
+            showRealTimeUpdatesPanel={realTimeUpdatesPanel.show}
+            isMobile={isMobile}
         >
-            <Contributors onContributorClick={handleOnContributorClick}/>
-            <MainContent headerActions={headerActions} isMobile={isMobile} markdownTabsRef={markdownTabsRef}/>
-
-            {isOwner && <SharePopUp
-                noteMeta={{id, isPublic}}
-                onClose={handleShowShare}
-                onVisibilityChange={onVisibilityChange}
-                show={showShare}
-            />}
-            <CommitHistory
-                noteId={id}
-                noteOwnerId={owner.id}
-                isOpen={commitHistoryOpen}
-                onItemClick={handleCommitClick}
-                onClose={handleShowCommitHistory}
-            />
-            <Contributor
-                noteId={id}
-                noteOwnerId={owner.id}
-                isOpen={contributorsOpen}
-                onItemClick={handleContributorClick}
-                onClose={handleShowContributors}
-            />
-            <UserContributionHistory
-                noteId={id}
-                userId={currentUserContributionHistoryId}
-                noteOwnerId={owner.id}
-                isOpen={userContributionHistoryOpen}
-                onItemClick={handleCommitClick}
-                onClose={handleCloseUserContributionHistory}
-            />
-            <CommitMessagePopup
-                isOpen={commitMessageOpen}
-                onClose={handleCloseCommitMessagePopup}
-                onSave={handleOnCommitSave}
-            />
-
-            {!isNew && <RealTimeUpdatePanel
-                show={showRealTimeUpdatesPanel}
-                onPull={handleOnPull}
-                onClose={handleCloseRealTimePanel}
+            <NoteView
+                headerActions={headerActions}
                 isMobile={isMobile}
-            />}
-        </GridContainerStyles>
+                markdownTabsRef={markdownTabsRef}
+                onContributorClick={handleOnContributorClick}
+                popups={popups}
+                realTimeUpdatesPanel={realTimeUpdatesPanel}
+                noteData={{
+                    id,
+                    isPublic,
+                    owner,
+                    isOwner,
+                    isNew
+                }}
+                handlers={{
+                    onVisibilityChange,
+                    handleCommitClick,
+                    handleOnCommitSave,
+                    handleOnPull,
+                    closePopup,
+                    togglePopup,
+                    handleContributorClick
+                }}
+            />
+        </NoteLayout>
     );
 }
 
