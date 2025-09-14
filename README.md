@@ -319,7 +319,9 @@ NOTES_PER_PAGE=10
 | `GET`       | `api/v1/notifications`                      | Get paginated list of user notifications for the authenticated user. Supports filters (e.g. `read=false`). |
 | `PATCH`     | `api/v1/notifications/:notificationId/read` | Mark a single notification as read for the authenticated user.                                             |
 | `PATCH`     | `api/v1/notifications/read-all`             | Mark all notifications as read for the authenticated user.                                                 |
+| `PATCH`     | `api/v1/notifications/seen-all`             | Mark all notifications as seen for the authenticated user.                                                 |
 | `GET`       | `api/v1/notifications/unread-count`         | Get the count of unread notifications for the authenticated user.                                          |
+| `GET`       | `api/v1/notifications/unseen-count`         | Get the count of unseen notifications for the authenticated user.                                          |
 
 ---
 
