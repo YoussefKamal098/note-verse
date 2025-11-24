@@ -41,7 +41,6 @@ class SessionRepository {
      * @param {string} [sessionData.osName] - The operating system name (optional).
      * @param {string} [sessionData.deviceModel] - The device model information (optional).
      * @param {string} [sessionData.deviceType] - The type of device (e.g., "Desktop" or "Mobile") (optional).
-     * @param {string} [sessionData.ipVersion] - The IP version (e.g., "IPv4" or "IPv6") (optional).
      * @param {Date} [sessionData.expiredAt] - The expiration timestamp for the session.
      * @param {Date} [sessionData.lastAccessedAt] - The last access time for the session (optional).
      * @returns {Promise<Object>} The created session document, deep-frozen to prevent further modifications.

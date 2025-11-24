@@ -100,7 +100,6 @@ class SessionService {
         const sessionData = {
             userId,
             userAgent,
-            ipVersion,
             ip: parsedIp,
             browserName: info.browser.name,
             osName: info.os.name,

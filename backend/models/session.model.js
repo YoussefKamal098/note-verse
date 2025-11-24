@@ -47,10 +47,6 @@ const sessionSchema = new Schema(
             type: String,
             default: 'Desktop'
         },
-        ipVersion: {
-            type: String,
-            default: null,
-        },
         // The expiration time. A session is active if expiredAt > current time.
         expiredAt: {
             type: Date,
