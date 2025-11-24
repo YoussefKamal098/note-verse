@@ -1,0 +1,5 @@
+.idea
+node_modules
+redis-cluster
+package-lock.json
+.env
