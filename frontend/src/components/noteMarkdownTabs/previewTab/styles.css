@@ -1,0 +1,74 @@
+/* ======================================  Preview styles ======================================  */
+.wmde-markdown {
+    padding: 1em 2em 3em;
+    font-weight: normal !important;
+    font-size: 1em !important;
+    background-color: transparent !important;
+}
+
+.wmde-markdown * {
+    font-family: 'Quicksand', sans-serif !important;
+    font-weight: 500;
+}
+
+.wmde-markdown [dir="rtl"] ul,
+.wmde-markdown [dir="rtl"] ol {
+    padding-right: 1.5rem;
+    padding-left: 0;
+    list-style-position: inside;
+}
+
+.wmde-markdown [dir="rtl"] ul ul,
+.wmde-markdown [dir="rtl"] ol ol {
+    padding-right: 1.5rem;
+}
+
+.wmde-markdown pre .copied {
+    color: var(--color-text-dark) !important;
+    background-color: var(--color-primary) !important;
+}
+
+.wmde-markdown pre:hover .copied:hover {
+    color: var(--color-text-dark) !important;
+    background-color: var(--color-primary-hover) !important;
+}
+
+.wmde-markdown hr {
+    background-color: transparent !important;
+    border-bottom: none;
+    position: relative;
+}
+
+.wmde-markdown hr::after {
+    position: absolute;
+    content: "";
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    transform: translateY(-50%);
+    background-color: var(--color-border);
+    border-radius: 25px;
+}
+
+.wmde-markdown table {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.wmde-markdown pre.language-mermaid,
+.wmde-markdown pre.language-graph {
+    min-height: 150px;
+}
+
+.wmde-markdown pre code {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+    padding: 20px;
+}
+
+.wmde-markdown pre *, code * {
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: bold !important;
+}

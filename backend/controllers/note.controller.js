@@ -41,6 +41,11 @@ class NotesController {
      * @descriptionService for handling note versions operations.
      */
     #versionService
+    /**
+     * @private
+     * @type {ReactionService}
+     */
+    #reactionService;
 
     /**
      * Constructs a new NotesController.
@@ -48,6 +53,7 @@ class NotesController {
      * @param {NoteService} dependencies.noteService - Note service instance.
      * @param {PermissionService} dependencies.permissionService - Permission service instance.
      * @param {GrantNotePermissionsUseCase} dependencies.grantNotePermissionsUseCase - Grant permissions UseCase
+     * @param {import("@/services/reaction.service").ReactionService} dependencies.reactionService
      * @param {CreateNoteUseCase} dependencies.createNoteUseCase - Create note UseCase
      * @param {UpdateNoteUseCase} dependencies.updateNoteUseCase - Update note UseCase
      * */
@@ -56,20 +62,22 @@ class NotesController {
                     grantNotePermissionsUseCase,
                     createNoteUseCase,
                     updateNoteUseCase,
-                    versionService
+                    reactionService,
+                    versionService,
                 }) {
         this.#noteService = noteService;
         this.#permissionService = permissionService;
         this.#grantNotePermissionsUseCase = grantNotePermissionsUseCase;
         this.#createNoteUseCase = createNoteUseCase;
         this.#updateNoteUseCase = updateNoteUseCase;
+        this.#reactionService = reactionService;
         this.#versionService = versionService;
     }
 
     /**
      * Creates a new note for a user.
      * @param {import('express').Request} req - Express request object.
-     * @param {string} req.params.userId - ID of the user creating the note.
+     * @param {string} req.userId - ID of the user creating the note.
      * @param {Object} req.body - Note data.
      * @param {string} req.body.title - Note title.
      * @param {string[]} [req.body.tags] - Note tags.
@@ -105,17 +113,25 @@ class NotesController {
     /**
      * Retrieves a specific note by ID.
      * @param {import('express').Request} req - Express request object.
-     * @param {Object} req.note - The note object attached by middleware.
+     * @param {string} req.userId - ID of the authenticated user.
+     * @param {OutputNote} req.note - The note object attached by middleware.
      * @param {import('express').Response} res - Express response object.
      * @returns {Promise<void>}
      */
     async findNoteById(req, res) {
-        res.status(httpCodes.OK.code).json(req.note);
+        const userId = req.userId;
+        const note = req.note;
+        const reaction = await this.#reactionService.getUserReaction(note.id, userId);
+        res.status(httpCodes.OK.code).json({
+            ...note,
+            authUserReaction: reaction
+        });
     }
 
     /**
      * Updates a note by ID.
      * @param {import('express').Request} req - Express request object.
+     * @param {string} req.userId - ID of the authenticated user.
      * @param {string} req.params.noteId - ID of the note to update.
      * @param {Object} req.body - Updated note data.
      * @param {string} [req.body.title] - New note title.
@@ -284,6 +300,37 @@ class NotesController {
         );
 
         res.status(httpCodes.OK.code).json(contributors);
+    }
+
+
+    /**
+     * Create, update, or remove a reaction for a note
+     * @async
+     * @method createOrUpdateReaction
+     * @param {import('express').Request} req - Express request object
+     * @param {string} req.userId - ID of the authenticated user.
+     * @param {import('express').Response} res - Express response object
+     * @returns {Promise<void>}
+     * @description Publishes reaction event to message queue for async processing
+     */
+    async reaction(req, res) {
+        const {noteId} = req.params;
+        const {type} = req.body;
+        const userId = req.userId;
+
+        // Publish reaction event
+        await this.#reactionService.reaction({
+            noteId,
+            userId,
+            type
+        });
+
+        // Return 202 Accepted since processing is async
+        res.status(httpCodes.ACCEPTED.code).json({
+            noteId,
+            message: type ? 'Reaction queued for processing ' : 'Reaction removal queued for processing',
+            ...(type ? {reaction: type} : {}),
+        });
     }
 }
 

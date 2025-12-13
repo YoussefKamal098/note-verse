@@ -9,6 +9,7 @@ module.exports = container => {
         sessionModel: asValue(require('../models/session.model')),
         versionModel: asValue(require('../models/version.model')),
         notificationModel: asValue(require('../models/notification.model')),
-        fileModel: asValue(require('../models/file.model'))
+        fileModel: asValue(require('../models/file.model')),
+        reactionModel: asValue(require('../models/reaction.model'))
     });
 };

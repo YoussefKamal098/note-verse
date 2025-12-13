@@ -10,6 +10,7 @@ const noteCreationSchema = require("../schemas/noteCreation.schema");
 const notesQuerySchema = require("../schemas/notesQuery.schema");
 const grantPermissionsSchema = require('../schemas/grantPermissions.schema');
 const grantedPermissionsQuerySchema = require('../schemas/grantedPermissionsQuery.schema');
+const reactionTypeSchema = require('../schemas/reactionType.schema');
 const container = require('../container');
 const {
     validateNoteViewPermission,
@@ -107,6 +108,14 @@ router.get(
     asyncRequestHandler(validateNoteViewPermissionMiddleware),
     asyncRequestHandler(validateRequestMiddlewares(paginationQuerySchema, {isQuery: true})),
     asyncRequestHandler(api('getContributors'))
+);
+
+router.post(
+    '/:noteId/reactions',
+    asyncRequestHandler(validateNoteViewPermissionMiddleware),
+    asyncRequestHandler(validateRequestMiddlewares(reactionTypeSchema)),
+    asyncRequestHandler(clearNotesCaches),
+    asyncRequestHandler(api('reaction'))
 );
 
 module.exports = router;

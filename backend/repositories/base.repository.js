@@ -135,7 +135,7 @@ class BaseRepository {
     /**
      * Executes an operation within a transaction with proper error handling
      * @template T
-     * @param {(session: mongoose.ClientSession) => Promise<T>} operation - Operation to execute
+     * @param {(session: import('mongoose').ClientSession) => Promise<T>} operation - Operation to execute
      * @param {Object} [errorConfig] - Custom error configuration
      * @param {string} [errorConfig.message] - Custom error message
      * @param {number} [errorConfig.statusCode] - Custom status code

@@ -10,6 +10,7 @@ const ENDPOINTS = {
     GET_NOTE_PERMISSIONS: (noteId) => `/notes/${noteId}/permissions`,
     GET_COMMIT_HISTORY: (noteId) => `/notes/${noteId}/history`,
     GET_CONTRIBUTORS: (noteId) => `/notes/${noteId}/contributors`,
+    UPDATE_REACTION: (noteId) => `/notes/${noteId}/reactions`,
 };
 
 class NoteService {
@@ -182,6 +183,23 @@ class NoteService {
                 ...config,
                 params: queryParams
             }
+        );
+    }
+
+    /**
+     * Create, update, or remove a reaction for a note for auth user
+     * @param {string} noteId - The ID of the note
+     * @param {Object} reactionData - Reaction data
+     * @param {ReactionType|null} reactionData.type - The reaction type (like, love, etc.) or null to remove reaction
+     * @param {import('axios').AxiosRequestConfig} [config={}] - Axios request config
+     * @returns {Promise<Object>} Response with reaction operation result
+     * @throws {Error} If reaction operation fails
+     */
+    async updateReaction(noteId, {type}, config = {}) {
+        return await this.#apiClient.post(
+            ENDPOINTS.UPDATE_REACTION(noteId),
+            {type},
+            config
         );
     }
 }

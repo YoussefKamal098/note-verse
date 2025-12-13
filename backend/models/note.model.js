@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {DEFAULT_REACTION_COUNTS} = require("@/constants/reaction.constants");
 const {Schema} = mongoose;
 
 const noteSchema = new Schema({
@@ -29,6 +30,10 @@ const noteSchema = new Schema({
     isPublic: {
         type: Boolean,
         default: false
+    },
+    reactionsCount: {
+        type: Schema.Types.Mixed,
+        default: () => ({...DEFAULT_REACTION_COUNTS})
     }
 }, {
     timestamps: true,

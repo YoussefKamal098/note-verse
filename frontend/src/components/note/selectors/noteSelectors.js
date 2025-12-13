@@ -18,6 +18,7 @@ export const createNoteSelectors = () => {
         })),
         getOwner: createSelector([selectBase], state => state.owner),
         getUserRole: createSelector([selectBase], state => state.userRole),
+        getUserReaction: createSelector([selectBase], state => state.reactions.userReaction),
         getStatus: createSelector([selectBase], state => state.status),
         canEdit: createSelector([selectBase], state =>
             [roles.OWNER, roles.EDITOR].includes(state.userRole)

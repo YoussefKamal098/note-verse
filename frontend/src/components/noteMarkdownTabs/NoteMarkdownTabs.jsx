@@ -33,7 +33,7 @@ const NoteMarkdownTabs = forwardRef(({content, canEdit, onContentChange, onTypin
         onTyping?.();
     }, []);
 
-    const handleOnKeyUp = useCallback(() => {
+    const handleOnKeyUp = useCallback((value) => {
         debouncedContentUpdate(value);
     }, [debouncedContentUpdate]);
 

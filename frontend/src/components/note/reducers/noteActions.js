@@ -7,6 +7,7 @@ import cacheService from '@/services/cacheService';
 import {ACTION_TYPES} from "../constants/actionTypes";
 import {DEFAULT_CONTENT, NEW_NOTE_KEY} from "../constants/noteConstants";
 import {getContentChanges} from "./noteReducer";
+import {Reactions} from "@/constants/reactionTypes";
 
 const normalizeContent = (str) => str.replace(/\s+$/, '') + '\n';
 
@@ -59,6 +60,8 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 }
 
                 const currentContent = {...noteContent, ...cachedData}
+                const reactionsCount = note.reactionsCount;
+                const authUserReaction = note.authUserReaction;
 
                 dispatch({
                     type: ACTION_TYPES.NOTE.INIT,
@@ -82,6 +85,10 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                         originalContent: {
                             ...noteContent,
                             content: normalizeContent(noteContent.content),
+                        },
+                        reactions: {
+                            counts: reactionsCount,
+                            userReaction: authUserReaction
                         },
                         status: {editMode: !!cachedData}
                     }
@@ -175,6 +182,73 @@ export const createNoteActions = (dispatch, getState, dependencies) => {
                 handleError(error);
             } finally {
                 dispatch({type: ACTION_TYPES.STATUS.UPDATE, payload: {isLoading: false}});
+                requestManager.removeAbortController(controller);
+            }
+        },
+
+        /**
+         * Update user's reaction for a note
+         * @param {ReactionType|null} reaction - The reaction type (like/love/celebrate) or null to remove reaction
+         * @returns {Promise<void>}
+         */
+        updateReaction: async (reaction) => {
+            const controller = requestManager.createAbortController();
+            const currentState = getState();
+            const currentUserReaction = currentState.reactions?.userReaction;
+            const currentCounts = currentState.reactions?.counts || {};
+
+            // Validate reaction type
+            if (reaction !== null && !Object.values(Reactions).includes(reaction)) {
+                throw new Error(`Invalid reaction type: ${reaction}`);
+            }
+
+            try {
+                // Optimistic update for immediate UI feedback
+                const optimisticCounts = {...currentCounts};
+                const optimisticUserReaction = reaction;
+
+                // Decrement old reaction if exists
+                if (currentUserReaction) {
+                    optimisticCounts[currentUserReaction] = Math.max(0, (optimisticCounts[currentUserReaction] || 1) - 1);
+                }
+
+                // Increment new reaction if not null
+                if (reaction) {
+                    optimisticCounts[reaction] = (optimisticCounts[reaction] || 0) + 1;
+                }
+
+                dispatch({
+                    type: ACTION_TYPES.REACTIONS.UPDATE,
+                    payload: {
+                        counts: optimisticCounts,
+                        userReaction: optimisticUserReaction,
+                    }
+                });
+
+                // Make API call
+                const result = await noteService.updateReaction(getState().id, {type: reaction}, {signal: controller.signal});
+
+                // Update with server response
+                dispatch({
+                    type: ACTION_TYPES.REACTIONS.UPDATE,
+                    payload: {
+                        counts: result.data?.counts || optimisticCounts,
+                        userReaction: result.data?.reaction || optimisticUserReaction,
+                    }
+                });
+
+            } catch (error) {
+                // Revert optimistic update on error
+                dispatch({
+                    type: ACTION_TYPES.REACTIONS.UPDATE,
+                    payload: {
+                        counts: currentCounts,
+                        userReaction: currentUserReaction,
+                    }
+                });
+
+                handleError(error);
+            } finally {
                 requestManager.removeAbortController(controller);
             }
         },

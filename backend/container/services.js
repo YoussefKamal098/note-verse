@@ -48,5 +48,13 @@ module.exports = container => {
         emailMediator: asFunction(({}) =>
             new (require('@/services/email.mediator'))(require('@/queues/email.queue'))
         ).singleton(),
+
+        reactionService: asFunction(({reactionCache, reactionRepo}) =>
+            new (require('@/services/reaction'))({
+                reactionProducer: new (require('@/services/reaction/reaction.producer'))({redis: redis}),
+                reactionCache,
+                reactionRepo
+            })
+        ).singleton(),
     });
 };

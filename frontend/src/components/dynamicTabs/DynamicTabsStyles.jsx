@@ -137,21 +137,6 @@ const TabStyled = styled.div`
         max-height: calc(100vh - 2rem);
         overflow-y: auto;
     }
-
-    // This is especially for markdown editor tab
-
-    &.full-screen .tab-body .md-editor {
-        max-height: calc(100vh - 2rem);
-    }
-
-    &.full-screen .tab-body .wmde-markdown {
-        min-height: calc(100vh - 2rem);
-    }
-
-    &.full-screen .tab-body .cm-editor,
-    &.full-screen .tab-body .cm-content {
-        min-height: calc(100vh - 2rem - 29px); // 29px is the editor toolbar height
-    }
 `
 
 const ToolbarStyled = styled.div`

@@ -1,9 +1,21 @@
-const config = require('@/config/config');
+const crc16 = require('crc').crc16;
 const {EventEmitter} = require('events');
+const config = require('@/config/config');
+
+function computeRedisSlot(key) {
+    let s = key.indexOf('{');
+    if (s > -1) {
+        const e = key.indexOf('}', s + 1);
+        if (e > -1) {
+            key = key.substring(s + 1, e);
+        }
+    }
+    return crc16(key) % 16384;
+}
 
 /**
  * @class RedisService
- * @extends EventEmitter
+ * @abstract EventEmitter
  * @description Redis client wrapper with enhanced cluster support, connection management, and safety features
  *
  * Features:
@@ -14,25 +26,39 @@ const {EventEmitter} = require('events');
  * - TTL-based operations
  **/
 class RedisService extends EventEmitter {
-    /** @private @type {RedisClient} */
+    /** @private
+     *  @type {import('ioredis').Cluster}
+     *  */
     #client;
-    /** @private @type {number} */
+    /** @private
+     * @type {number}
+     * */
     #ttl;
-    /** @private @type {Console|Logger} */
+    /** @private
+     * @type {Console|Logger}
+     * */
     #logger;
-    /** @private @type {boolean} */
+    /** @private
+     * @type {boolean}
+     * */
     #isConnected = false;
-    /** @private @type {number} */
+    /** @private
+     * @type {number}
+     * */
     #reconnectAttempts = 0;
-    /** @private @type {number} */
+    /** @private
+     *  @type {number}
+     *  */
     #maxReconnectAttempts = 5;
-    /** @private @type {number} */
+    /** @private
+     * @type {number}
+     * */
     #reconnectDelay = 1000;
 
     /**
      * Creates RedisService instance
      * @param {Object} config - Configuration
-     * @param {import('ioredis').Redis} config.redisClient - Configured Redis client
+     * @param {import('ioredis').Cluster} config.redisClient - Configured Redis client
      * @param {number} [config.ttl=3600] - Default TTL in seconds
      * @param {Console|Logger} [config.logger=console] - Logger instance
      * @param {number} [config.maxReconnectAttempts=5] - Max reconnection attempts
@@ -62,7 +88,7 @@ class RedisService extends EventEmitter {
 
     /**
      * Get underlying Redis client
-     * @returns {import('ioredis').Redis}
+     * @returns {import('ioredis').Cluster}
      */
     get client() {
         return this.#client;
@@ -206,6 +232,45 @@ class RedisService extends EventEmitter {
     }
 
     /**
+     * Sets value with full Redis options support
+     * @param {string} key - Redis key
+     * @param {string} value - Value to store
+     * @param {Object} [options] - Redis SET options
+     * @param {number} [options.EX] - Expire time in seconds
+     * @param {number} [options.PX] - Expire time in milliseconds
+     * @param {boolean} [options.NX] - Only set if key does not exist
+     * @param {boolean} [options.XX] - Only set if key exists
+     * @param {boolean} [options.KEEPTTL] - Retain the time to live
+     * @returns {Promise<'OK'|null>} 'OK' if set, null if condition not met
+     */
+    async setWithOptions(key, value, options = {}) {
+        await this.#ensureConnection();
+
+        const args = [key, value];
+
+        // Add expiration options
+        if (options.EX !== undefined) {
+            args.push('EX', options.EX.toString());
+        } else if (options.PX !== undefined) {
+            args.push('PX', options.PX.toString());
+        }
+
+        // Add existence conditions
+        if (options.NX) {
+            args.push('NX');
+        } else if (options.XX) {
+            args.push('XX');
+        }
+
+        // Add KEEPTTL if needed
+        if (options.KEEPTTL) {
+            args.push('KEEPTTL');
+        }
+
+        return this.#client.set(...args);
+    }
+
+    /**
      * Gets values of multiple keys
      * @param {...string} keys - Keys to retrieve
      * @returns {Promise<Array<string|null>>} Array of values
@@ -248,6 +313,84 @@ class RedisService extends EventEmitter {
     async sadd(key, ...members) {
         await this.#ensureConnection();
         return this.#client.sadd(key, members);
+    }
+
+    /**
+     * Adds members to a sorted set with optional parameters
+     *
+     * @example
+     * // Basic usage
+     * await redis.zadd('leaderboard', 100, 'player1');
+     *
+     * @example
+     * // With options - only add if it doesn't exist
+     * await redis.zadd('leaderboard', 'NX', 100, 'player1');
+     *
+     * @example
+     * // Multiple members with options
+     * await redis.zadd('leaderboard', 'XX', 'CH', 100, 'player1', 200, 'player2');
+     *
+     * @param {string} key - Sorted set key
+     * @param {...string|number} args - Options followed by alternating score and member pairs
+     * @returns {Promise<number>} Number of members added (or changed if CH option used)
+     *
+     * @throws {import('ioredis').RedisError} When connection is not established
+     * @throws {Error} When invalid arguments provided
+     *
+     * @see {@link https://redis.io/commands/zadd/|Redis ZADD Documentation}
+     */
+    async zadd(key, ...args) {
+        await this.#ensureConnection();
+
+        if (args.length === 0) {
+            throw new Error('ZADD requires at least one score-member pair or option');
+        }
+
+        return this.#client.zadd(key, args);
+    }
+
+    /**
+     * Removes and returns one or multiple random members from a set
+     *
+     * @example
+     * // Pop single random member
+     * const member = await redis.spop('users');
+     *
+     * @example
+     * // Pop multiple random members
+     * const members = await redis.spop('users', 5);
+     *
+     * @param {string} key - Set key
+     * @param {number} [count=1] - Number of members to pop
+     * @returns {Promise<string|string[]|null>} Popped member(s)
+     *
+     * @see {@link https://redis.io/commands/spop/|Redis SPOP Documentation}
+     */
+    async spop(key, count = 1) {
+        await this.#ensureConnection();
+        return count > 1 ? this.#client.spop(key, count) : this.#client.spop(key);
+    }
+
+    /**
+     * Removes and returns members with the highest scores from sorted set
+     *
+     * @example
+     * // Pop single highest member
+     * const result = await redis.zpopmax('leaderboard');
+     *
+     * @example
+     * // Pop multiple highest members
+     * const results = await redis.zpopmax('leaderboard', 3);
+     *
+     * @param {string} key - Sorted set key
+     * @param {number} [count=1] - Number of members to pop
+     * @returns {Promise<Object[]>} Array of objects with member and score
+     *
+     * @see {@link https://redis.io/commands/zpopmax/|Redis ZPOPMAX Documentation}
+     */
+    async zpopmax(key, count = 1) {
+        await this.#ensureConnection();
+        return this.#client.zpopmax(key, count);
     }
 
     /**
@@ -296,12 +439,64 @@ class RedisService extends EventEmitter {
     }
 
     /**
+     * Create a Redis transaction (MULTI) for executing multiple commands atomically
+     *
+     * @async
+     * @method multi
+     * @returns {import('ioredis').ChainableCommander} Redis transaction object that allows command chaining and execution
+     * @example
+     * const transaction = redis.multi();
+     * transaction.set('key1', 'value1');
+     * transaction.get('key2');
+     * await transaction.exec();
+     */
+    multi() {
+        return this.#client.multi();
+    }
+
+    /**
+     * Execute a Lua script on the Redis server
+     *
+     * @async
+     * @method eval
+     * @param {string} script - Lua script to execute
+     * @param {number} numKeys - Number of keys that the script will access
+     * @param {...string} args - Arguments for the script (keys followed by additional arguments)
+     * @returns {Promise<*>} Result of the Lua script execution
+     * @example
+     * // Basic usage
+     * const result = await redis.eval('return redis.call("GET", KEYS[1])', 1, 'myKey');
+     *
+     * @example
+     * // With multiple keys and arguments
+     * const result = await redis.eval(
+     *   'return {KEYS[1], KEYS[2], ARGV[1], ARGV[2]}',
+     *   2,
+     *   'key1',
+     *   'key2',
+     *   'arg1',
+     *   'arg2'
+     * );
+     *
+     * @example
+     * // Using with hash operations
+     * const script = `
+     *   local current = redis.call('HGET', KEYS[1], ARGV[1])
+     *   return current or 'default'
+     * `;
+     * const value = await redis.eval(script, 1, 'myHash', 'fieldName');
+     */
+    eval(script, numKeys, ...args) {
+        return this.#client.eval(script, numKeys, ...args);
+    }
+
+    /**
      * Checks if key exists
      * @param {string} key - Key to check
      * @returns {Promise<number>} 1 if exists, 0 if not
      */
     async exists(key) {
-        return await this.#client.exists(key);
+        return this.#client.exists(key);
     }
 
     /**
@@ -320,7 +515,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} TTL in seconds, -2 if key doesn't exist, -1 if no expiry
      */
     async ttl(key) {
-        return await this.#client.ttl(key);
+        return this.#client.ttl(key);
     }
 
     /**
@@ -330,7 +525,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} 1 if member exists, 0 if not
      */
     async sismember(key, member) {
-        return await this.#client.sismember(key, member);
+        return this.#client.sismember(key, member);
     }
 
     /**
@@ -339,7 +534,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} Number of members
      */
     async scard(key) {
-        return await this.#client.scard(key);
+        return this.#client.scard(key);
     }
 
     /**
@@ -349,7 +544,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<string|null>} Field value or null
      */
     async hget(key, field) {
-        return await this.#client.hget(key, field);
+        return this.#client.hget(key, field);
     }
 
     /**
@@ -359,7 +554,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<Array<string|null>>} Array of values
      */
     async hmget(key, ...fields) {
-        return await this.#client.hmget(key, fields);
+        return this.#client.hmget(key, fields);
     }
 
     /**
@@ -368,7 +563,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<Object>} Object with field-value pairs
      */
     async hgetall(key) {
-        return await this.#client.hgetall(key);
+        return this.#client.hgetall(key);
     }
 
     /**
@@ -378,7 +573,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} Number of fields removed
      */
     async hdel(key, ...fields) {
-        return await this.#client.hdel(key, fields);
+        return this.#client.hdel(key, fields);
     }
 
     /**
@@ -388,7 +583,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} 1 if exists, 0 if not
      */
     async hexists(key, field) {
-        return await this.#client.hexists(key, field);
+        return this.#client.hexists(key, field);
     }
 
     /**
@@ -399,7 +594,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New field value
      */
     async hincrby(key, field, increment) {
-        return await this.#client.hincrby(key, field, increment);
+        return this.#client.hincrby(key, field, increment);
     }
 
     /**
@@ -409,7 +604,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New list length
      */
     async lpush(key, ...values) {
-        return await this.#client.lpush(key, values);
+        return this.#client.lpush(key, values);
     }
 
     /**
@@ -419,7 +614,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New list length
      */
     async rpush(key, ...values) {
-        return await this.#client.rpush(key, values);
+        return this.#client.rpush(key, values);
     }
 
     /**
@@ -428,7 +623,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<string|null>} First element or null
      */
     async lpop(key) {
-        return await this.#client.lpop(key);
+        return this.#client.lpop(key);
     }
 
     /**
@@ -437,7 +632,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<string|null>} Last element or null
      */
     async rpop(key) {
-        return await this.#client.rpop(key);
+        return this.#client.rpop(key);
     }
 
     /**
@@ -448,7 +643,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<string[]>} Array of elements
      */
     async lrange(key, start, stop) {
-        return await this.#client.lrange(key, start, stop);
+        return this.#client.lrange(key, start, stop);
     }
 
     /**
@@ -457,7 +652,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} List length
      */
     async llen(key) {
-        return await this.#client.llen(key);
+        return this.#client.llen(key);
     }
 
     /**
@@ -466,7 +661,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New value
      */
     async incr(key) {
-        return await this.#client.incr(key);
+        return this.#client.incr(key);
     }
 
     /**
@@ -476,7 +671,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New value
      */
     async incrby(key, increment) {
-        return await this.#client.incrby(key, increment);
+        return this.#client.incrby(key, increment);
     }
 
     /**
@@ -485,7 +680,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New value
      */
     async decr(key) {
-        return await this.#client.decr(key);
+        return this.#client.decr(key);
     }
 
     /**
@@ -495,7 +690,7 @@ class RedisService extends EventEmitter {
      * @returns {Promise<number>} New value
      */
     async decrby(key, decrement) {
-        return await this.#client.decrby(key, decrement);
+        return this.#client.decrby(key, decrement);
     }
 
     /**
@@ -554,7 +749,7 @@ class RedisService extends EventEmitter {
     /**
      * Creates a Redis pipeline for batch operations.
      *
-     * @returns {import('ioredis').Pipeline} Redis pipeline instance
+     * @returns {import('ioredis').ChainableCommander} Redis pipeline instance
      *
      * @example
      * const pipeline = redisService.pipeline();
@@ -563,8 +758,54 @@ class RedisService extends EventEmitter {
      * await pipeline.exec();
      */
     pipeline() {
-        return this.#client.pipeline();
+        const client = this.#client;
+        const commands = [];
+
+        /** @type {import('ioredis').ChainableCommander}*/
+        const api = new Proxy({}, {
+            get(_, prop) {
+                if (prop === 'exec') {
+                    return async () => {
+                        if (commands.length === 0) return [];
+
+                        // 1. Group commands by Redis slot
+                        const groups = new Map(); // slot => [cmd, cmd, ...]
+
+                        for (const cmd of commands) {
+                            const key = cmd[1]; // key is always second argument
+                            const slot = computeRedisSlot(key);
+
+                            if (!groups.has(slot)) groups.set(slot, []);
+                            groups.get(slot).push(cmd);
+                        }
+
+                        // 2. Execute each slot group in parallel
+                        const promises = [...groups.values()].map(async group => {
+                            const pipeline = client.pipeline();
+
+                            for (const [command, ...args] of group) {
+                                pipeline[command](...args);
+                            }
+                            return pipeline.exec();
+                        });
+
+                        // 3. Flatten results to match original order
+                        const groupedResults = await Promise.all(promises);
+                        return groupedResults.flat();
+                    };
+                }
+
+                // Dynamic command wrapper
+                return (...args) => {
+                    commands.push([prop, ...args]);
+                    return api; // allow chaining
+                };
+            }
+        });
+
+        return api;
     }
+
 
     /**
      * Gets Redis cluster info

@@ -1,0 +1,95 @@
+/* ======================================  Monaco Editor styles ======================================  */
+.editor-wrapper {
+    height: 100%;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.editor-wrapper > :nth-child(2) {
+    height: inherit;
+    max-height: inherit;
+    min-height: inherit;
+}
+
+.editor-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.monaco-editor,
+.monaco-editor * {
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: 500;
+}
+
+.monaco-editor *::after,
+.monaco-editor *::before {
+    font-family: "codicon", sans-serif !important;
+}
+
+.monaco-editor .margin {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+.monaco-editor .slider {
+    border-radius: 0;
+}
+
+.monaco-editor .sticky-widget {
+    box-shadow: var(--box-shadow-hover);
+}
+
+.editor-loader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 400px
+}
+
+/* ======================================  Monaco Editor Toolbar styles ======================================  */
+
+/* Toolbar */
+.editor-toolbar {
+    padding: 0.4rem 0.6rem 0;
+    min-height: 40px;
+    display: flex;
+    gap: 0.3rem;
+    overflow-x: auto;
+    /*border-bottom: 1px solid var(--color-border);*/
+    background: var(--color-background);
+    box-shadow: var(--box-shadow-hoverable);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+/* Buttons */
+.editor-toolbar .editor-btn {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    gap: 5px;
+    padding: 0.2rem 0.3rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    background: var(--color-background);
+    cursor: pointer;
+    border: 2px solid var(--color-border-secondary);
+    transition: all 0.18s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.editor-toolbar .editor-btn:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.editor-toolbar .editor-btn:active {
+    transform: scale(0.95);
+}

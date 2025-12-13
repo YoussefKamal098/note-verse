@@ -20,7 +20,7 @@ const ButtonContainerStyles = styled.button`
     border-radius: 10px;
     box-shadow: var(--box-shadow);
     font-family: 'Roboto', sans-serif;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: 600;
     color: var(--color-text);
     cursor: pointer;

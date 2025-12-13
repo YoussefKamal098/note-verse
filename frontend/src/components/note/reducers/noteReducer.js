@@ -14,6 +14,7 @@ export const noteReducer = (draft, action) => {
                 userRole: action.payload.userRole,
                 originalContent: action.payload.originalContent,
                 currentContent: action.payload.currentContent,
+                reactions: action.payload.reactions,
                 status: {...NOTE_STATUS, ...action.payload.status}
             });
             break;
@@ -62,6 +63,11 @@ export const noteReducer = (draft, action) => {
         case ACTION_TYPES.CONTENT.RESET_CONTENT:
             draft.originalContent.content = action.payload;
             draft.currentContent.content = action.payload;
+            break;
+
+        case ACTION_TYPES.REACTIONS.UPDATE:
+            draft.reactions.counts = action.payload.counts;
+            draft.reactions.userReaction = action.payload.userReaction;
             break;
 
         default:

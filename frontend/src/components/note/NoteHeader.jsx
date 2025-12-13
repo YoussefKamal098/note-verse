@@ -1,7 +1,5 @@
 import React from "react";
 import styled from 'styled-components';
-import {SiSocketdotio} from "react-icons/si";
-import {IconButton} from '@mui/material';
 import {TranslateTransitionContainer} from "../animations/ContainerAnimation";
 import BackHomeButton from "@/components/buttons/BackHomeButton";
 import NoteMenu from "@/components/menus/noteMenu";
@@ -9,6 +7,7 @@ import Button, {BUTTON_TYPE, ButtonsContainerStyles} from "@/components/buttons/
 import UserDetailsWithNoteMeta from "@/components/userDetails/UserDetailsWithNoteMeta";
 import {useNoteContext, useNoteSelector} from "./hooks/useNoteContext";
 import {useUserOnlineStatus} from "@/hooks/useUserOnlineStatus";
+import ReactionButton from "@/components/reaction";
 
 const HeaderWrapperStyles = styled.div`
     display: flex;
@@ -28,31 +27,17 @@ const HeaderLeftPartContainerStyles = styled.div`
 const HeaderRightPartContainerStyles = styled.div`
     display: flex;
     align-items: center;
-    gap: 0.25em
+    gap: 0.5em
 `
 
-const IconWrapper = styled.span`
-    font-size: 1em;
+const NoteActionGroupStyles = styled.div`
     display: flex;
-    align-items: center;
     justify-content: center;
-    cursor: pointer;
-    color: var(--color-text);
-    border-radius: 50%;
-    transition: all 0.2s ease;
-
-    &:hover {
-        color: var(--color-accent);
-    }
+    align-items: center;
+    gap: 0.5em;
 `;
 
-const iconsStyles = {
-    color: 'var(--color-text)',
-    fontSize: "1.3em",
-    padding: "0.15em"
-}
-
-const NoteHeader = ({actions, isMobile}) => {
+const NoteHeader = ({actions}) => {
     const {selectors} = useNoteContext();
     const {isNew, isLoading, editMode} = useNoteSelector(selectors.getStatus);
     const isOwner = useNoteSelector(selectors.isOwner);
@@ -60,6 +45,7 @@ const NoteHeader = ({actions, isMobile}) => {
     const {current} = useNoteSelector(selectors.getContent);
     const hasChanges = useNoteSelector(selectors.hasChanges);
     const owner = useNoteSelector(selectors.getOwner);
+    const userReaction = useNoteSelector(selectors.getUserReaction);
     const {isPublic, isPinned, createdAt} = useNoteSelector(selectors.getMeta);
 
     const {isOnline} = useUserOnlineStatus(owner?.id);
@@ -102,29 +88,26 @@ const NoteHeader = ({actions, isMobile}) => {
                     <TranslateTransitionContainer
                         keyProp={"note_menu"}
                     >
-                        <NoteMenu
-                            onDelete={!isNew && isOwner ? actions.onDelete : undefined}
-                            onEdit={!isNew && canEdit ? actions.onEdit : undefined}
-                            onCopyLink={!isNew ? actions.onCopyLink : undefined}
-                            onShowShare={!isNew && isOwner ? actions.onShowShare : undefined}
-                            onShowCommitHistory={!isNew && !editMode ? actions.onShowCommitHistory : undefined}
-                            onTogglePin={isOwner ? actions.onTogglePin : undefined}
-                            onToggleVisibility={isOwner ? actions.onToggleVisibility : undefined}
-                            isPinned={isPinned}
-                            isVisible={isPublic}
-                        />
+                        <NoteActionGroupStyles>
+                            <ReactionButton
+                                value={userReaction}
+                                onChange={(reaction) => actions.updateReaction(reaction)}
+                            />
+
+                            <NoteMenu
+                                onDelete={!isNew && isOwner ? actions.onDelete : undefined}
+                                onEdit={!isNew && canEdit ? actions.onEdit : undefined}
+                                onCopyLink={!isNew ? actions.onCopyLink : undefined}
+                                onShowShare={!isNew && isOwner ? actions.onShowShare : undefined}
+                                onShowCommitHistory={!isNew && !editMode ? actions.onShowCommitHistory : undefined}
+                                onTogglePin={isOwner ? actions.onTogglePin : undefined}
+                                onToggleVisibility={isOwner ? actions.onToggleVisibility : undefined}
+                                isPinned={isPinned}
+                                isVisible={isPublic}
+                            />
+                        </NoteActionGroupStyles>
                     </TranslateTransitionContainer>
                 )}
-
-                {!isNew && isMobile && <IconButton
-                    onClick={actions.onRealTimeUpdateIconClick}
-                    aria-label="real-time-updates"
-                    sx={iconsStyles}
-                >
-                    <IconWrapper>
-                        <SiSocketdotio/>
-                    </IconWrapper>
-                </IconButton>}
             </HeaderRightPartContainerStyles>
 
         </HeaderWrapperStyles>

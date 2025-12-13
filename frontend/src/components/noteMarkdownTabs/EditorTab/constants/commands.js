@@ -1,0 +1,18 @@
+export const MARKDOWN_COMMANDS = Object.freeze({
+    bold: (t) => `**${t || "bold text"}**`,
+    italic: (t) => `*${t || "italic text"}*`,
+    header1: (t) => `# ${t || "Heading 1"}`,
+    header2: (t) => `## ${t || "Heading 2"}`,
+    header3: (t) => `### ${t || "Heading 3"}`,
+    header4: (t) => `#### ${t || "Heading 4"}`,
+    header5: (t) => `##### ${t || "Heading 5"}`,
+    strike: (t) => `~~${t || "strike"}~~`,
+    hr: () => `---\n`,
+    link: (t) => `[${t || "link"}](https://)`,
+    image: (t) => `![${t || "alt"}](https://)`,
+    code: (t) => `\`\`\`\n${t || "code"}\n\`\`\``,
+    quote: (t) => `> ${t || "quote"}`,
+    ul: (t) => `- ${t || "list item"}`,
+    ol: (t) => `1. ${t || "list item"}`,
+    table: () => `| Header | Header |\n|--------|--------|\n| Data   | Data   |`,
+});

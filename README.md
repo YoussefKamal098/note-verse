@@ -264,17 +264,18 @@ NOTES_PER_PAGE=10
 
 #### 📝 Notes API (`note.routes.js`)
 
-| HTTP Method | Endpoint                            | Description                                                                          |
-|-------------|-------------------------------------|--------------------------------------------------------------------------------------|
-| `POST`      | `api/v1/notes`                      | Create a new note for the authenticated user.                                        |
-| `GET`       | `api/v1/notes`                      | Retrieve paginated notes for the authenticated user with optional query parameters.  |
-| `GET`       | `api/v1/notes/:noteId`              | Retrieve a specific note by its ID for the specified user. Requires view permission. |
-| `PATCH`     | `api/v1/notes/:noteId`              | Update a specific note by its ID for the specified user. Requires edit permission.   |
-| `DELETE`    | `api/v1/notes/:noteId`              | Delete a specific note by its ID for the specified user. Requires ownership.         |
-| `POST`      | `api/v1/notes/:noteId/permissions`  | Grant permissions for a note. Requires ownership.                                    |
-| `GET`       | `api/v1/notes/:noteId/permissions`  | Get all permissions for a note with pagination. Requires ownership.                  |
-| `GET`       | `api/v1/notes/:noteId/history`      | Get paginated commit history of a note. Requires view permission.                    |
-| `GET`       | `api/v1/notes/:noteId/contributors` | Get paginated list of contributors for a note. Requires view permission.             |
+| HTTP Method | Endpoint                            | Description                                                                              |
+|-------------|-------------------------------------|------------------------------------------------------------------------------------------|
+| `POST`      | `api/v1/notes`                      | Create a new note for the authenticated user.                                            |
+| `GET`       | `api/v1/notes`                      | Retrieve paginated notes for the authenticated user with optional query parameters.      |
+| `GET`       | `api/v1/notes/:noteId`              | Retrieve a specific note by its ID for the specified user. Requires view permission.     |
+| `PATCH`     | `api/v1/notes/:noteId`              | Update a specific note by its ID for the specified user. Requires edit permission.       |
+| `DELETE`    | `api/v1/notes/:noteId`              | Delete a specific note by its ID for the specified user. Requires ownership.             |
+| `POST`      | `api/v1/notes/:noteId/permissions`  | Grant permissions for a note. Requires ownership.                                        |
+| `GET`       | `api/v1/notes/:noteId/permissions`  | Get all permissions for a note with pagination. Requires ownership.                      |
+| `GET`       | `api/v1/notes/:noteId/history`      | Get paginated commit history of a note. Requires view permission.                        |
+| `GET`       | `api/v1/notes/:noteId/contributors` | Get paginated list of contributors for a note. Requires view permission.                 |
+| `POST`      | `/api/v1/notes/:noteId/reactions`	  | React to a note (like, love, etc.) for the authenticated user. Requires view permission. |
 
 ### 🕒 Version API (`version.routes.js`)
 
@@ -352,6 +353,8 @@ notes_app/
 │   │   ├── emitters/              # Event emission services
 │   │   ├── helpers/               # Service-specific utilities.
 │   │   ├── notifications/         # Notification delivery services   
+│   │   ├── online/                # Real-time online presence and connection management
+│   │   ├── reaction/              # Reaction system services (publish/subscribe model)
 │   │   ├── socket/                # Real-time socket services
 │   │   ├── storage/               # Implements IStorageEngine interface with wrappers for storage SDKs (Backblaze B2, AWS S3, Google Cloud, etc.)
 │   ├── templates/                 # This folder contains Handlebars (.hbs) email template files used for generating dynamic email content.
@@ -405,6 +408,7 @@ notes_app/
 │   │   │   ├── previewPopUpTap/   # Content preview popup with tap interactions     
 │   │   │   ├── profileImageUploader/   # This folder contains React components for profile image uploading and editing.
 │   │   │   ├── progressiveImage/       # This folder contains React components for progressive image loading (from placeholder to high-res images).
+│   │   │   ├── reaction           # Components for note reactions (e.g., like, love, etc.)
 │   │   │   ├── searchBar/         # Search bar component for filtering/searching notes
 │   │   │   ├── selection/         # Custom selection/dropdown components
 │   │   │   ├── sessions/          # Components for displaying and managing user sessions, including session list and session item with revoke actions

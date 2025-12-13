@@ -5,7 +5,7 @@ import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 import 'katex/contrib/mhchem';
 import '@uiw/react-markdown-preview/markdown.css';
-import '../styles.css';
+import './styles.css';
 
 import {useTheme} from "@/contexts/ThemeContext";
 import {createCodeRenderer} from './codeRenderer';

@@ -2,7 +2,8 @@ const {Queue} = require('bullmq');
 const QUEUE_NAMES = require('@/constants/queueNames.constant');
 const JOB_NAMES = require('@/constants/jobNames.constant');
 const {BULLMQ_PREFIX} = require("@/constants/bullmq.constants");
-const NotificationType = require('@/enums/notifications.enum');
+
+// const NotificationType = require('@/enums/notifications.enum');
 
 /**
  * A queue service for managing notification jobs in BullMQ.
@@ -67,29 +68,31 @@ class NotificationQueue {
         const notifications = isBatch ? notificationData : [notificationData];
 
         try {
-            const jobs = await Promise.all(
-                notifications.map(notification => {
-                    const priority = this.#getPriority(notification.type);
-                    return this.#queue.add(
-                        JOB_NAMES.PROCESS_NOTIFICATION,
-                        notification,
-                        {priority}
-                    );
-                })
+            // const jobs = await Promise.all(
+            //     notifications.map(notification => {
+            //         const priority = this.#getPriority(notification.type);
+            const job = await this.#queue.add(
+                JOB_NAMES.PROCESS_NOTIFICATION,
+                notifications,
+                // {priority}
+                // );
+                // })
             );
 
             // Log results
-            jobs.forEach(job => {
-                console.info('[NotificationQueue] Successfully added notification job', {
-                    jobId: job.id,
-                    type: job.data.type,
-                    recipient: job.data.recipient,
-                    priority: job.opts.priority,
-                    queue: QUEUE_NAMES.NOTIFICATIONS
-                });
+            // jobs.forEach(job => {
+            console.info('[NotificationQueue] Successfully added notifications job', {
+                jobId: job.id,
+                data: job.data,
+                // type: job.data.type,
+                // recipient: job.data.recipient,
+                // priority: job.opts.priority,
+                queue: QUEUE_NAMES.NOTIFICATIONS
             });
+            // });
 
-            return isBatch ? jobs : jobs[0]; // Return same format as input
+            // return isBatch ? jobs : jobs[0]; // Return same format as input
+            return job;
         } catch (error) {
             console.error('[NotificationQueue] Failed to add notification job(s)', {
                 error: error.message,
@@ -101,20 +104,20 @@ class NotificationQueue {
         }
     }
 
-    /**
-     * Determines job priority based on notification type
-     * @private
-     * @param {NotificationType} type - Notification type from NotificationType enum
-     * @returns {number} Priority value (lower numbers = higher priority)
-     */
-    #getPriority(type) {
-        const priorities = {
-            [NotificationType.LOGIN]: 3,
-            [NotificationType.NOTE_UPDATE]: 2
-        };
-
-        return priorities[type] || 5;
-    }
+    // /**
+    //  * Determines job priority based on notification type
+    //  * @private
+    //  * @param {NotificationType} type - Notification type from NotificationType enum
+    //  * @returns {number} Priority value (lower numbers = higher priority)
+    //  */
+    // #getPriority(type) {
+    //     const priorities = {
+    //         [NotificationType.LOGIN]: 3,
+    //         [NotificationType.NOTE_UPDATE]: 2
+    //     };
+    //
+    //     return priorities[type] || 5;
+    // }
 }
 
 module.exports = NotificationQueue;

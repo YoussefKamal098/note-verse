@@ -13,7 +13,7 @@ const MainContentContainerStyles = styled(ContainerStyles)`
     grid-area: main_content;
 `;
 
-const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
+const MainContent = ({headerActions, markdownTabsRef}) => {
     const {actions, selectors} = useNoteContext();
     const {editMode} = useNoteSelector(selectors.getStatus);
     const {current} = useNoteSelector(selectors.getContent);
@@ -26,7 +26,7 @@ const MainContent = ({headerActions, isMobile, markdownTabsRef}) => {
 
     return (
         <MainContentContainerStyles>
-            <NoteHeader actions={headerActions} isMobile={isMobile}/>
+            <NoteHeader actions={headerActions}/>
 
             <EditableTitle
                 title={current.title}

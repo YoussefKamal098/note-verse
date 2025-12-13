@@ -78,7 +78,12 @@ const NoteMenu = ({
     return (
         <Menu options={menuOptions}
               triggerIcon={
-                  <IconButton aria-label="settings" sx={{color: 'var(--color-text)', fontSize: "1em"}}>
+                  <IconButton aria-label="settings" sx={{
+                      color: 'var(--color-text)', fontSize: "1em",
+                      "&:hover": {
+                          backgroundColor: "transparent !important",
+                      }
+                  }}>
                       <MoreVert style={{fontSize: "1em"}}/>
                   </IconButton>
               }

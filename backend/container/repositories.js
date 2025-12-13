@@ -1,4 +1,4 @@
-const {asFunction} = require('awilix');
+const {asFunction, asClass} = require('awilix');
 
 module.exports = container => {
     container.register({
@@ -25,5 +25,6 @@ module.exports = container => {
         fileRepo: asFunction(({fileModel}) =>
             new (require('../repositories/file.repository'))(fileModel)
         ).singleton(),
+        reactionRepo: asClass(require('../repositories/reaction.repository')).singleton(),
     });
 };

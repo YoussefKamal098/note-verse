@@ -54,7 +54,6 @@ const NoteView = ({
             <Contributors onContributorClick={onContributorClick}/>
             <MainContent
                 headerActions={headerActions}
-                isMobile={isMobile}
                 markdownTabsRef={markdownTabsRef}
             />
 
@@ -98,7 +97,7 @@ const NoteView = ({
                 onSave={handleOnCommitSave}
             />
 
-            {!isNew && (
+            {!isNew && !isMobile && (
                 <RealTimeUpdatePanel
                     show={realTimeUpdatesPanel.show}
                     onPull={handleOnPull}

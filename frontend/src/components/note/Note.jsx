@@ -101,7 +101,7 @@ const Note = () => {
      */
     const onVisibilityChange = useCallback((visibility) => {
         actions.updateVisibilityState(visibility);
-    }, [actions]);
+    }, [actions.updateVisibilityState]);
 
     /**
      * Navigate to a specific note version
@@ -120,7 +120,8 @@ const Note = () => {
         onRealTimeUpdateIconClick: realTimeUpdatesPanel.toggle,
         onShowCommitHistory: () => togglePopup('commitHistory'),
         onTogglePin: handleTogglePin,
-        onToggleVisibility: handleToggleVisibility
+        onToggleVisibility: handleToggleVisibility,
+        updateReaction: (reaction) => actions.updateReaction(reaction)
     }), [
         handleOnSave,
         handleDelete,
@@ -130,7 +131,8 @@ const Note = () => {
         togglePopup,
         realTimeUpdatesPanel.toggle,
         handleTogglePin,
-        handleToggleVisibility
+        handleToggleVisibility,
+        actions.updateReaction
     ]);
 
     /**
