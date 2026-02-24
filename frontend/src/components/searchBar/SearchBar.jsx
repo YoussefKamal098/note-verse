@@ -1,12 +1,10 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback} from "react";
 import {FaSearch} from "react-icons/fa";
 import {IoClose} from "react-icons/io5";
-import useDebounce from "../../hooks/useDebounce";
 import usePersistedState from "../../hooks/usePersistedState";
 import {WidthTransitionContainer} from "../animations/ContainerAnimation";
-
 import {
-    IconWrapperStyled,
+    IconButtonStyled,
     InputStyled,
     SearchBarBoxStyled,
     SearchBarContainerStyled,
@@ -14,26 +12,19 @@ import {
 } from "./SearchBarStyles";
 
 const SearchBar = ({onSearch = (value) => value}) => {
-    const [searchText, setSearchText] = usePersistedState("search_text", "");
-    const [value, setValue] = useState(searchText);
+    const [value, setValue] = usePersistedState("search_text", "");
 
-    useEffect(() => {
-        setSearchText(value.trim());
-    }, [value]);
+    const handleSearch = useCallback(async () => {
+        const trimmedValue = value.trim();
+        if (!trimmedValue) return;
 
-    const handleSearch = useCallback((value) => {
-        onSearch(value.trim());
-        setSearchText(value.trim());
-    }, [onSearch, setSearchText]);
+        return await onSearch(trimmedValue);
+    }, [value, onSearch]);
 
-    const debouncedSearch = useDebounce(handleSearch, 300);
+    const handleChange = (e) => setValue(e.target.value);
 
-    const handleChange = (e) => {
-        setValue(e.target.value)
-    };
-
-    const handleKeyUp = () => {
-        debouncedSearch(searchText);
+    const handleKeyUp = (e) => {
+        if (e.key === "Enter") handleSearch();
     };
 
     const handleClear = () => {
@@ -44,7 +35,7 @@ const SearchBar = ({onSearch = (value) => value}) => {
     return (
         <SearchBarBoxStyled>
             <SearchBarWrapperStyled>
-                <WidthTransitionContainer keyProp={"SearchBar"}>
+                <WidthTransitionContainer keyProp="SearchBar">
                     <SearchBarContainerStyled>
                         <InputStyled
                             type="search"
@@ -52,13 +43,29 @@ const SearchBar = ({onSearch = (value) => value}) => {
                             value={value}
                             onChange={handleChange}
                             onKeyUp={handleKeyUp}
+                            aria-label="Search input"
                         />
-                        <IconWrapperStyled>
-                            {value && (
-                                <IoClose className="close-icon" onClick={handleClear}/>
-                            )}
-                            <FaSearch className="search-icon"/>
-                        </IconWrapperStyled>
+
+                        {value && (
+                            <IconButtonStyled
+                                type="button"
+                                onClick={handleClear}
+                                className="clear"
+                                aria-label="Clear search"
+                            >
+                                <IoClose/>
+                            </IconButtonStyled>
+                        )}
+
+                        <IconButtonStyled
+                            type="button"
+                            onClick={handleSearch}
+                            disabled={!value.trim()}
+                            className="search"
+                            aria-label="Search"
+                        >
+                            <FaSearch/>
+                        </IconButtonStyled>
                     </SearchBarContainerStyled>
                 </WidthTransitionContainer>
             </SearchBarWrapperStyled>

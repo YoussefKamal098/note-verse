@@ -196,24 +196,23 @@ class NotesController {
     }
 
     /**
-     * Retrieves paginated, sorted, and filtered notes for authenticated user.
+     * Retrieves paginated, sorted, and filtered notes for the authenticated user.
      * @param {import('express').Request} req - Express request object.
-     * @param {string} req.userId - ID of the authenticated user.
-     * @param {Object} req.query - Query parameters.
-     * @param {number} [req.query.page=1] - Page number.
-     * @param {number} [req.query.perPage=10] - Items per page.
-     * @param {Object} [req.query.sort] - Sorting criteria.
-     * @param {string} [req.query.searchText] - Text to search in notes.
+     * @param {string} req.userId - ID of the authenticated user (attached by auth middleware).
+     * @param {Object} req.query - Validated query parameters.
+     * @param {number} [req.query.limit] - Max number of items to return.
+     * @param {string} [req.query.cursor] - Cursor for pagination.
+     * @param {string} [req.query.searchText] - Search string for Atlas Search.
      * @param {import('express').Response} res - Express response object.
      * @returns {Promise<void>}
      */
     async findPaginatedUserNotes(req, res) {
         const userId = req.userId;
-        const {page, perPage, sort, searchText} = req.query;
+        const {limit, cursor, searchText} = req.query;
 
         const result = await this.#noteService.findUserNotes(userId, {
             searchText,
-            options: {page, perPage, sort}
+            options: {limit, cursor}
         });
 
         res.status(httpCodes.OK.code).json({...result});

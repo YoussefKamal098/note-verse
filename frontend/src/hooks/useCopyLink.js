@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {useToastNotification} from "../contexts/ToastNotificationsContext";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 
 const useCopyLink = () => {
     const {notify} = useToastNotification();

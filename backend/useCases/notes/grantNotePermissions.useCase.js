@@ -1,9 +1,9 @@
-const AppError = require('../../errors/app.error');
-const httpCodes = require('../../constants/httpCodes');
-const statusMessages = require('../../constants/statusMessages');
-const roles = require('../../enums/roles.enum');
-const resources = require('../../enums/resources.enum');
-const {FRONTEND_ROUTES} = require('../../constants/frontendUrls');
+const statusMessages = require('@/constants/statusMessages');
+const roles = require('@/enums/roles.enum');
+const resources = require('@/enums/resources.enum');
+const {FRONTEND_ROUTES} = require('@/constants/frontendUrls');
+const {isOwner} = require("@/utils/roles.utils");
+const errorFactory = require('@/errors/factory.error');
 
 class GrantNotePermissionsUseCase {
     /**
@@ -72,8 +72,7 @@ class GrantNotePermissionsUseCase {
      * @throws {AppError} For authorization failures
      */
     async execute({grantedBy, resourceId, userIds, role, message = '', notify = true}) {
-        return this.#transactionService.executeTransaction(
-            async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
                 // 1. Validate all users exist first
                 const existingUsers = await this.#validateUsersExist(userIds, session);
 
@@ -85,25 +84,12 @@ class GrantNotePermissionsUseCase {
 
                 // 3. Get resource and granter details
                 const [note, granter] = await Promise.all([
-                    this.#noteRepo.findById(resourceId, session),
+                    this.#noteRepo.findById(resourceId, {session}),
                     this.#userRepo.findById(grantedBy, {session})
                 ]);
 
-                if (!note) {
-                    throw new AppError(
-                        statusMessages.NOTE_NOT_FOUND,
-                        httpCodes.NOT_FOUND.code,
-                        httpCodes.NOT_FOUND.name
-                    );
-                }
-
-                if (!this.#isOwner({userId: grantedBy, note, permission: granterPermission})) {
-                    throw new AppError(
-                        statusMessages.PERMISSION_DENIED,
-                        httpCodes.FORBIDDEN.code,
-                        httpCodes.FORBIDDEN.name
-                    );
-                }
+                if (!note) throw errorFactory.noteNotFound();
+                if (isOwner(granterPermission?.role)) throw errorFactory.permissionDenied();
 
                 // 3. Process permissions
                 const permissions = await this.#permissionRepo.grantPermissionsForUsers({
@@ -116,29 +102,56 @@ class GrantNotePermissionsUseCase {
 
                 // 4. Send notifications if enabled
                 if (notify) {
-                    await this.#sendNotifications({
-                        granter,
-                        resourceId,
-                        note,
-                        users: existingUsers,
-                        role,
-                        message: message || {
-                            [roles.VIEWER]: 'You now have view-only access to this note',
-                            [roles.EDITOR]: 'You can now view and edit this note',
-                        }[role],
-                        session
-                    });
+                    await this.#notify(
+                        {
+                            granter,
+                            resourceId,
+                            note,
+                            users: existingUsers,
+                            role,
+                            message,
+                            session
+                        }
+                    )
                 }
 
                 return permissions;
-            },
-            {
+            }, {
                 message: statusMessages.PERMISSION_GRANT_FAILED,
                 conflictMessage: statusMessages.PERMISSIONS_GRANT_CONFLICT
             }
         );
     }
 
+    /**
+     * notify granted users
+     * @private
+     */
+    async #notify({
+                      granter,
+                      resourceId,
+                      note,
+                      users,
+                      role,
+                      message,
+                      session
+                  }) {
+        // Define default message for notification
+        const defaultMessage = {
+            [roles.VIEWER]: 'You now have view-only access to this note',
+            [roles.EDITOR]: 'You can now view and edit this note',
+        }[role];
+
+        await this.#sendNotifications({
+            granter,
+            resourceId,
+            note,
+            users,
+            role,
+            message: message || defaultMessage,
+            session
+        });
+    }
 
     /**
      * Validates that all users exist
@@ -151,11 +164,7 @@ class GrantNotePermissionsUseCase {
             const foundIds = new Set(users.map(u => u.id));
             const missingIds = userIds.filter(id => !foundIds.has(id));
 
-            throw new AppError(
-                statusMessages.USERS_NOT_FOUND.replace('%s', missingIds.join(', ')),
-                httpCodes.NOT_FOUND.code,
-                httpCodes.NOT_FOUND.name
-            );
+            throw errorFactory.usersNotFound(missingIds);
         }
 
         return users;
@@ -182,18 +191,6 @@ class GrantNotePermissionsUseCase {
                 })
             )
         );
-    }
-
-    /**
-     * Determines if user is the owner
-     * @param {Object} params
-     * @param {string} params.userId
-     * @param {Object} params.note
-     * @param {Object|null} params.permission
-     * @returns {boolean}
-     */
-    #isOwner({userId, note, permission}) {
-        return note.userId === userId || permission?.role === roles.OWNER;
     }
 }
 

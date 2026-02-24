@@ -7,17 +7,14 @@ const noteSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-        index: true
     },
     title: {
         type: String,
         required: true,
-        index: true,
     },
     tags: {
         type: [String],
         required: true,
-        index: true
     },
     content: {
         type: String,
@@ -47,9 +44,6 @@ const noteSchema = new Schema({
         }
     }
 });
-
-// Compound index for filtering and sorting
-noteSchema.index({isPinned: -1, updatedAt: -1, createdAt: -1, title: 1, tags: 1});
 
 const Note = mongoose.model('Note', noteSchema);
 

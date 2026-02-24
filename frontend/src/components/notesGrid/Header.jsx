@@ -3,10 +3,8 @@ import {CardHeader, Typography} from '@mui/material';
 import {Description} from '@mui/icons-material';
 import {formatDate} from 'shared-utils/date.utils';
 import PinStatus from './PinStatus';
-import Spinner from '../buttons/LoadingSpinnerButton';
-import NoteMenu from "../menus/noteMenu";
 
-const NoteCardHeader = React.memo(({note, onTogglePin, onDelete, loading}) => {
+const NoteCardHeader = React.memo(({note}) => {
     const headerStyles = {
         p: '12px 16px',
         backgroundColor: 'var(--color-background-secondary)',
@@ -36,15 +34,6 @@ const NoteCardHeader = React.memo(({note, onTogglePin, onDelete, loading}) => {
     return (
         <CardHeader
             avatar={<Description color="primary" fontSize="large"/>}
-            action={
-                <Spinner loading={loading} color="var(--color-text)">
-                    <NoteMenu
-                        onDelete={onDelete}
-                        onTogglePin={onTogglePin}
-                        isPinned={note.isPinned}
-                    />
-                </Spinner>
-            }
             sx={headerStyles}
             title={
                 <Typography

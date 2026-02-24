@@ -12,12 +12,6 @@ export const NoteCardsContainerStyles = styled.div`
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 12px;
     }
-
-    ${({loading}) => loading && `
-        opacity: 0.5;
-        pointer-events: none;
-        cursor: not-allowed;
-    `}
 `;
 
 export const CardStyles = styled.div`
@@ -56,56 +50,6 @@ export const MarkdownContainerStyles = styled.div`
         height: auto;
         display: block;
         margin: 0.5rem 0;
-    }
-`;
-
-export const TagsWrapperStyles = styled.div`
-    padding: 10px 5px;
-    background-color: transparent;
-    //border-top: 1px solid var(--color-border)
-`
-
-export const TagsContainerStyles = styled.div`
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 0.5em;
-    overflow-x: auto;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-
-    &:hover {
-        flex-wrap: wrap;
-        overflow-y: auto;
-    }
-`;
-
-export const TagStyles = styled.span`
-    color: var(--color-text);
-    box-shadow: var(--box-shadow);
-    border-radius: 10px;
-    border: 1px solid var(--color-background-secondary);
-    background-color: var(--color-background);
-    padding: 0.2em 0.6em;
-    font-size: 0.75em;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    transition: all 0.3s ease;
-    gap: 0.3em;
-
-    span {
-        font-size: 1.3em;
-        font-weight: bold;
-        color: var(--color-accent);
-    }
-
-    &:hover {
-        transform: scale(1.1);
-        background-color: var(--color-background-secondary);
     }
 `;
 

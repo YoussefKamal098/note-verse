@@ -1,4 +1,4 @@
-const statusMessages = require('../../constants/statusMessages');
+const statusMessages = require('@/constants/statusMessages');
 const NotificationType = require('@/enums/notifications.enum');
 
 class UpdateNoteUseCase {
@@ -66,20 +66,19 @@ class UpdateNoteUseCase {
      * @param {string} params.noteId - Note ID to update
      * @param {string} [params.commitMessage]  - Version message/description
      * @param {Object} params.updateData - Raw update data from request
-     * @returns {Promise<{note: Object, version: Object}>} Updated note and created version (if content changed)
+     * @returns {Promise<{note: OutputNote, version: OutputVersion}>} Updated note and created version (if content changed)
      * @throws {AppError} For validation errors or system failures
      */
     async execute({userId, noteId, commitMessage, updateData = {}}) {
-        return this.#transactionService.executeTransaction(
-            async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
                 // 1. Validate using the validator (with existing session)
-                const oldNote = await this.#validator.execute(
+                const {note: oldNote, userRole} = await this.#validator.execute(
                     {userId, noteId, commitMessage, updateData},
                     {session}
                 );
 
                 // 2. Create version if content changed
-                const version = await this.#maybeCreateVersion({
+                const version = await this.#createVersion({
                     oldNote,
                     noteId,
                     userId,
@@ -89,10 +88,14 @@ class UpdateNoteUseCase {
                 });
 
                 // 3. Update the note
+                // Fetch full note with role-specific projection
                 const updatedNote = await this.#noteRepo.findByIdAndUpdate(
                     noteId,
                     updateData,
-                    session
+                    {
+                        session,
+                        role: userRole
+                    }
                 );
 
                 if (updatedNote && updatedNote.userId !== userId && version) {
@@ -106,8 +109,10 @@ class UpdateNoteUseCase {
                         },
                     });
                 }
-                
-                version && await this.#noteRoomEmitter.emitNoteUpdate(noteId, {versionId: version.id});
+
+                if (version) {
+                    await this.#noteRoomEmitter.emitNoteUpdate(noteId, {versionId: version.id});
+                }
 
                 return {note: updatedNote, version};
             }, {
@@ -117,7 +122,7 @@ class UpdateNoteUseCase {
         );
     }
 
-    async #maybeCreateVersion({oldNote, noteId, userId, commitMessage, updateData, session}) {
+    async #createVersion({oldNote, noteId, userId, commitMessage, updateData, session}) {
         if (updateData.content && this.#isContentChanged(oldNote.content, updateData.content)) {
             return await this.#versionRepo.createVersion({
                 noteId,

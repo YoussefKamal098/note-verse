@@ -43,6 +43,7 @@ const permissionSchema = new Schema({
 });
 
 permissionSchema.index({resourceId: 1, resourceType: 1, userId: 1, grantedBy: 1});
+permissionSchema.index({userId: 1, resourceType: 1});
 permissionSchema.index(
     {resourceId: 1, resourceType: 1, userId: 1},
     {unique: true, name: 'unique_permission'}

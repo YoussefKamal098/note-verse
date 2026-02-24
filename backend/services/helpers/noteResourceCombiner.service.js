@@ -73,7 +73,7 @@ class ResourceNoteCombiner extends BaseResourceCombiner {
         const noteId = this._extractNestedId(resource, noteIdField);
         if (!noteId) return null;
 
-        const note = await this.#noteRepo.findById(noteId, session, projection);
+        const note = await this.#noteRepo.findById(noteId, {session, projection});
         return this._combineSingle(resource, note, noteIdField, 'note');
     }
 }

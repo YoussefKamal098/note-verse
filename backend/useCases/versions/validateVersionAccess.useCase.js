@@ -1,6 +1,5 @@
-const AppError = require('../../errors/app.error');
-const httpCodes = require('../../constants/httpCodes');
-const statusMessages = require('../../constants/statusMessages');
+const AppError = require('@/errors/app.error');
+const errorFactory = require('@/errors/factory.error');
 
 class ValidateVersionAccessUseCase {
     /**
@@ -37,15 +36,11 @@ class ValidateVersionAccessUseCase {
         try {
             // 1. Get version first
             const version = await this.#versionRepo.getVersion(versionId);
-            if (!version) {
-                throw new AppError(
-                    statusMessages.VERSION_NOT_FOUND,
-                    httpCodes.NOT_FOUND.code,
-                    httpCodes.NOT_FOUND.name
-                );
-            }
 
-            // 2. Validate note access using existing use case
+            // 2. ensure that version exists
+            if (!version) throw errorFactory.versionNotFound();
+
+            // 3. Validate note access using existing use case
             const note = await this.#validateNoteViewUseCase.execute({
                 userId,
                 noteId: version.noteId
@@ -54,13 +49,10 @@ class ValidateVersionAccessUseCase {
             return {version, note};
         } catch (error) {
             if (error instanceof AppError) throw error;
-            throw new AppError(
-                statusMessages.VERSION_ACCESS_CHECK_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
+            throw errorFactory.versionAccessCheckFailed();
         }
     }
+
 }
 
 module.exports = ValidateVersionAccessUseCase;

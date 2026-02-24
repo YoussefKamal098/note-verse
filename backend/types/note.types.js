@@ -7,6 +7,7 @@
  * @property {string} content - Note content
  * @property {boolean} isPinned - Whether note is pinned
  * @property {boolean} isPublic - Whether note is public
+ * @property {ReactionCounts} reactionCounts - Reactions counts
  * @property {Date} createdAt - Creation timestamp
  * @property {Date} updatedAt - Update timestamp
  */

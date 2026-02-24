@@ -133,6 +133,9 @@ const statusMessages = Object.freeze({
 
     // ======================= 💠 NEW PERMISSION ERRORS 💠 =======================
     PERMISSION_OPERATION_FAILED: "Permission operation failed. Please check your permissions and try again.",
+    NOTE_PERMISSION_DENIED: "Access denied. You don't have permission to perform this action on this note.",
+    NOTE_VIEW_DENIED: "Access denied. You do not have permission to view this note.",
+    NOTE_EDIT_DENIED: "Access denied. You do not have permission to edit this note.",
     PERMISSION_GRANT_FAILED: "Failed to grant permissions. Please verify the users and resource exist.",
     PERMISSION_REMOVAL_FAILED: "Failed to remove permissions. Please verify the permissions exist.",
     PERMISSION_UPDATE_FAILED: "Failed to update permissions. Ensure valid roles/actions are provided.",

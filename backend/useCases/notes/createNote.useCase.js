@@ -1,4 +1,6 @@
-const statusMessages = require('../../constants/statusMessages');
+const statusMessages = require('@/constants/statusMessages');
+const roles = require('@/enums/roles.enum');
+const resources = require('@/enums/resources.enum');
 
 class CreateNoteUseCase {
     /**
@@ -15,6 +17,12 @@ class CreateNoteUseCase {
 
     /**
      * @private
+     * @type {PermissionRepository}
+     */
+    #permissionRepo
+
+    /**
+     * @private
      * @type {BaseTransactionService}
      */
     #transactionService;
@@ -24,11 +32,13 @@ class CreateNoteUseCase {
      * @param {Object} dependencies
      * @param {NoteRepository} dependencies.noteRepo
      * @param {VersionRepository} dependencies.versionRepo
+     * @param {PermissionRepository} dependencies.permissionRepo
      * @param {BaseTransactionService} dependencies.transactionService
      */
-    constructor({noteRepo, versionRepo, transactionService}) {
+    constructor({noteRepo, versionRepo, permissionRepo, transactionService}) {
         this.#noteRepo = noteRepo;
         this.#versionRepo = versionRepo;
+        this.#permissionRepo = permissionRepo;
         this.#transactionService = transactionService;
     }
 
@@ -45,29 +55,37 @@ class CreateNoteUseCase {
      * @throws {AppError} When creation fails
      */
     async execute({userId, title, content, tags, isPinned, isPublic}) {
-        return this.#transactionService.executeTransaction(
-            async (session) => {
-                // 1. Create the note
-                const note = await this.#noteRepo.create({
-                    userId,
-                    title,
-                    tags,
-                    content,
-                    isPinned,
-                    isPublic
-                }, session);
+        return this.#transactionService.executeTransaction(async (session) => {
+            // 1. Create the note
+            const note = await this.#noteRepo.create({
+                userId,
+                title,
+                tags,
+                content,
+                isPinned,
+                isPublic
+            }, session);
 
-                // 2. Create initial version
-                await this.#versionRepo.createVersion({
-                    noteId: note.id,
-                    oldContent: '',
-                    newContent: content,
-                    userId,
-                    message: "Initial version"
-                }, {session});
+            // 2. Create permission
+            await this.#permissionRepo.grantPermissionsForUsers({
+                userIds: [userId],
+                resourceId: note.id,
+                resourceType: resources.NOTE,
+                role: roles.OWNER,
+                grantedBy: userId,
+            }, session);
 
-                return note;
-            }, {message: statusMessages.NOTE_CREATION_FAILED});
+            // 3. Create initial version
+            await this.#versionRepo.createVersion({
+                noteId: note.id,
+                oldContent: '',
+                newContent: content,
+                userId,
+                message: "Initial version"
+            }, {session});
+
+            return note;
+        }, {message: statusMessages.NOTE_CREATION_FAILED});
     }
 }
 

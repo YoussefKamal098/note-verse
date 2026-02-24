@@ -1,85 +1,66 @@
-import {useCallback, useEffect, useRef, useState} from "react";
-import routesPaths from "../constants/routesPaths";
-import usePersistedState from "./usePersistedState";
-import useRequestManager from "./useRequestManager";
+import {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import useRequestManager from "./useRequestManager";
+import {useToastNotification} from "@/contexts/ToastNotificationsContext";
 import noteService from "../api/noteService";
-import {API_CLIENT_ERROR_CODES} from "../api/apiClient"
+import {API_CLIENT_ERROR_CODES} from "../api/apiClient";
 
-const usePaginatedNotes = (userId, searchText, notesPerPage) => {
+const usePaginatedNotes = ({
+                               searchText,
+                               limit = 10
+                           }) => {
     const navigate = useNavigate();
+    const {notify} = useToastNotification();
     const {createAbortController} = useRequestManager();
-    const [notes, setNotes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = usePersistedState("notes_current_page", 0);
-    const [totalPages, setTotalPages] = useState(0);
-    const totalNotes = useRef(0);
 
-    const fetchPageNotes = useCallback(async (page, search) => {
+    const [notes, setNotes] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [nextCursor, setNextCursor] = useState(null);
+
+    const fetchNotes = useCallback(async ({cursor, searchText, limit}) => {
         const controller = createAbortController();
 
         try {
-            const queryParams = {
-                searchText: search,
-                page,
-                perPage: notesPerPage,
-                sort: {isPinned: -1, updatedAt: -1, createdAt: -1},
-            };
-
-            const result = await noteService.getUserNotes(queryParams, {
-                signal: controller.signal
-            });
-
-            return result.data;
-        } catch (error) {
-            if (error.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
-                throw new Error(error.message);
+            const res = await noteService.getUserNotes(
+                {searchText, cursor, limit},
+                {signal: controller.signal}
+            );
+            return res.data;
+        } catch (err) {
+            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                throw err;
             }
         }
-    }, [notesPerPage]);
+    }, [createAbortController]);
 
-    const loadNotes = useCallback(async (page, search) => {
+    const loadNotes = useCallback(async ({cursor, searchText, limit} = {}) => {
         try {
             setLoading(true);
-            let result = await fetchPageNotes(page, search);
+            const result = await fetchNotes({cursor, searchText, limit});
+            if (!result) return;
 
-            if (!result) return; // Aborted request
-
-            if (result.data.length === 0 && result.totalPages > 0) {
-                result = await fetchPageNotes(result.totalPages - 1, search);
-                if (!result) return; // Aborted request
-                setCurrentPage(result.totalPages - 1);
-            }
-
-            const {data, totalPages: total, totalItems} = result;
-            totalNotes.current = totalItems;
-            setTotalPages(total);
-            setNotes(data);
+            setNotes((prev) => [...prev, ...result.data]);
+            setNextCursor(result.nextCursor);
             setLoading(false);
-        } catch (error) {
-            navigate(routesPaths.ERROR, {
-                state: {
-                    message: "An error occurred while retrieving your notes. Please try again later."
-                }
-            });
+        } catch (err) {
+            if (err.code !== API_CLIENT_ERROR_CODES.ERR_CANCELED) {
+                setLoading(false);
+                notify.error(err.message);
+            }
         }
-    }, [fetchPageNotes, navigate]);
+    }, [fetchNotes, navigate]);
 
+    // Reset on search
     useEffect(() => {
-        loadNotes(currentPage, searchText);
-    }, [loadNotes, currentPage, searchText]);
+        setNotes([]);
+        loadNotes({cursor: null, limit, searchText});
+    }, [searchText]);
 
     return {
         notes,
         loading,
-        totalPages,
-        loadNotes,
-        fetchPageNotes,
-        totalNotes,
-        setNotes,
-        setTotalPages,
-        currentPage,
-        setCurrentPage
+        nextCursor,
+        loadNext: () => nextCursor && loadNotes({cursor: nextCursor})
     };
 };
 

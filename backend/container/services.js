@@ -8,7 +8,6 @@ const redis = require('@/config/redis');
 module.exports = container => {
     container.register({
         passwordHasherService: asClass(PasswordHasherService).singleton(),
-
         hasherService: asClass(HasherService).singleton(),
 
         cacheService: asFunction(() =>
@@ -25,16 +24,14 @@ module.exports = container => {
             new (require('@/services/user.service'))(passwordHasherService, userRepo, cacheService)
         ).singleton(),
 
-        noteService: asFunction(({noteRepo}) =>
-            new (require('@/services/note.service'))(noteRepo)
-        ).singleton(),
+        noteSearchService: asClass(require('@/services/noteSearch.service')).singleton(),
+        noteService: asClass(require('@/services/note.service')).singleton(),
 
         sessionService: asFunction(({sessionRepo}) =>
             new (require('@/services/session.service'))(sessionRepo)
         ).singleton(),
 
         permissionService: asClass(require('@/services/permission.service')).singleton(),
-
         versionService: asClass(require('@/services/version.service')).singleton(),
 
         fileStorageService: asFunction(({b2StorageEngine, fileRepo}) =>

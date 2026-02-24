@@ -32,7 +32,7 @@ export const getEditorOptions = (disable) => ({
     renderLineHighlight: "all",
     renderWhitespace: "selection",
     links: true,
-    contextmenu: true,
+    contextmenu: false,
     // Language specific
     wordBasedSuggestions: "allDocuments",
     suggest: {

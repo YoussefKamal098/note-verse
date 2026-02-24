@@ -31,7 +31,7 @@ const MainContent = ({headerActions, markdownTabsRef}) => {
             <EditableTitle
                 title={current.title}
                 onSave={useCallback((title) => actions.updateContent({title}), [actions.updateContent])}
-                canEdit={editMode && canEdit}
+                canEdit={editMode && isOwner}
             />
 
             <EditableTags

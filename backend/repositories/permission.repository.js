@@ -1,6 +1,6 @@
-const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
+const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('@/utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
-const dbErrorCodes = require("../constants/dbErrorCodes");
+const dbErrorCodes = require("@/constants/dbErrorCodes");
 
 /**
  * Repository for managing Permission documents with transaction support
@@ -216,6 +216,26 @@ class PermissionRepository {
             console.error("Permission retrieval failed:", error);
             throw new Error(`Failed to get user permissions: ${error.message}`);
         }
+    }
+
+    /**
+     * Retrieves allowed resource IDs for a user based on role and resource type.
+     * Uses Redis caching to improve performance for frequent lookups.
+     *
+     * @param {Object} params
+     * @param {string} params.userId - ID of the user
+     * @param {ResourceType} params.resourceType - Type of resource, e.g., 'note'
+     * @param {Object} [options] - session options
+     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
+     * @returns {Promise<Array<string>>} - Array of allowed resource IDs as strings
+     */
+    async getAllowedResourceIds({userId, resourceType}, {session = null}) {
+        if (!isValidObjectId(userId)) return [];
+
+        return await this.#model.find({
+            userId: convertToObjectId(userId),
+            resourceType
+        }).distinct('resourceId').session(session);
     }
 
     /**

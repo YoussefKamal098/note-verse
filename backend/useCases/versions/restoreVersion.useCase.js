@@ -1,6 +1,5 @@
-const AppError = require('../../errors/app.error');
-const httpCodes = require('../../constants/httpCodes');
-const statusMessages = require('../../constants/statusMessages');
+const statusMessages = require('@/constants/statusMessages');
+const errorFactory = require('@/errors/factory.error');
 
 class RestoreNoteVersionUseCase {
     /**
@@ -46,38 +45,15 @@ class RestoreNoteVersionUseCase {
      * @throws {AppError} When restore operation fails
      */
     async execute({userId, versionId}) {
-        return this.#transactionService.executeTransaction(
-            async (session) => {
+        return this.#transactionService.executeTransaction(async (session) => {
                 // 1. Get version first
                 const version = await this.#versionRepo.getVersion(versionId, {session});
-                if (!version) {
-                    throw new AppError(
-                        statusMessages.VERSION_NOT_FOUND,
-                        httpCodes.NOT_FOUND.code,
-                        httpCodes.NOT_FOUND.name
-                    );
-                }
+                if (!version) throw errorFactory.versionNotFound();
 
-                const note = await this.#noteRepo.findById(
-                    version?.noteId,
-                    session
-                );
+                const note = await this.#noteRepo.findById(version?.noteId, {session});
+                if (!note) throw errorFactory.noteNotFound();
 
-                if (!note) {
-                    throw new AppError(
-                        statusMessages.NOTE_NOT_FOUND,
-                        httpCodes.NOT_FOUND.code,
-                        httpCodes.NOT_FOUND.name
-                    );
-                }
-
-                if (note.userId !== userId) {
-                    throw new AppError(
-                        statusMessages.NOTE_OWNER_REQUIRED,
-                        httpCodes.FORBIDDEN.code,
-                        httpCodes.FORBIDDEN.name
-                    )
-                }
+                if (note.userId !== userId) throw errorFactory.noteOwnerRequired();
 
                 // 2. Create restoration version record
                 const restoreResult = await this.#versionRepo.restoreVersion({
@@ -85,40 +61,17 @@ class RestoreNoteVersionUseCase {
                     userId
                 }, {session});
 
-                if (!restoreResult) {
-                    throw new AppError(
-                        statusMessages.VERSION_NOT_FOUND,
-                        httpCodes.NOT_FOUND.code,
-                        httpCodes.NOT_FOUND.name
-                    );
-                }
-
                 const restoredVersion = restoreResult.version;
-                if (!restoredVersion) {
-                    throw new AppError(
-                        statusMessages.VERSION_ALREADY_CURRENT,
-                        httpCodes.CONFLICT.code,
-                        httpCodes.CONFLICT.name
-                    );
-                }
+                if (!restoredVersion) throw errorFactory.versionAlreadyCurrent();
 
                 const updatedNote = await this.#noteRepo.findByIdAndUpdate(
                     version?.noteId,
                     {content: restoreResult.content},
-                    session
+                    {session}
                 );
 
-                if (!updatedNote) {
-                    throw new AppError(
-                        statusMessages.NOTE_NOT_FOUND,
-                        httpCodes.NOT_FOUND.code,
-                        httpCodes.NOT_FOUND.name
-                    );
-                }
-
                 return {version: restoredVersion, note: updatedNote};
-            },
-            {
+            }, {
                 message: statusMessages.VERSION_RESTORE_FAILED,
                 conflictMessage: statusMessages.VERSION_RESTORE_CONFLICT
             }

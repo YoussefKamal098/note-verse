@@ -1,6 +1,25 @@
-const NotePaginatorService = require("@/services/helpers/notePaginatorService");
-const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('../utils/obj.utils');
+const {isValidObjectId, convertToObjectId, sanitizeMongoObject} = require('@/utils/obj.utils');
 const {deepFreeze} = require('shared-utils/obj.utils');
+const roles = require('@/enums/roles.enum');
+
+
+/**
+ * Defines the MongoDB projection rules for each role.
+ * This data is now local to the Repository as it concerns data retrieval/visibility.
+ */
+const NOTE_PROJECTIONS = Object.freeze({
+    // OWNER: null means no projection is applied, returning the full document.
+    [roles.OWNER]: null,
+
+    // EDITOR and VIEWER roles restrict the view, primarily showing less sensitive data.
+    [roles.EDITOR]: Object.freeze({
+        isPinned: 0
+    }),
+
+    [roles.VIEWER]: Object.freeze({
+        isPinned: 0
+    }),
+});
 
 /**
  * Repository for managing Note documents in the database.
@@ -18,12 +37,6 @@ class NoteRepository {
      * @description The Mongoose model used for note operations.
      */
     #model;
-    /**
-     * @private
-     * @type {NotePaginatorService}
-     * @description Service instance for handling pagination of note results.
-     */
-    #paginator;
 
     /**
      * Creates an instance of NoteRepository.
@@ -32,7 +45,6 @@ class NoteRepository {
      */
     constructor(model) {
         this.#model = model;
-        this.#paginator = new NotePaginatorService(model);
     }
 
     /**
@@ -49,6 +61,28 @@ class NoteRepository {
             ...sanitizeMongoObject(note),
             ...(note.userId ? {userId: note.userId.toString()} : {})
         };
+    }
+
+    /**
+     * Calculates the final MongoDB projection object based on the user's role and an optional override.
+     * @private
+     * @param {string} [role] - User role (e.g., 'OWNER', 'VIEWER').
+     * @param {Object|string} [projectionOverride] - Manual projection override from the caller.
+     * @returns {Object|null} The final projection object to use in the Mongoose query.
+     */
+    #getFinalProjection(role, projectionOverride) {
+        // 1. Highest precedence: Use the manual projection override if provided.
+        if (projectionOverride) {
+            return projectionOverride;
+        }
+
+        // 2. Fallback: Use the projection defined for the role.
+        if (role && NOTE_PROJECTIONS[role]) {
+            return NOTE_PROJECTIONS[role];
+        }
+
+        // 3. Default: If no role or no projection defined for the role, return null (full document).
+        return null;
     }
 
     /**
@@ -81,12 +115,16 @@ class NoteRepository {
      *
      * @param {string} noteId - The ID of the note to update.
      * @param {Object} updates - The fields to update.
-     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
-     * @returns {Promise<Readonly<Object|null>>} The updated note document, deep-frozen, or null if not found.
+     * @param options Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
+     * @param {Object|string} [options.projection] - Fields to include from note
+     * @param {UserRoleType| null} [options.role] - User role to apply default projection.
+     * @returns {Promise<Readonly<OutputNote|null>>} The updated note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the update.
      */
-    async findByIdAndUpdate(noteId, updates = {}, session = null) {
+    async findByIdAndUpdate(noteId, updates = {}, {session = null, projection = null, role} = {}) {
         if (!isValidObjectId(noteId)) return null;
+        const finalProjection = this.#getFinalProjection(role, projection);
 
         try {
             const updatedNote = await this.#model.findByIdAndUpdate(
@@ -94,6 +132,7 @@ class NoteRepository {
                 {$set: updates}, {
                     new: true,
                     runValidators: true,
+                    projection: finalProjection,
                     session
                 }).lean();
             return updatedNote ? deepFreeze(this.#sanitizeNoteMongoObject(updatedNote)) : null;
@@ -107,17 +146,20 @@ class NoteRepository {
      * Retrieves a note by its ID.
      *
      * @param {string} noteId - The ID of the note.
-     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
-     * @param {Object|string} [projection] - Fields to include from note
+     * @param options Options
+     * @param {import('mongoose').ClientSession} [options.session] - MongoDB transaction session
+     * @param {Object|string} [options.projection] - Manual projection override.
+     * @param {UserRoleType| null} [options.role] - User role to apply default projection.
      * @returns {Promise<Readonly<OutputNote|null>>} The note document, deep-frozen, or null if not found.
      * @throws {Error} If an error occurs during the query.
      */
-    async findById(noteId, session = null, projection = null) {
+    async findById(noteId, {session = null, projection = null, role = null} = {}) {
         if (!isValidObjectId(noteId)) return null;
+        const finalProjection = this.#getFinalProjection(role, projection);
 
         try {
             const query = this.#model.findById(convertToObjectId(noteId)).lean();
-            if (projection) query.select(projection);
+            if (finalProjection) query.select(finalProjection);
             if (session) query.session(session);
 
             const note = await query.exec();
@@ -164,77 +206,6 @@ class NoteRepository {
         } catch (error) {
             console.error("Error deleting note:", error);
             throw new Error("Error deleting note");
-        }
-    }
-
-    /**
-     * Retrieves notes using MongoDB Atlas Search with optional full-text matching, filters, and pagination.
-     *
-     * Constructs a `$search` query with compound filtering using Atlas Search's `compound.must` operator.
-     * Supports full-text matching on "title" and "tags", along with equality filters like `userId`.
-     *
-     * @param {string} [searchText] - Text to match in the note fields (title, tags).
-     * @param {Object} [query={}] - Object containing equality filters (e.g., { userId }).
-     * @param {Object} [options={}] - Pagination and sorting options.
-     * @param {number} [options.page=1] - The page number to retrieve (1-based).
-     * @param {number} [options.perPage=10] - Number of results per page.
-     * @param {Object} [options.sort={isPinned: -1, updatedAt: -1, createdAt: -1}] - Sort criteria.
-     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
-     * @returns {Promise<Readonly<Object>>} An object containing paginated search results.
-     * @throws {Error} If an error occurs while fetching notes.
-     */
-    async find({searchText, query = {}, options = {}} = {}, session = null) {
-        const mustConditions = [];
-
-        if (searchText && searchText.trim()) {
-            mustConditions.push({
-                text: {
-                    query: searchText,
-                    path: ['title', 'tags']
-                }
-            });
-        }
-
-        if (query.userId) {
-            mustConditions.push({
-                equals: {
-                    path: "userId",
-                    value: convertToObjectId(query.userId)
-                }
-            });
-        }
-
-        return this.#fetchNotes(mustConditions, options, session);
-    }
-
-    /**
-     * Private helper method to execute the Atlas Search query with pagination.
-     * It also ensures the sort object follows the compound index order:
-     * { userId, isPinned, createdAt, updatedAt, title, tags }.
-     * If a key in the order is undefined, the process stops, preserving index order.
-     *
-     * @private
-     * @param {Array<Object>} mustConditions - Conditions for the `$search.compound.must` clause.
-     * @param {Object} options - Pagination and sorting options.
-     * @param {import('mongoose').ClientSession} [session] - MongoDB transaction session
-     * @returns {Promise<Readonly<Object>>} An object containing the paginated results.
-     * @throws {Error} If an error occurs while fetching notes.
-     */
-    async #fetchNotes(mustConditions, options, session = null) {
-        // Set default pagination and sort options
-        const {
-            page = 1,
-            perPage = 10,
-            sort = {isPinned: -1, updatedAt: -1, createdAt: -1}
-        } = options;
-
-        try {
-            const result = await this.#paginator.getPagination(mustConditions, {page, perPage, sort}, session);
-            result.data = result.data.map(this.#sanitizeNoteMongoObject);
-            return deepFreeze(result);
-        } catch (error) {
-            console.error("Error fetching notes:", error);
-            throw new Error("Error fetching notes");
         }
     }
 

@@ -30,15 +30,14 @@ const SearchBarWrapperStyled = styled.div`
 const SearchBarContainerStyled = styled.div`
     display: flex;
     align-items: center;
-    padding: 0 1em;
+    padding: 0 0.8em;
     background-color: var(--color-background-secondary);
     border-radius: var(--border-radius);
-    transition: 0.3s ease;
-    overflow: hidden;
+    transition: 0.25s ease;
+    border: 2px solid transparent;
 
-    &:hover .search-icon,
-    &:focus-within .search-icon {
-        color: var(--color-accent);
+    &:focus-within {
+        box-shadow: 0 0 0 2px rgba(0, 150, 255, 0.1);
     }
 `;
 
@@ -63,33 +62,50 @@ const InputStyled = styled.input`
     }
 `;
 
-const IconWrapperStyled = styled.div`
+const IconButtonStyled = styled.button`
     display: flex;
     align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 50%;
     cursor: pointer;
-    gap: 0.1em;
+    transition: all 0.2s ease;
 
-    .close-icon {
+    svg {
+        font-size: 1.1rem;
         color: var(--color-placeholder);
-        font-size: 1.5em;
-        transition: color 0.3s ease;
-
-        &:hover {
-            color: var(--color-danger-hover);
-        }
+        transition: color 0.2s ease, transform 0.2s ease;
     }
 
-    .search-icon {
-        color: var(--color-placeholder);
-        font-size: 1em;
-        transition: color 0.3s ease;
+    &:hover:not(:disabled) svg {
+        color: var(--color-accent);
+        transform: scale(1.1);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.4;
+    }
+
+    &.clear svg {
+        font-size: 1.4rem;
+    }
+
+    &.clear:hover svg {
+        color: var(--color-danger-hover);
     }
 `;
 
 export {
+    IconButtonStyled,
     SearchBarBoxStyled,
     SearchBarWrapperStyled,
     SearchBarContainerStyled,
     InputStyled,
-    IconWrapperStyled
 };

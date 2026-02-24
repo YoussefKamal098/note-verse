@@ -1,6 +1,6 @@
-const httpCodes = require('../constants/httpCodes');
-const statusMessages = require('../constants/statusMessages');
-const AppError = require('../errors/app.error');
+const statusMessages = require('@/constants/statusMessages');
+const AppError = require('@/errors/app.error');
+const {internalServerError} = require("@/errors/factory.error");
 
 /**
  * Service for managing user notes.
@@ -16,15 +16,22 @@ class NoteService {
      * @private
      * @type {NoteRepository}
      */
-    #noteRepository;
+    #noteRepo;
+    /**
+     * @private
+     * @type {NoteSearchService}
+     */
+    #noteSearchService;
 
     /**
      * Creates an instance of NoteService.
      *
-     * @param {NoteRepository} noteRepository - Repository handling note database operations.
+     * @param {NoteRepository} noteRepo - Repository handling note database operations.
+     * @param {NoteSearchService} noteSearchService - The new search service
      */
-    constructor(noteRepository) {
-        this.#noteRepository = noteRepository;
+    constructor({noteRepo, noteSearchService}) {
+        this.#noteRepo = noteRepo;
+        this.#noteSearchService = noteSearchService;
     }
 
     /**
@@ -45,13 +52,10 @@ class NoteService {
      */
     async create({userId, title, tags, content, isPinned = false, isPublic = false} = {}) {
         try {
-            return await this.#noteRepository.create({userId, title, tags, content, isPinned, isPublic});
-        } catch (error) {
-            throw new AppError(
-                statusMessages.NOTE_CREATION_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
+            return await this.#noteRepo.create({userId, title, tags, content, isPinned, isPublic});
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            throw internalServerError(statusMessages.NOTE_CREATION_FAILED);
         }
     }
 
@@ -66,13 +70,10 @@ class NoteService {
      */
     async findNoteById(noteId) {
         try {
-            return await this.#noteRepository.findById(noteId);
-        } catch (error) {
-            throw new AppError(
-                httpCodes.INTERNAL_SERVER_ERROR.message,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
+            return await this.#noteRepo.findById(noteId);
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            throw internalServerError();
         }
     }
 
@@ -93,16 +94,12 @@ class NoteService {
      * @throws {AppError} If the update operation fails.
      */
     async updateNoteById(noteId, {title, tags, content, isPinned, isPublic}) {
-
         try {
             const updates = {title, tags, content, isPinned, isPublic};
-            return await this.#noteRepository.findByIdAndUpdate(noteId, updates);
-        } catch (error) {
-            throw new AppError(
-                statusMessages.NOTE_UPDATE_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
+            return await this.#noteRepo.findByIdAndUpdate(noteId, updates);
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            throw internalServerError(statusMessages.NOTE_UPDATE_FAILED);
         }
     }
 
@@ -117,30 +114,25 @@ class NoteService {
      */
     async deleteNoteById(noteId) {
         try {
-            return await this.#noteRepository.deleteById(noteId);
-        } catch (error) {
-            throw new AppError(
-                statusMessages.NOTE_DELETION_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
-            );
+            return await this.#noteRepo.deleteById(noteId);
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            throw internalServerError(statusMessages.NOTE_DELETION_FAILED);
         }
     }
 
     /**
      * Retrieves notes for a specific user with optional search and pagination.
+     * Integrates NoteSearchService for full-text capabilities or falls back to repository find.
      *
-     * Ensures that the user exists and applies default pagination options if none are provided.
-     * If searchText is provided, delegates to a search method; otherwise, retrieves notes normally.
-     *
-     * @param {string} userId - The ID of the user.
-     * @param {Object} [params={}] - Parameters for fetching notes.
-     * @param {string} [params.searchText] - Text to search for within notes.
-     * @param {number} [options.page=1] - The page number to retrieve (1-based).
-     * @param {number} [options.perPage=10] - Number of results per page.
-     * @param {Object} [options.sort={isPinned: 1, createdAt: -1, updatedAt: -1}] - Sort criteria.
-     * @returns {Promise<Readonly<Object>>} An object containing the paginated results.
-     * @throws {AppError} If note retrieval fails.
+     * @param {string} userId - The ID of the owner of the notes.
+     * @param {Object} [params] - The search and filtering parameters.
+     * @param {string} [params.searchText] - The text query for fuzzy search.
+     * @param {Object} [params.options] - Configuration for pagination and sorting.
+     * @param {number} [options.limit=10] - Number of records per page.
+     * @param {string|null} [options.cursor=null] - Atlas Search sequence token for next page.
+     * @returns {Promise<import('./NoteSearchService').SearchResult>} A paginated search result object.
+     * @throws {AppError} If note retrieval or search operation fails.
      */
     async findUserNotes(userId, {
         searchText,
@@ -148,18 +140,22 @@ class NoteService {
     } = {}) {
         try {
             const {
-                page,
-                perPage,
-                sort
+                limit = 10,
+                cursor = null
             } = options;
 
-            return await this.#noteRepository.find({searchText, query: {userId}, options: {page, perPage, sort}});
-        } catch (error) {
-            throw new AppError(
-                statusMessages.NOTES_FETCH_FAILED,
-                httpCodes.INTERNAL_SERVER_ERROR.code,
-                httpCodes.INTERNAL_SERVER_ERROR.name
+            return await this.#noteSearchService.search(
+                searchText,
+                {userId}, // Filters to this user's notes
+                {
+                    limit,
+                    cursor,
+                    sortKey: 'pinned'
+                }
             );
+        } catch (err) {
+            if (err instanceof AppError) throw err;
+            throw internalServerError(statusMessages.NOTES_FETCH_FAILED);
         }
     }
 }
