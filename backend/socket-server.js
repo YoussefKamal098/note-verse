@@ -18,12 +18,10 @@ async function startSocketServer(port = 6000) {
 
         // Initialize services
         const redisService = container.resolve('redisService');
-        const cacheService = container.resolve('cacheService');
 
         // Connect to all dependencies
         await Promise.all([
             connectDB(),
-            cacheService.connect(),
             redisService.connect()
         ]);
 

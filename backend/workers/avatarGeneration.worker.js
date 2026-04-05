@@ -4,7 +4,6 @@ const {Worker} = require('bullmq');
 const {Readable} = require('stream');
 const mime = require('mime-types');
 const QUEUE_NAMES = require('@/constants/queueNames.constant');
-const REDIS = require('@/constants/redis.constants');
 const JOB_NAMES = require('@/constants/jobNames.constant');
 const {BULLMQ_PREFIX} = require('@/constants/bullmq.constants');
 const AvatarGenerationTypes = require('@/enums/avatarGenerationTypes.enum')
@@ -12,9 +11,9 @@ const redis = require('@/config/redis');
 const container = require('@/container');
 const AvatarGeneratorService = require('@/services/avatarGenerator.service');
 
-const pubClient = redis.duplicate();
 const avatarGenerator = new AvatarGeneratorService({size: 128});
 const fileStorageService = new container.resolve('fileStorageService');
+const userService = new container.resolve('userService');
 
 avatarGenerator.registerFontFile(path.join(__dirname, "../fonts/Quicksand/Quicksand-Bold.ttf"), 'bold', 'Quicksand');
 
@@ -68,11 +67,11 @@ const worker = new Worker(
                 createdAt: Date.now()
             };
 
-            // 4. Publish to Redis channel
-            const channel = REDIS.CHANNELS.AVATAR_GENERATED(useType);
-            await pubClient.publish(channel, JSON.stringify(payload));
+            await userService.updateUser(userId, {
+                avatarPlaceholder: uploadedFile.id,
+            });
 
-            console.log(`[AVATAR.WORKER] [PUB] Published avatar to ${channel}`, payload);
+            console.log(`[AVATAR.WORKER] Generated avatar for user with id "${userId}"`, payload);
 
             return uploadedFile;
         } catch (error) {
@@ -138,15 +137,9 @@ worker.on('closing', () => {
     console.info('[AVATAR.WORKER] Worker is shutting down...');
 });
 
-pubClient.on('connect', () => console.info('[AVATAR.WORKER][REDIS] Pub client connected'));
-pubClient.on('ready', () => console.info('[AVATAR.WORKER][REDIS] Pub client ready'));
-pubClient.on('error', err => console.error('[AVATAR.WORKER][REDIS] Pub client error:', err));
-pubClient.on('end', () => console.info('[AVATAR.WORKER][REDIS] Pub client disconnected'));
-
 // Graceful shutdown
 const shutdown = async () => {
     console.log(`[AVATAR.WORKER] ${worker.name} is shutting down...`);
-    pubClient.status === 'ready' && await pubClient.quit();
     await worker.close();
     process.exit(0);
 };

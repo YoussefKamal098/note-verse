@@ -1,8 +1,6 @@
 const express = require('express');
 const {makeClassInvoker} = require("awilix-express");
 const container = require('../container');
-const cacheKeys = require('../utils/cacheKeys');
-const {createCacheMiddleware} = require('../middlewares/cache.middleware');
 const asyncRequestHandler = require('../utils/asyncHandler');
 const resolveMeIdentifier = require('../middlewares/resolveMeIdentifier.middleware');
 const {createUploadMiddleware} = require('../middlewares/fileUpload.middleware');
@@ -36,17 +34,9 @@ const uploadUserImageMiddleWare = createUploadMiddleware(
     {allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp']}
 );
 
-const userCacheMiddleware = createCacheMiddleware({
-    generateCacheKey: (req) => {
-        const {id, email} = req.query;
-        return id ? cacheKeys.userProfileById(id) : cacheKeys.userProfileByEmail(email);
-    }
-});
-
 router.get('/',
     asyncRequestHandler(validateRequestMiddlewares(getUserQuerySchema, {isQuery: true})),
     asyncRequestHandler(resolveMeIdentifier()),
-    asyncRequestHandler(userCacheMiddleware),
     asyncRequestHandler(api('getUser'))
 );
 

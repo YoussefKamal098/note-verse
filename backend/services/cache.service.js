@@ -4,80 +4,108 @@ const {timeUnit, time} = require('shared-utils/date.utils');
 class CacheService {
     #client;
     #ttl;
+    #connectPromise = null;
 
-    constructor({redisUrl = 'redis://127.0.0.1:6379', ttl = time({[timeUnit.HOUR]: 1})} = {}) {
-        this.#client = redis.createClient({url: redisUrl});
+    constructor({
+                    url = 'redis://127.0.0.1:6379',
+                    ttl = time({[timeUnit.HOUR]: 1}),
+                } = {}) {
         this.#ttl = ttl;
+
+        this.#client = redis.createClient({url});
+
+        this.#client.on('error', (err) => {
+            console.error('[Redis Error]', err);
+        });
+
+        this.#client.on('connect', () => {
+            console.log('[Redis] connecting...');
+        });
+
+        this.#client.on('ready', () => {
+            console.log('[Redis] ready ✅');
+        });
+
+        this.#client.on('end', () => {
+            console.log('[Redis] disconnected ❌');
+        });
     }
 
-    // Establish connection in an asynchronous method
-    async connect() {
-        try {
-            await this.#client.connect(); // Ensure a client is connected
-            console.log('Redis client connected.');
-        } catch (err) {
-            console.error('Redis connection failed:', err.message);
-            throw new Error(`Cache service connection error: ${err}`);
+    // central connection guard
+    async #ensureConnection() {
+        if (this.#client.isOpen) return;
+
+        if (!this.#connectPromise) {
+            this.#connectPromise = this.#client.connect().catch((err) => {
+                this.#connectPromise = null;
+                throw err;
+            });
         }
+
+        return this.#connectPromise;
     }
 
-    async isConnected() {
-        try {
-            await this.#client.ping();  // Ping Redis to check connection
-            return true;
-        } catch (err) {
-            console.warn('Redis not connected:', err);
-            return false;
-        }
+    // Generic executor (removes duplication)
+    async #exec(command) {
+        await this.#ensureConnection();
+        return command();
     }
+
+    // ======================
+    // CACHE METHODS
+    // ======================
 
     async get(key) {
-        return await this.#client.get(key);
+        return this.#exec(() => this.#client.get(key));
     }
 
     async set(key, value, ttl = this.#ttl) {
-        await this.#client.set(key, value, {EX: ttl});
-    }
-
-    async increment(key) {
-        return await this.#client.incr(key);
-    }
-
-    async expire(key, ttl = this.#ttl) {
-        await this.#client.expire(key, ttl);
+        return this.#exec(() =>
+            this.#client.set(key, value, {EX: ttl})
+        );
     }
 
     async delete(key) {
-        await this.#client.del(key);
+        return this.#exec(() => this.#client.del(key));
     }
 
-    async clearKeysByPattern(pattern) {
-        const SCAN_COUNT = 100;
-        let cursor = 0;
-        do {
-            const {cursor: newCursor, keys} = await this.#client.scan(cursor, {
-                MATCH: pattern,
-                COUNT: SCAN_COUNT,
-            });
-            cursor = newCursor;
-
-            if (keys.length) {
-                await Promise.all(keys.map(key => this.#client.del(key)));
-            }
-        } while (cursor !== 0);
+    async increment(key) {
+        return this.#exec(() => this.#client.incr(key));
     }
 
-    async close() {
-        try {
-            await this.#client.quit(); // Gracefully close the Redis connection
-            console.log('Redis client disconnected.');
-        } catch (err) {
-            console.error('Error disconnecting Redis client:', err);
-        }
+    async expire(key, ttl = this.#ttl) {
+        return this.#exec(() => this.#client.expire(key, ttl));
     }
 
     async flush() {
-        return await this.#client.flushDb() // Clear all cache keys
+        return this.#exec(() => this.#client.flushDb());
+    }
+
+    async clearByPattern(pattern) {
+        return this.#exec(async () => {
+            const SCAN_COUNT = 100;
+            let cursor = 0;
+
+            do {
+                const {cursor: nextCursor, keys} = await this.#client.scan(cursor, {
+                    MATCH: pattern,
+                    COUNT: SCAN_COUNT,
+                });
+
+                cursor = Number(nextCursor);
+
+                if (keys.length) {
+                    await this.#client.del(keys);
+                }
+
+            } while (cursor !== 0);
+        });
+    }
+
+    async close() {
+        if (this.#client.isOpen) {
+            await this.#client.quit();
+        }
     }
 }
 
