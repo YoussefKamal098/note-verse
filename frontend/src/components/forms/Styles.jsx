@@ -39,7 +39,6 @@ const SubmitButtonStyled = styled.button`
     font-weight: bold;
     font-family: "Pacifico", cursive;
     color: var(--color-text);
-    border: 2px solid var(--color-border-secondary);
     background-color: var(--color-background-secondary);
     border-radius: 7px;
     box-shadow: var(--box-shadow);
@@ -79,16 +78,10 @@ const InputContainerStyled = styled.div`
         display: flex;
         align-items: center;
         width: 100%;
-        border: 2px solid var(--color-border-secondary);
         border-radius: 7px;
         box-shadow: var(--box-shadow);
         transition: 0.3s ease;
         overflow: hidden;
-    }
-
-    .input:has(input:focus),
-    .input:hover {
-        border-color: ${({has_error, hover_color}) => has_error ? "var(--color-danger)" : `${hover_color}`};
     }
 
     .input:hover input::placeholder,

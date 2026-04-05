@@ -16,7 +16,6 @@ const ButtonContainerStyles = styled.button`
     padding: 8px 24px;
     margin: 15px auto;
     background: var(--color-background-secondary);
-    border: 2px solid var(--color-border-secondary);
     border-radius: 10px;
     box-shadow: var(--box-shadow);
     font-family: 'Roboto', sans-serif;

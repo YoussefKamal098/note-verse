@@ -24,15 +24,6 @@ import {
 } from "@/validations/userValidation";
 import {ErrorMessageStyled, FormContainerStyled, FormHeaderStyled, LinkStyled} from "./Styles";
 
-// Create a styled component for the div wrapping the name fields
-const NameFieldsContainerStyled = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-self: center;
-    gap: 1em;
-    width: 100%;
-`;
-
 // Increase the max-width of FormContainerStyled
 // Override FormContainerStyled by extending it
 const OverriddenFormContainerStyled = styled(FormContainerStyled)`
@@ -103,18 +94,17 @@ const RegisterForm = () => {
                     >
                         {({isSubmitting, isValid}) => (
                             <Form onKeyDown={(e) => handleKeyDown(e, isSubmitting)}>
-                                <NameFieldsContainerStyled>
-                                    <Field
-                                        name="firstname"
-                                        component={FirstNameInput}
-                                        innerRef={firstnameRef}
-                                    />
-                                    <Field
-                                        name="lastname"
-                                        component={LastNameInput}
-                                        innerRef={lastnameRef}
-                                    />
-                                </NameFieldsContainerStyled>
+                                <Field
+                                    name="firstname"
+                                    component={FirstNameInput}
+                                    innerRef={firstnameRef}
+                                />
+
+                                <Field
+                                    name="lastname"
+                                    component={LastNameInput}
+                                    innerRef={lastnameRef}
+                                />
 
                                 <Field
                                     name="email"
