@@ -198,6 +198,7 @@ class BaseRepository {
 
     /**
      * Deep freezes an object or array to prevent modification
+     * @protected
      * @template T
      * @param {T} obj - The object to freeze
      * @returns {Readonly<T>}

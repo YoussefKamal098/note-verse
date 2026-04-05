@@ -38,19 +38,13 @@ class NotificationRepository extends BaseRepository {
      */
     async batchCreate(notifications = [], {session = null} = {}) {
         try {
-            const insertedNotifications = await this._model.insertMany(
-                notifications.map(n => ({
-                    ...n,
-                    recipient: this.toObjectId(n.recipient)
-                })),
-                {
-                    ordered: false,
-                    lean: true,
-                    rawResult: false,
-                    session
-                }
-            );
-            return this.freeze(this.#sanitizeNotification(insertedNotifications));
+            const docs = notifications.map(n => ({
+                ...n,
+                recipient: this.toObjectId(n.recipient)
+            }));
+
+            const insertedNotifications = await this._model.create(docs, {session});
+            return this.freeze(insertedNotifications.map(n => this.#sanitizeNotification(n.toObject())));
         } catch (err) {
             if (err.code === dbErrorCodes.DUPLICATE_KEY) {
                 const conflictError = new Error('Duplicate notification detected');
